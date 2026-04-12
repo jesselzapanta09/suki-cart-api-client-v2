@@ -1,0 +1,191 @@
+<?php
+
+namespace App\Http\Controllers\Seller;
+
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Seller\StoreProductRequest;
+use App\Http\Requests\Seller\UpdateProductRequest;
+use App\Models\Product;
+use App\Models\ProductImage;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
+
+class SellerProductController extends Controller
+{
+    // GET /api/seller/products
+    public function index(Request $request)
+    {
+        $user = $request->user();
+        $query = Product::where('store_id', $user->store->id);
+
+        // Search
+        if ($search = $request->input('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%")
+                  ->orWhere('sku', 'like', "%{$search}%");
+            });
+        }
+
+        // Category filter
+        if ($request->has('category_id')) {
+            $query->where('category_id', $request->input('category_id'));
+        }
+
+        // Status filter
+        if ($request->has('status')) {
+            $query->where('status', $request->input('status'));
+        }
+
+        // Sort
+        $sortField = $request->input('sort_field', 'created_at');
+        $sortOrder = $request->input('sort_order', 'desc');
+        $allowedSorts = ['id', 'name', 'price', 'stock', 'status', 'created_at'];
+        if (in_array($sortField, $allowedSorts)) {
+            $query->orderBy($sortField, $sortOrder === 'ascend' ? 'asc' : 'desc');
+        }
+
+        $perPage = (int) $request->input('per_page', 10);
+        $products = $query->with(['images', 'category'])->paginate($perPage);
+
+        return response()->json($products);
+    }
+
+    // GET /api/seller/products/{id}
+    public function show($id, Request $request)
+    {
+        $user = $request->user();
+        $product = Product::where('store_id', $user->store->id)
+            ->with(['images', 'category', 'store'])
+            ->findOrFail($id);
+        return response()->json(['product' => $product]);
+    }
+
+    // POST /api/seller/products
+    public function store(StoreProductRequest $request)
+    {
+        return DB::transaction(function () use ($request) {
+            $user = $request->user();
+            $data = $request->validated();
+            $data['store_id'] = $user->store->id;
+            $product = Product::create([
+                'name' => $data['name'],
+                'description' => $data['description'] ?? null,
+                'category_id' => $data['category_id'] ?? null,
+                'price' => $data['price'] ?? 0,
+                'stock' => $data['stock'] ?? 0,
+                'sku' => $data['sku'] ?? null,
+                'condition' => $data['condition'] ?? null,
+                'brand' => $data['brand'] ?? null,
+                'weight' => $data['weight'] ?? null,
+                'dimensions' => $data['dimensions'] ?? null,
+                'status' => $data['status'] ?? 1,
+                'store_id' => $data['store_id'],
+            ]);
+            foreach ($request->file('images', []) as $index => $image) {
+                $path = $image->store('products', 'public');
+                ProductImage::create([
+                    'product_id' => $product->id,
+                    'image_path' => $path,
+                    'sort_order' => $index,
+                ]);
+            }
+            return response()->json([
+                'message' => 'Product created successfully.',
+                'product' => $product->load(['images', 'category']),
+            ], 201);
+        });
+    }
+
+    // PUT /api/seller/products/{id}
+    public function update(UpdateProductRequest $request, $id)
+    {
+        return DB::transaction(function () use ($request, $id) {
+            $user = $request->user();
+            $product = Product::where('store_id', $user->store->id)->findOrFail($id);
+            $data = $request->validated();
+            $deletedImageIds = collect($data['deleted_image_ids'] ?? [])
+                ->map(fn ($imageId) => (int) $imageId)
+                ->unique()
+                ->values();
+
+            $product->update([
+                'name' => $data['name'] ?? $product->name,
+                'description' => $data['description'] ?? $product->description,
+                'category_id' => $data['category_id'] ?? $product->category_id,
+                'price' => $data['price'] ?? $product->price,
+                'stock' => $data['stock'] ?? $product->stock,
+                'sku' => $data['sku'] ?? $product->sku,
+                'condition' => $data['condition'] ?? $product->condition,
+                'brand' => $data['brand'] ?? $product->brand,
+                'weight' => $data['weight'] ?? $product->weight,
+                'dimensions' => $data['dimensions'] ?? $product->dimensions,
+                'status' => $data['status'] ?? $product->status,
+            ]);
+
+            if ($deletedImageIds->isNotEmpty()) {
+                $imagesToDelete = $product->images()
+                    ->whereIn('id', $deletedImageIds)
+                    ->get();
+
+                foreach ($imagesToDelete as $image) {
+                    Storage::disk('public')->delete($image->image_path);
+                    $image->delete();
+                }
+            }
+
+            $newImages = $request->file('images', []);
+            $remainingImagesCount = $product->images()->count();
+            $totalImages = $remainingImagesCount + count($newImages);
+
+            if ($totalImages < 1) {
+                throw ValidationException::withMessages([
+                    'images' => ['At least one image is required'],
+                ]);
+            }
+
+            if ($totalImages > 5) {
+                throw ValidationException::withMessages([
+                    'images' => ['A product can only have up to 5 images'],
+                ]);
+            }
+
+            if (!empty($newImages)) {
+                $nextSortOrder = ((int) $product->images()->max('sort_order')) + 1;
+
+                foreach ($newImages as $image) {
+                    $path = $image->store('products', 'public');
+                    ProductImage::create([
+                        'product_id' => $product->id,
+                        'image_path' => $path,
+                        'sort_order' => $nextSortOrder++,
+                    ]);
+                }
+            }
+
+            return response()->json([
+                'message' => 'Product updated successfully.',
+                'product' => $product->load(['images', 'category']),
+            ]);
+        });
+    }
+
+    // DELETE /api/seller/products/{id}
+    public function destroy(Request $request, $id)
+    {
+        $user = $request->user();
+        $product = Product::where('store_id', $user->store->id)
+            ->with('images')
+            ->findOrFail($id);
+
+        foreach ($product->images as $image) {
+            Storage::disk('public')->delete($image->image_path);
+            $image->delete();
+        }
+
+        $product->delete();
+        return response()->json(['message' => 'Product deleted successfully.']);
+    }
+}

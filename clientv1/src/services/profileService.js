@@ -1,72 +1,7 @@
-const BASE = '/api';
-
-function getToken() {
-    return localStorage.getItem('token');
-}
-
-function authHeaders(extra = {}) {
-    return {
-        'Accept': 'application/json',
-        'Authorization': `Bearer ${getToken()}`,
-        ...extra,
-    };
-}
-
-async function safeJson(res) {
-    const text = await res.text();
-    if (!text) return {};
-    try { return JSON.parse(text); } catch { return { message: `Server error (${res.status})` }; }
-}
-
-async function authGet(url) {
-    const res = await fetch(url, { headers: authHeaders() });
-    const json = await safeJson(res);
-    if (!res.ok) {
-        const error = new Error(json.message ?? 'Request failed');
-        error.errors = json.errors ?? {};
-        error.status = res.status;
-        error.data = json;
-        throw error;
-    }
-    return json;
-}
-
-async function authPostForm(url, formData) {
-    const res = await fetch(url, {
-        method: 'POST',
-        headers: authHeaders(),
-        body: formData,
-    });
-    const json = await safeJson(res);
-    if (!res.ok) {
-        const error = new Error(json.message ?? 'Request failed');
-        error.errors = json.errors ?? {};
-        error.status = res.status;
-        error.data = json;
-        throw error;
-    }
-    return json;
-}
-
-async function authPostJson(url, payload) {
-    const res = await fetch(url, {
-        method: 'POST',
-        headers: authHeaders({ 'Content-Type': 'application/json' }),
-        body: JSON.stringify(payload),
-    });
-    const json = await safeJson(res);
-    if (!res.ok) {
-        const error = new Error(json.message ?? 'Request failed');
-        error.errors = json.errors ?? {};
-        error.status = res.status;
-        error.data = json;
-        throw error;
-    }
-    return json;
-}
+import api from './api';
 
 export function getProfile() {
-    return authGet(`${BASE}/profile`);
+    return api.get('/profile');
 }
 
 export function updateInfo(values) {
@@ -82,11 +17,11 @@ export function updateInfo(values) {
         fd.append('remove_picture', '1');
     }
 
-    return authPostForm(`${BASE}/profile/info`, fd);
+    return api.post('/profile/info', fd);
 }
 
 export function updateAddress(values) {
-    return authPostJson(`${BASE}/profile/address`, {
+    return api.post('/profile/address', {
         region: values.region ?? '',
         province: values.province ?? '',
         city: values.city ?? '',
@@ -107,11 +42,11 @@ export function updateStore(values) {
         fd.append('remove_banner', '1');
     }
 
-    return authPostForm(`${BASE}/profile/store`, fd);
+    return api.post('/profile/store', fd);
 }
 
 export function changePassword(values) {
-    return authPostJson(`${BASE}/profile/password`, {
+    return api.post('/profile/password', {
         current_password: values.current_password,
         password: values.password,
         password_confirmation: values.password_confirmation,

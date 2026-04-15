@@ -1,97 +1,46 @@
-const BASE = '/api/notifications';
-
-function getToken() {
-    return localStorage.getItem('token');
-}
-
-function authHeaders(extra = {}) {
-    return {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${getToken()}`,
-        ...extra,
-    };
-}
-
-async function safeJson(res) {
-    const text = await res.text();
-    if (!text) return {};
-    try { return JSON.parse(text); } catch { return { message: `Server error (${res.status})` }; }
-}
-
-export async function request(url, options = {}) {
-    const res = await fetch(url, options);
-    const json = await safeJson(res);
-    if (!res.ok) {
-        const error = new Error(json.message ?? 'Request failed');
-        error.status = res.status;
-        throw error;
-    }
-    return json;
-}
+import api from './api';
 
 // ── Notifications ──────────────────────────────────────────────────────────────
 
 export function getNotifications(page = 1, perPage = 20) {
-    return request(`${BASE}?page=${page}&per_page=${perPage}`, {
-        headers: authHeaders(),
-    });
+    return api.get('/notifications', { params: { page, per_page: perPage } });
 }
 
 export function getUnreadCount() {
-    return request(`${BASE}/unread-count`, {
-        headers: authHeaders(),
-    });
+    return api.get('/notifications/unread-count');
 }
 
 export function markRead(id) {
-    return request(`${BASE}/${id}/mark-read`, {
-        method: 'POST',
-        headers: authHeaders(),
-    });
+    return api.post(`/notifications/${id}/mark-read`);
 }
 
 export function markAllRead() {
-    return request(`${BASE}/mark-all-read`, {
-        method: 'POST',
-        headers: authHeaders(),
-    });
+    return api.post('/notifications/mark-all-read');
 }
 
 export function deleteNotification(id) {
-    return request(`${BASE}/${id}`, {
-        method: 'DELETE',
-        headers: authHeaders(),
-    });
+    return api.delete(`/notifications/${id}`);
 }
 
 // ── Push Subscription ──────────────────────────────────────────────────────────
 
 export async function getVapidPublicKey() {
-    const json = await request(`${BASE}/vapid-public-key`, {
-        headers: authHeaders(),
-    });
+    const json = await api.get('/notifications/vapid-public-key');
     return json.vapid_public_key;
 }
 
 export function savePushSubscription(subscription) {
     const json = subscription.toJSON();
-    return request(`${BASE}/push-subscription`, {
-        method: 'POST',
-        headers: authHeaders(),
-        body: JSON.stringify({
-            endpoint:   json.endpoint,
-            public_key: json.keys.p256dh,
-            auth_token: json.keys.auth,
-        }),
+    return api.post('/notifications/push-subscription', {
+        endpoint: json.endpoint,
+        public_key: json.keys.p256dh,
+        auth_token: json.keys.auth,
     });
 }
 
 export function deletePushSubscription(endpoint) {
-    return request(`${BASE}/push-subscription`, {
-        method: 'DELETE',
-        headers: authHeaders(),
-        body: JSON.stringify({ endpoint }),
+    return api.delete('/notifications/push-subscription', {
+        data: { endpoint },
     });
 }
 
@@ -105,8 +54,6 @@ function urlBase64ToUint8Array(base64String) {
 }
 
 export async function registerPushSubscription() {
-    // Service workers aren't available in Cordova WebView the same way,
-    // but this still works when wrapped with cordova-plugin-service-worker or similar.
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
         console.warn('[Push] Not supported in this environment.');
         return null;

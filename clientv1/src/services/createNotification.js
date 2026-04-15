@@ -1,13 +1,5 @@
-import { request } from "./notificationService";
+import api from './api';
 
 export function createNotification({ type, title, message }) {
-    return request("/api/notifications", {
-        method: "POST",
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
-        body: JSON.stringify({ type, title, message }),
-    });
+    return api.post('/notifications', { type, title, message });
 }

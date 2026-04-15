@@ -1,27 +1,40 @@
+import axios from 'axios';
+
 // Philippine Standard Geographic Code (PSGC) API
 // Docs: https://psgc.gitlab.io/api/
-const BASE = "https://psgc.gitlab.io/api";
+const psgcApi = axios.create({
+    baseURL: 'https://psgc.gitlab.io/api',
+    headers: { 'Accept': 'application/json' },
+});
+
+// Response interceptor to extract data only
+psgcApi.interceptors.response.use(
+    (response) => response.data,
+    (error) => Promise.reject(error)
+);
 
 const cache = {};
 
 async function fetchWithCache(url) {
     if (cache[url]) return cache[url];
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`Failed to fetch: ${url}`);
-    const data = await res.json();
-    cache[url] = data;
-    return data;
+    try {
+        const data = await psgcApi.get(url);
+        cache[url] = data;
+        return data;
+    } catch (error) {
+        console.error(`Failed to fetch ${url}:`, error);
+    }
 }
 
 const addressService = {
-    getRegions: () => fetchWithCache(`${BASE}/regions/`),
-    getProvinces: (regionCode) => fetchWithCache(`${BASE}/regions/${regionCode}/provinces/`),
-    getCities: (provinceCode) => fetchWithCache(`${BASE}/provinces/${provinceCode}/cities-municipalities/`),
-    getBarangays: (cityCode) => fetchWithCache(`${BASE}/cities-municipalities/${cityCode}/barangays/`),
-    getRegion: (code) => fetchWithCache(`${BASE}/regions/${code}/`),
-    getProvince: (code) => fetchWithCache(`${BASE}/provinces/${code}/`),
-    getCity: (code) => fetchWithCache(`${BASE}/cities-municipalities/${code}/`),
-    getBarangay: (code) => fetchWithCache(`${BASE}/barangays/${code}/`),
+    getRegions: () => fetchWithCache('/regions/'),
+    getProvinces: (regionCode) => fetchWithCache(`/regions/${regionCode}/provinces/`),
+    getCities: (provinceCode) => fetchWithCache(`/provinces/${provinceCode}/cities-municipalities/`),
+    getBarangays: (cityCode) => fetchWithCache(`/cities-municipalities/${cityCode}/barangays/`),
+    getRegion: (code) => fetchWithCache(`/regions/${code}/`),
+    getProvince: (code) => fetchWithCache(`/provinces/${code}/`),
+    getCity: (code) => fetchWithCache(`/cities-municipalities/${code}/`),
+    getBarangay: (code) => fetchWithCache(`/barangays/${code}/`),
 };
 
 export default addressService;

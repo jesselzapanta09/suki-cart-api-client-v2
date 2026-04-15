@@ -1,50 +1,21 @@
-const BASE = '/api/admin';
-
-function getToken() {
-    return localStorage.getItem('token');
-}
-
-function authHeaders(extra = {}) {
-    return {
-        'Accept': 'application/json',
-        'Authorization': `Bearer ${getToken()}`,
-        ...extra,
-    };
-}
-
-async function safeJson(res) {
-    const text = await res.text();
-    if (!text) return {};
-    try { return JSON.parse(text); } catch { return { message: `Server error (${res.status})` }; }
-}
-
-async function request(url, options = {}) {
-    const res = await fetch(url, options);
-    const json = await safeJson(res);
-    if (!res.ok) {
-        const error = new Error(json.message ?? 'Request failed');
-        error.errors = json.errors ?? {};
-        error.status = res.status;
-        error.data = json;
-        throw error;
-    }
-    return json;
-}
+import api from './api';
 
 export function getUsers({ page = 1, perPage = 10, search, sortField, sortOrder, role, verified } = {}) {
-    const params = new URLSearchParams();
-    params.set('page', page);
-    params.set('per_page', perPage);
-    if (search) params.set('search', search);
-    if (sortField) params.set('sort_field', sortField);
-    if (sortOrder) params.set('sort_order', sortOrder);
-    if (role) params.set('role', role);
-    if (verified !== undefined && verified !== null) params.set('verified', verified);
-    return request(`${BASE}/users?${params}`, { headers: authHeaders() });
+    return api.get('/admin/users', {
+        params: {
+            page,
+            per_page: perPage,
+            ...(search && { search }),
+            ...(sortField && { sort_field: sortField }),
+            ...(sortOrder && { sort_order: sortOrder }),
+            ...(role && { role }),
+            ...(verified !== undefined && verified !== null && { verified }),
+        },
+    });
 }
 
 export function getUser(id) {
-    return request(`${BASE}/users/${id}`, { headers: authHeaders() });
+    return api.get(`/admin/users/${id}`);
 }
 
 export function createUser(values) {
@@ -70,7 +41,7 @@ export function createUser(values) {
     if (values.store_banner instanceof File) {
         fd.append('store_banner', values.store_banner);
     }
-    return request(`${BASE}/users`, { method: 'POST', headers: authHeaders(), body: fd });
+    return api.post('/admin/users', fd);
 }
 
 export function updateUser(id, values) {
@@ -99,9 +70,9 @@ export function updateUser(id, values) {
     if (values.store_banner instanceof File) {
         fd.append('store_banner', values.store_banner);
     }
-    return request(`${BASE}/users/${id}`, { method: 'POST', headers: authHeaders(), body: fd });
+    return api.post(`/admin/users/${id}`, fd);
 }
 
 export function deleteUser(id) {
-    return request(`${BASE}/users/${id}`, { method: 'DELETE', headers: authHeaders() });
+    return api.delete(`/admin/users/${id}`);
 }

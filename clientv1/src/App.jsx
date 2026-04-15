@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ConfigProvider, App as AntApp } from "antd";
 import { AuthProvider, useAuth } from "./context/AuthContext.jsx";
 import { CartProvider } from "./context/CartContext.jsx";
+import { NotificationProvider } from "./context/NotificationContext.jsx";
 import ProtectedRoute from "./routes/ProtectedRoute.jsx";
 
 // Layouts
@@ -76,8 +77,9 @@ export default function App() {
         <ConfigProvider theme={antTheme}>
             <AntApp>
                 <AuthProvider>
-                    <CartProvider>
-                        <BrowserRouter>
+                    <NotificationProvider>
+                        <CartProvider>
+                            <BrowserRouter>
                             <Routes>
                                 {/* Public - Home */}
                                 <Route element={<HomeLayout />}>
@@ -141,6 +143,7 @@ export default function App() {
                             </Routes>
                         </BrowserRouter>
                     </CartProvider>
+                    </NotificationProvider>
                 </AuthProvider>
             </AntApp>
         </ConfigProvider>

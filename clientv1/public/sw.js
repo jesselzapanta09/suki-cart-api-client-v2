@@ -47,7 +47,28 @@ self.addEventListener('push', (event) => {
     };
 
     event.waitUntil(
-        self.registration.showNotification(payload.title, options)
+        // Send message to all active clients (pages/tabs that are open)
+        clients.matchAll({ type: 'window', includeUncontrolled: false }).then((windowClients) => {
+            console.log('[SW Push] Found', windowClients.length, 'active clients');
+            
+            // If any clients are open, send them a message about the push
+            if (windowClients.length > 0) {
+                windowClients.forEach((client) => {
+                    console.log('[SW Push] Sending message to client:', client.url);
+                    client.postMessage({
+                        type: 'PUSH_NOTIFICATION',
+                        payload,
+                    });
+                });
+            }
+            
+            // Always show system notification too (OS may suppress if page is active, but we tried)
+            console.log('[SW Push] Showing notification:', payload.title);
+            return self.registration.showNotification(payload.title, options);
+        }).catch((err) => {
+            console.error('[SW Push] Error:', err);
+            return self.registration.showNotification(payload.title, options);
+        })
     );
 });
 

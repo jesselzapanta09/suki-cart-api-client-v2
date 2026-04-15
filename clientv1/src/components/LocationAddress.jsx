@@ -1,63 +1,23 @@
-import React, { useState, useEffect } from "react"
-import addressService from "../services/addressService"
+import React from "react"
 
 /**
- * Resolves PSGC codes (or location names) to human-readable names and renders the address.
+ * Displays location information that's already stored in the database.
+ * No API calls - just renders the stored location data.
  * Props:
- *   location – { region, province, city_municipality, barangay } (PSGC codes or names)
- *   className – optional extra class for the wrapper <span>
+ *   location – { region, province, city_municipality, barangay }
+ *   className – optional extra class for the wrapper
  */
 export default function LocationAddress({ location, className = "" }) {
-    const [names, setNames] = useState(null)
-    const [error, setError] = useState(false)
-
-    useEffect(() => {
-        if (!location) return
-        let cancelled = false
-
-        const resolve = async () => {
-            try {
-                const [region, province, city, barangay] = await Promise.all([
-                    location.region ? addressService.getRegion(location.region).then(d => d?.name || location.region) : Promise.resolve(""),
-                    location.province ? addressService.getProvince(location.province).then(d => d?.name || location.province) : Promise.resolve(""),
-                    location.city_municipality ? addressService.getCity(location.city_municipality).then(d => d?.name || location.city_municipality) : Promise.resolve(""),
-                    location.barangay ? addressService.getBarangay(location.barangay).then(d => d?.name || location.barangay) : Promise.resolve(""),
-                ])
-                if (!cancelled) {
-                    setNames({ region, province, city, barangay })
-                    setError(false)
-                }
-            } catch (err) {
-                console.error("Error resolving address:", err)
-                if (!cancelled) {
-                    setError(true)
-                    // Fallback to raw values if everything fails
-                    setNames({
-                        region: location.region || "",
-                        province: location.province || "",
-                        city: location.city_municipality || "",
-                        barangay: location.barangay || "",
-                    })
-                }
-            }
-        }
-
-        resolve()
-        return () => { cancelled = true }
-    }, [location?.region, location?.province, location?.city_municipality, location?.barangay])
-
     if (!location) return null
 
-    if (!names) {
-        return <span className={className}>Loading address…</span>
-    }
-
     const parts = [
-        names.barangay && { label: "Barangay", value: names.barangay },
-        names.city     && { label: "City / Municipality", value: names.city },
-        names.province && { label: "Province", value: names.province },
-        names.region   && { label: "Region", value: names.region },
+        location.barangay && { label: "Barangay", value: location.barangay },
+        location.city_municipality && { label: "City / Municipality", value: location.city_municipality },
+        location.province && { label: "Province", value: location.province },
+        location.region && { label: "Region", value: location.region },
     ].filter(Boolean)
+
+    if (parts.length === 0) return null
 
     return (
         <div className={className}>

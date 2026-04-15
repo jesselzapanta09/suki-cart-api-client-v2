@@ -211,7 +211,7 @@ export default function RegisterSeller() {
                                             </div>
                                         </Upload>
                                     </Form.Item>
-                                    <Button type="primary" size="large" block className="h-12 rounded-xl font-semibold" onClick={handleNext} icon={<ArrowRightOutlined />} iconPosition="end">
+                                    <Button type="primary" size="large" block className="h-12 rounded-xl font-semibold" onClick={handleNext} icon={<ArrowRightOutlined />} iconPlacement="end">
                                         Continue to Store Info
                                     </Button>
                             </div>
@@ -237,7 +237,7 @@ export default function RegisterSeller() {
                                     </Form.Item>
                                     <Row gutter={16}>
                                         <Col xs={12}><Button size="large" block className="h-12 rounded-xl font-semibold" onClick={() => setStep(0)} icon={<ArrowLeft size={16} />}>Back</Button></Col>
-                                        <Col xs={12}><Button type="primary" size="large" block className="h-12 rounded-xl font-semibold" onClick={handleNext} icon={<ArrowRightOutlined />} iconPosition="end">Continue</Button></Col>
+                                        <Col xs={12}><Button type="primary" size="large" block className="h-12 rounded-xl font-semibold" onClick={handleNext} icon={<ArrowRightOutlined />} iconPlacement="end">Continue</Button></Col>
                                     </Row>
                             </div>
 
@@ -246,7 +246,7 @@ export default function RegisterSeller() {
                                     <AddressSelect form={form} />
                                     <Row gutter={16} className="mt-6">
                                         <Col xs={12}><Button size="large" block className="h-12 rounded-xl font-semibold" onClick={() => setStep(1)} icon={<ArrowLeft size={16} />}>Back</Button></Col>
-                                        <Col xs={12}><Button type="primary" size="large" block className="h-12 rounded-xl font-semibold" onClick={handleNext} icon={<ArrowRightOutlined />} iconPosition="end">Continue</Button></Col>
+                                        <Col xs={12}><Button type="primary" size="large" block className="h-12 rounded-xl font-semibold" onClick={handleNext} icon={<ArrowRightOutlined />} iconPlacement="end">Continue</Button></Col>
                                     </Row>
                             </div>
 

@@ -202,7 +202,7 @@ export default function RegisterCustomer() {
                                             </div>
                                         </Upload>
                                     </Form.Item>
-                                    <Button type="primary" size="large" block className="h-12 rounded-xl font-semibold" onClick={handleNext} icon={<ArrowRightOutlined />} iconPosition="end">
+                                    <Button type="primary" size="large" block className="h-12 rounded-xl font-semibold" onClick={handleNext} icon={<ArrowRightOutlined />} iconPlacement="end">
                                         Continue to Address
                                     </Button>
                             </div>
@@ -217,7 +217,7 @@ export default function RegisterCustomer() {
                                             </Button>
                                         </Col>
                                         <Col xs={12}>
-                                            <Button type="primary" size="large" block className="h-12 rounded-xl font-semibold" onClick={handleNext} icon={<ArrowRightOutlined />} iconPosition="end">
+                                            <Button type="primary" size="large" block className="h-12 rounded-xl font-semibold" onClick={handleNext} icon={<ArrowRightOutlined />} iconPlacement="end">
                                                 Continue
                                             </Button>
                                         </Col>

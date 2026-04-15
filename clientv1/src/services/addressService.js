@@ -16,16 +16,14 @@ psgcApi.interceptors.response.use(
 const cache = {};
 const nameToCodeCache = {};
 
-async function fetchWithCache(url, silent = false) {
+async function fetchWithCache(url) {
     if (cache[url]) return cache[url];
     try {
         const data = await psgcApi.get(url);
         cache[url] = data;
         return data;
     } catch (error) {
-        if (!silent) {
-            console.error(`Failed to fetch ${url}:`, error);
-        }
+        console.error(`Failed to fetch ${url}:`, error);
         return null;
     }
 }
@@ -34,20 +32,20 @@ async function fetchWithCache(url, silent = false) {
  * Searches for a location by name and returns its code
  * This helps when database stores location names instead of PSGC codes
  */
-async function searchLocationByName(name, endpoint) {
-    const cacheKey = `search:${endpoint}:${name}`;
+async function searchLocationByName(name, searchType) {
+    const cacheKey = `${searchType}:${name}`;
     if (nameToCodeCache[cacheKey]) return nameToCodeCache[cacheKey];
 
     try {
-        const searchUrl = `/${endpoint}/?q=${encodeURIComponent(name)}`;
-        const results = await fetchWithCache(searchUrl, true); // Suppress errors for searches
+        const searchUrl = `/${searchType}/?q=${encodeURIComponent(name)}`;
+        const results = await fetchWithCache(searchUrl);
         if (results && results.length > 0) {
             const found = results[0];
             nameToCodeCache[cacheKey] = found;
             return found;
         }
     } catch (error) {
-        // Silently fail - we'll fall back to the name
+        console.error(`Failed to search for ${name}:`, error);
     }
     return null;
 }
@@ -59,11 +57,12 @@ async function safeGetLocation(code, endpoint) {
     if (!code) return null;
 
     // Try direct code first
-    const result = await fetchWithCache(`/${endpoint}/${code}/`, false);
+    const result = await fetchWithCache(`/${endpoint}/${code}/`);
     if (result) return result;
 
-    // If code fails, try searching by name using the correct endpoint format
-    return searchLocationByName(code, endpoint);
+    // If code fails, try searching by name
+    const searchType = endpoint.replace('-', '');
+    return searchLocationByName(code, searchType);
 }
 
 const addressService = {

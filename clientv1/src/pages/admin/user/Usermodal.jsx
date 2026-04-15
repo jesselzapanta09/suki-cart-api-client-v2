@@ -229,7 +229,7 @@ export default function UserModal({ open, onClose, onSubmit, initialValues, load
 
                         <Row gutter={16}>
                             <Col xs={12}><Button size="large" block className="h-12 rounded-xl font-semibold" onClick={onClose}>Cancel</Button></Col>
-                            <Col xs={12}><Button type="primary" size="large" block className="h-12 rounded-xl font-semibold" onClick={handleNext} icon={<ArrowRightOutlined />} iconPosition="end">Continue</Button></Col>
+                            <Col xs={12}><Button type="primary" size="large" block className="h-12 rounded-xl font-semibold" onClick={handleNext} icon={<ArrowRightOutlined />} iconPlacement="end">Continue</Button></Col>
                         </Row>
                     </div>
 
@@ -258,7 +258,7 @@ export default function UserModal({ open, onClose, onSubmit, initialValues, load
 
                         <Row gutter={16}>
                             <Col xs={12}><Button size="large" block className="h-12 rounded-xl font-semibold" onClick={() => setStep(0)} icon={<ArrowLeft size={16} />}>Back</Button></Col>
-                            <Col xs={12}><Button type="primary" size="large" block className="h-12 rounded-xl font-semibold" onClick={handleNext} icon={<ArrowRightOutlined />} iconPosition="end">Continue</Button></Col>
+                            <Col xs={12}><Button type="primary" size="large" block className="h-12 rounded-xl font-semibold" onClick={handleNext} icon={<ArrowRightOutlined />} iconPlacement="end">Continue</Button></Col>
                         </Row>
                     </div>
 
@@ -267,7 +267,7 @@ export default function UserModal({ open, onClose, onSubmit, initialValues, load
                         <AddressSelect form={form} initialValues={addressInitial} key={initialValues?.id || 'new'} />
                         <Row gutter={16} className="mt-6">
                             <Col xs={12}><Button size="large" block className="h-12 rounded-xl font-semibold" onClick={() => setStep(step - 1)} icon={<ArrowLeft size={16} />}>Back</Button></Col>
-                            <Col xs={12}><Button type="primary" size="large" block className="h-12 rounded-xl font-semibold" onClick={handleNext} icon={<ArrowRightOutlined />} iconPosition="end">Continue</Button></Col>
+                            <Col xs={12}><Button type="primary" size="large" block className="h-12 rounded-xl font-semibold" onClick={handleNext} icon={<ArrowRightOutlined />} iconPlacement="end">Continue</Button></Col>
                         </Row>
                     </div>
 

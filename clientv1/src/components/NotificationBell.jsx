@@ -55,7 +55,8 @@ export default function NotificationBell() {
     useEffect(() => {
         // Defer initial refreshCount to avoid setState in effect body
         const timeout = setTimeout(refreshCount, 0);
-        const id = setInterval(refreshCount, 5000);
+        // Reduced polling frequency: once every 30 seconds instead of every 5 seconds
+        const id = setInterval(refreshCount, 30000);
         return () => {
             clearTimeout(timeout);
             clearInterval(id);

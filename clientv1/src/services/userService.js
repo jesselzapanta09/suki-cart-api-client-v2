@@ -76,3 +76,4 @@ export function updateUser(id, values) {
 export function deleteUser(id) {
     return api.delete(`/admin/users/${id}`);
 }
+

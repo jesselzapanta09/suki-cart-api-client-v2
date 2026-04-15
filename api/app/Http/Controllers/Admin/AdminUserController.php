@@ -39,12 +39,12 @@ class AdminUserController extends Controller
             $query->where('role', $role);
         }
 
-        // Verified filter
+        // Email Verified filter
         if ($request->has('verified')) {
             $verified = $request->input('verified');
-            if ($verified === '1') {
+            if ($verified === '1' || $verified === 1) {
                 $query->whereNotNull('email_verified_at');
-            } else {
+            } elseif ($verified === '0' || $verified === 0) {
                 $query->whereNull('email_verified_at');
             }
         }

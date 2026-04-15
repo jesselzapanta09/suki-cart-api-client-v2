@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from "react"
 import { Table, Button, Popconfirm, Input, Tag, Tooltip, App, Modal, Spin } from "antd"
-import { Plus, Edit, Trash2, Search, Users, ShieldCheck, Store, UserCheck, AlertCircle, User2 } from "lucide-react"
+import { Plus, Edit, Trash2, Search, Users, User2 } from "lucide-react"
 import UserModal from "./Usermodal"
 import Avatar from "../../../components/Avatar"
 import LocationAddress from "../../../components/LocationAddress"
@@ -14,8 +14,9 @@ export default function UserIndex() {
     const [total, setTotal] = useState(0)
     const [search, setSearch] = useState("")
     const [pagination, setPagination] = useState({ current: 1, pageSize: 10 })
-    const [sorter, setSorter] = useState({ field: "created_at", order: "descend" })
+    const [sorter, setSorter] = useState({ field: "id", order: "descend" })
     const [roleFilter, setRoleFilter] = useState(null)
+    const [emailVerifiedFilter, setEmailVerifiedFilter] = useState(null)
 
     const [modalOpen, setModalOpen] = useState(false)
     const [modalMode, setModalMode] = useState("add")
@@ -25,12 +26,9 @@ export default function UserIndex() {
     const [viewUser, setViewUser] = useState(null)
     const [viewLoading, setViewLoading] = useState(false)
 
-    // Stats from total data
-    const [stats, setStats] = useState({ total: 0, admins: 0, sellers: 0, customers: 0, unverified: 0 })
-
     const searchTimer = useRef(null)
 
-    const fetchUsers = useCallback(async (page, pageSize, sortField, sortOrder, searchVal, role) => {
+    const fetchUsers = useCallback(async (page, pageSize, sortField, sortOrder, searchVal, role, verified) => {
         setLoading(true)
         try {
             const data = await userService.getUsers({
@@ -40,6 +38,7 @@ export default function UserIndex() {
                 sortField: sortField || undefined,
                 sortOrder: sortOrder || undefined,
                 role: role || undefined,
+                verified: verified ? (verified === 'verified' ? '1' : '0') : undefined,
             })
             setUsers(data.data)
             setTotal(data.total)
@@ -51,38 +50,24 @@ export default function UserIndex() {
         }
     }, [message])
 
-    // Fetch stats once (unfiltered count)
-    const fetchStats = useCallback(async () => {
-        try {
-            const all = await userService.getUsers({ perPage: 1 })
-            const totalCount = all.total
 
-            const [admins, sellers, customers, unverified] = await Promise.all([
-                userService.getUsers({ perPage: 1, role: 'admin' }).then(d => d.total).catch(() => 0),
-                userService.getUsers({ perPage: 1, role: 'seller' }).then(d => d.total).catch(() => 0),
-                userService.getUsers({ perPage: 1, role: 'customer' }).then(d => d.total).catch(() => 0),
-                userService.getUsers({ perPage: 1, verified: '0' }).then(d => d.total).catch(() => 0),
-            ])
-
-            setStats({ total: totalCount, admins, sellers, customers, unverified })
-        } catch { /* ignore */ }
-    }, [])
 
     useEffect(() => {
-        fetchUsers(pagination.current, pagination.pageSize, sorter.field, sorter.order, search, roleFilter)
-        fetchStats()
+        fetchUsers(pagination.current, pagination.pageSize, sorter.field, sorter.order, search, roleFilter, emailVerifiedFilter)
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     const handleTableChange = (pag, filters, sort) => {
         const newSorter = sort.order ? { field: sort.field, order: sort.order } : sorter
         const newRole = filters.role?.[0] || null
-        const filtersOrSortChanged = newSorter.field !== sorter.field || newSorter.order !== sorter.order || newRole !== roleFilter
+        const newEmailVerified = filters.email_verified_at?.[0] || null
+        const filtersOrSortChanged = newSorter.field !== sorter.field || newSorter.order !== sorter.order || newRole !== roleFilter || newEmailVerified !== emailVerifiedFilter
         const page = filtersOrSortChanged ? 1 : pag.current
         setSorter(newSorter)
         setRoleFilter(newRole)
+        setEmailVerifiedFilter(newEmailVerified)
         setPagination(prev => ({ ...prev, current: page, pageSize: pag.pageSize }))
-        fetchUsers(page, pag.pageSize, newSorter.field, newSorter.order, search, newRole)
+        fetchUsers(page, pag.pageSize, newSorter.field, newSorter.order, search, newRole, newEmailVerified)
     }
 
     const handleSearch = (val) => {
@@ -90,13 +75,12 @@ export default function UserIndex() {
         clearTimeout(searchTimer.current)
         searchTimer.current = setTimeout(() => {
             setPagination(prev => ({ ...prev, current: 1 }))
-            fetchUsers(1, pagination.pageSize, sorter.field, sorter.order, val, roleFilter)
+            fetchUsers(1, pagination.pageSize, sorter.field, sorter.order, val, roleFilter, emailVerifiedFilter)
         }, 400)
     }
 
     const reload = () => {
-        fetchUsers(pagination.current, pagination.pageSize, sorter.field, sorter.order, search, roleFilter)
-        fetchStats()
+        fetchUsers(pagination.current, pagination.pageSize, sorter.field, sorter.order, search, roleFilter, emailVerifiedFilter)
     }
 
     const openAdd = () => { setModalMode("add"); setEditRecord(null); setModalOpen(true) }
@@ -190,6 +174,13 @@ export default function UserIndex() {
         },
         {
             title: "Email Verified", dataIndex: "email_verified_at", key: "email_verified_at", width: 150,
+            sorter: false,
+            filters: [
+                { text: "Verified", value: "1" },
+                { text: "Not Verified", value: "0" },
+            ],
+            filterMultiple: false,
+            filteredValue: emailVerifiedFilter ? [emailVerifiedFilter] : null,
             render: val => (
                 <span className={`flex items-center gap-1 text-xs ${val ? "text-green-600" : "text-red-600"}`}>
                     <span className={`w-2 h-2 rounded-full ${val ? "bg-green-600" : "bg-red-600"}`}></span>
@@ -219,13 +210,7 @@ export default function UserIndex() {
         }
     ]
 
-    const statItems = [
-        { label: "Total", value: stats.total, icon: <Users size={16} />, color: "text-green-700", bg: "bg-green-50", ring: "ring-green-200" },
-        { label: "Admins", value: stats.admins, icon: <ShieldCheck size={16} />, color: "text-purple-700", bg: "bg-purple-50", ring: "ring-purple-200" },
-        { label: "Sellers", value: stats.sellers, icon: <Store size={16} />, color: "text-orange-700", bg: "bg-orange-50", ring: "ring-orange-200" },
-        { label: "Customers", value: stats.customers, icon: <UserCheck size={16} />, color: "text-emerald-700", bg: "bg-emerald-50", ring: "ring-emerald-200" },
-        { label: "Unverified", value: stats.unverified, icon: <AlertCircle size={16} />, color: "text-red-600", bg: "bg-red-50", ring: "ring-red-200" },
-    ]
+
 
     return (
         <div className="p-6 lg:p-8 max-w-275 mx-auto space-y-5">
@@ -243,21 +228,7 @@ export default function UserIndex() {
                 <Button onClick={openAdd} type="primary" icon={<Plus size={14} />} size="large">Add User</Button>
             </div>
 
-            {/* Stats row */}
-            <div>
-                <h2 className="font-sora font-semibold text-sm text-gray-700 mb-2">Overview</h2>
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-                {statItems.map(s => (
-                    <div key={s.label} className={`flex items-center gap-3 rounded-xl px-4 py-3 ${s.bg} ring-1 ${s.ring}`}>
-                        <div className={`${s.color}`}>{s.icon}</div>
-                        <div>
-                            <div className={`font-sora font-bold text-lg leading-none ${s.color}`}>{s.value}</div>
-                            <div className="text-xs text-gray-500 mt-0.5">{s.label}</div>
-                        </div>
-                    </div>
-                ))}
-                </div>
-            </div>
+
 
             {/* Table card */}
             <div className="bg-white rounded-2xl border border-gray-200 shadow-sm">

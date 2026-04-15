@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useCallback, useRef } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { Button, Tag, Spin, App, Input } from "antd"
 import { ArrowLeft, Store, CheckCircle, XCircle, RotateCcw, Pencil, History } from "lucide-react"
@@ -14,21 +14,32 @@ export default function SellerVerifyShow() {
     const [store, setStore] = useState(null)
     const [loading, setLoading] = useState(true)
     const [actionLoading, setActionLoading] = useState(false)
+    const isMountedRef = useRef(true)
 
-    const fetchStore = async () => {
+    const fetchStore = useCallback(async () => {
         setLoading(true)
         try {
             const data = await storeVerificationService.getStoreVerification(id)
-            setStore(data.store)
+            if (isMountedRef.current) setStore(data.store)
         } catch (err) {
-            message.error(err.message)
-            navigate("/admin/seller-verify")
+            if (isMountedRef.current) {
+                const errorMessage = err.status === 404 ? "Store not found" : err.message
+                message.error(errorMessage)
+                navigate("/admin/seller-verify")
+            }
         } finally {
-            setLoading(false)
+            if (isMountedRef.current) setLoading(false)
         }
-    }
+    }, [id, message, navigate])
 
-    useEffect(() => { fetchStore() }, [id])
+    useEffect(() => {
+        isMountedRef.current = true
+        fetchStore()
+
+        return () => {
+            isMountedRef.current = false
+        }
+    }, [fetchStore])
 
     const handleApprove = () => {
         modal.confirm({

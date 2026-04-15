@@ -139,7 +139,7 @@ class UserSeeder extends Seeder
             'store_name' => $attributes['store_name'],
             'category_id' => $attributes['category_id'],
             'description' => $attributes['description'],
-            'verified_at' => $verifiedAt,
+            'verified_at' => null,
         ]);
         $store->save();
 
@@ -153,23 +153,10 @@ class UserSeeder extends Seeder
                 'store_id' => $store->id,
             ],
             [
-                'store_status' => 'approved',
+                'store_status' => 'pending',
                 'rejection_reason' => null,
-                'reviewed_by' => $reviewedBy,
-                'reviewed_at' => $reviewedAt,
-            ]
-        );
-
-        StoreVerificationLog::updateOrCreate(
-            [
-                'store_id' => $store->id,
-                'action' => 'approve',
-                'new_status' => 'approved',
-            ],
-            [
-                'previous_status' => 'pending',
-                'rejection_reason' => null,
-                'performed_by' => $reviewedBy,
+                'reviewed_by' => null,
+                'reviewed_at' => null,
             ]
         );
     }

@@ -19,6 +19,8 @@ export default function Avatar({ user, size = 40, fontSize = "1rem", style = {} 
                 alt={user?.firstname || "User"}
                 className={baseClass}
                 style={dynamicStyle}
+                loading="lazy"
+                decoding="async"
             />
         );
     }

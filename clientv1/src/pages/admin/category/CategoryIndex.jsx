@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from "react"
-import { Table, Button, Popconfirm, Input, Tag, Tooltip, App } from "antd"
-import { Plus, Edit, Trash2, Search, LayoutGrid, CheckCircle, XCircle } from "lucide-react"
+import { Table, Button, Popconfirm, Input, Tag, Tooltip, App, Modal, Spin } from "antd"
+import { Plus, Edit, Trash2, Search, Grid3x3 } from "lucide-react"
 import CategoryModal from "./CategoryModal"
 import * as categoryService from "../../../services/categoryService"
 
@@ -20,8 +20,9 @@ export default function CategoryIndex() {
     const [editRecord, setEditRecord] = useState(null)
     const [submitLoading, setSubmitLoading] = useState(false)
 
-    // Stats
-    const [stats, setStats] = useState({ total: 0, active: 0, inactive: 0 })
+    const [viewModalOpen, setViewModalOpen] = useState(false)
+    const [viewCategory, setViewCategory] = useState(null)
+    const [viewLoading, setViewLoading] = useState(false)
 
     const searchTimer = useRef(null)
 
@@ -46,23 +47,24 @@ export default function CategoryIndex() {
         }
     }, [message])
 
-    const fetchStats = useCallback(async () => {
-        try {
-            const all = await categoryService.getCategories({ perPage: 1 })
-            const totalCount = all.total
-
-            const [active, inactive] = await Promise.all([
-                categoryService.getCategories({ perPage: 1, status: 1 }).then(d => d.total).catch(() => 0),
-                categoryService.getCategories({ perPage: 1, status: 0 }).then(d => d.total).catch(() => 0),
-            ])
-
-            setStats({ total: totalCount, active, inactive })
-        } catch { /* ignore */ }
-    }, [])
+    const openView = (id) => {
+        setViewModalOpen(true)
+        setViewLoading(true)
+        categoryService.getCategory(id)
+            .then(data => {
+                setViewCategory(data.category)
+            })
+            .catch(err => {
+                message.error(err.message)
+                setViewModalOpen(false)
+            })
+            .finally(() => {
+                setViewLoading(false)
+            })
+    }
 
     useEffect(() => {
         fetchCategories(pagination.current, pagination.pageSize, sorter.field, sorter.order, search, statusFilter)
-        fetchStats()
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
@@ -88,7 +90,6 @@ export default function CategoryIndex() {
 
     const reload = () => {
         fetchCategories(pagination.current, pagination.pageSize, sorter.field, sorter.order, search, statusFilter)
-        fetchStats()
     }
 
     const openAdd = () => { setModalMode("add"); setEditRecord(null); setModalOpen(true) }
@@ -142,7 +143,14 @@ export default function CategoryIndex() {
         {
             title: "Name", dataIndex: "name", key: "name",
             sorter: true,
-            render: name => <span className="font-semibold text-green-900 text-sm">{name}</span>
+            render: (name, record) => (
+                <span
+                    onClick={() => openView(record.id)}
+                    className="font-semibold text-green-900 text-sm cursor-pointer hover:underline"
+                >
+                    {name}
+                </span>
+            )
         },
         {
             title: "Description", dataIndex: "description", key: "description",
@@ -187,19 +195,13 @@ export default function CategoryIndex() {
         }
     ]
 
-    const statItems = [
-        { label: "Total", value: stats.total, icon: <LayoutGrid size={16} />, color: "text-green-700", bg: "bg-green-50", ring: "ring-green-200" },
-        { label: "Active", value: stats.active, icon: <CheckCircle size={16} />, color: "text-emerald-700", bg: "bg-emerald-50", ring: "ring-emerald-200" },
-        { label: "Inactive", value: stats.inactive, icon: <XCircle size={16} />, color: "text-red-600", bg: "bg-red-50", ring: "ring-red-200" },
-    ]
-
     return (
         <div className="p-6 lg:p-8 max-w-275 mx-auto space-y-5">
             {/* Header */}
             <div className="flex items-center justify-between rounded-xl px-6 py-5 bg-white ring-1 ring-gray-200 shadow-sm">
                 <div className="flex items-center gap-4">
                     <div className="w-11 h-11 rounded-lg bg-linear-to-br from-green-600 to-emerald-500 flex items-center justify-center shadow-sm">
-                        <LayoutGrid size={22} className="text-white" />
+                        <Grid3x3 size={22} className="text-white" />
                     </div>
                     <div>
                         <h1 className="font-sora font-bold text-xl text-gray-900">Category Management</h1>
@@ -207,22 +209,6 @@ export default function CategoryIndex() {
                     </div>
                 </div>
                 <Button onClick={openAdd} type="primary" icon={<Plus size={14} />} size="large">Add Category</Button>
-            </div>
-
-            {/* Stats row */}
-            <div>
-                <h2 className="font-sora font-semibold text-sm text-gray-700 mb-2">Overview</h2>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                    {statItems.map(s => (
-                        <div key={s.label} className={`flex items-center gap-3 rounded-xl px-4 py-3 ${s.bg} ring-1 ${s.ring}`}>
-                            <div className={`${s.color}`}>{s.icon}</div>
-                            <div>
-                                <div className={`font-sora font-bold text-lg leading-none ${s.color}`}>{s.value}</div>
-                                <div className="text-xs text-gray-500 mt-0.5">{s.label}</div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
             </div>
 
             {/* Table card */}
@@ -260,6 +246,35 @@ export default function CategoryIndex() {
             </div>
 
             <CategoryModal open={modalOpen} onClose={() => setModalOpen(false)} onSubmit={handleSubmit} initialValues={editRecord} loading={submitLoading} mode={modalMode} />
+
+            {/* View Modal */}
+            <Modal open={viewModalOpen} onCancel={() => setViewModalOpen(false)} footer={null}>
+                {viewLoading ? (
+                    <div className="flex justify-center py-10"><Spin /></div>
+                ) : viewCategory && (
+                    <div className="space-y-4 pt-20">
+                        <div className="absolute top-0 left-0 w-full rounded-t-xl z-10 overflow-hidden">
+                            <div className="flex border-b border-gray-200 bg-linear-to-r from-green-50/80 to-white">
+                                <div className="w-1.5 bg-linear-to-b from-green-600 to-emerald-400 rounded-tl-xl" />
+                                <div className="px-5 py-4">
+                                    <h3 className="font-sora font-bold text-base text-gray-900">Category Details</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <div className="font-semibold text-green-900">{viewCategory.name}</div>
+                            <div className="text-gray-400 text-sm mt-1">{viewCategory.description || "—"}</div>
+                        </div>
+                        <div className="flex gap-2">
+                            <Tag color={viewCategory.status ? "green" : "red"}>{viewCategory.status ? "Active" : "Inactive"}</Tag>
+                            <span className="text-gray-600 text-sm">Stores: {viewCategory.stores_count ?? 0}</span>
+                        </div>
+                        <div className="text-sm text-gray-500">
+                            Created: {new Date(viewCategory.created_at).toLocaleDateString("en-PH", { year: "numeric", month: "long", day: "numeric" })}
+                        </div>
+                    </div>
+                )}
+            </Modal>
         </div>
     )
 }

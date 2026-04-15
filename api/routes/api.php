@@ -59,12 +59,12 @@ Route::middleware('auth:api')->group(function () {
         Route::put('/categories/{id}',    [AdminCategoryController::class, 'update']);
         Route::delete('/categories/{id}', [AdminCategoryController::class, 'destroy']);
 
-        Route::get('/store-verifications',              [AdminStoreVerificationController::class, 'index']);
-        Route::get('/store-verifications/{id}',         [AdminStoreVerificationController::class, 'show']);
-        Route::get('/store-verifications/{id}/logs',    [AdminStoreVerificationController::class, 'logs']);
-        Route::post('/store-verifications/{id}/approve', [AdminStoreVerificationController::class, 'approve']);
-        Route::post('/store-verifications/{id}/reject',  [AdminStoreVerificationController::class, 'reject']);
-        Route::post('/store-verifications/{id}/pending', [AdminStoreVerificationController::class, 'pending']);
+        Route::get('/store-verifications',                      [AdminStoreVerificationController::class, 'index']);
+        Route::get('/store-verifications/{store}',         [AdminStoreVerificationController::class, 'show']);
+        Route::get('/store-verifications/{store}/logs',    [AdminStoreVerificationController::class, 'logs']);
+        Route::post('/store-verifications/{store}/approve', [AdminStoreVerificationController::class, 'approve']);
+        Route::post('/store-verifications/{store}/reject',  [AdminStoreVerificationController::class, 'reject']);
+        Route::post('/store-verifications/{store}/pending', [AdminStoreVerificationController::class, 'pending']);
         Route::get('/store-verification-logs',              [AdminStoreVerificationController::class, 'allLogs']);
         Route::post('/store-verification-logs/{logId}/revert', [AdminStoreVerificationController::class, 'revertLog']);
     });

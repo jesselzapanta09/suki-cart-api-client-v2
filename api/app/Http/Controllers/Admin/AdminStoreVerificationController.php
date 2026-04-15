@@ -65,20 +65,21 @@ class AdminStoreVerificationController extends Controller
     }
 
     /**
-     * GET /api/admin/store-verifications/{id}
+     * GET /api/admin/store-verifications/{store}
+     * Route model binding automatically resolves UUID to Store
      */
-    public function show($uuid)
+    public function show(Store $store)
     {
-        $store = Store::with(['user.locations', 'category', 'verification.reviewer'])->where('uuid', $uuid)->firstOrFail();
+        $store->load(['user.locations', 'category', 'verification.reviewer']);
         return response()->json(['store' => $store]);
     }
 
     /**
-     * POST /api/admin/store-verifications/{id}/approve
+     * POST /api/admin/store-verifications/{store}/approve
+     * Route model binding automatically resolves UUID to Store
      */
-    public function approve($uuid)
+    public function approve(Store $store)
     {
-        $store = Store::where('uuid', $uuid)->firstOrFail();
         $verification = $store->verification;
         $previousStatus = $verification?->store_status ?? null;
 
@@ -117,15 +118,14 @@ class AdminStoreVerificationController extends Controller
     }
 
     /**
-     * POST /api/admin/store-verifications/{id}/reject
+     * POST /api/admin/store-verifications/{store}/reject
+     * Route model binding automatically resolves UUID to Store
      */
-    public function reject(Request $request, $uuid)
+    public function reject(Request $request, Store $store)
     {
         $request->validate([
             'rejection_reason' => 'required|string|max:500',
         ]);
-
-        $store = Store::where('uuid', $uuid)->firstOrFail();
         $verification = $store->verification;
         $previousStatus = $verification?->store_status ?? null;
 
@@ -166,11 +166,11 @@ class AdminStoreVerificationController extends Controller
     }
 
     /**
-     * POST /api/admin/store-verifications/{id}/pending
+     * POST /api/admin/store-verifications/{store}/pending
+     * Route model binding automatically resolves UUID to Store
      */
-    public function pending($uuid)
+    public function pending(Store $store)
     {
-        $store = Store::where('uuid', $uuid)->firstOrFail();
         $verification = $store->verification;
 
         if (!$verification) {
@@ -230,11 +230,12 @@ class AdminStoreVerificationController extends Controller
     }
 
     /**
-     * GET /api/admin/store-verifications/{id}/logs
+     * GET /api/admin/store-verifications/{store}/logs
+     * Route model binding automatically resolves UUID to Store
      */
-    public function logs($uuid)
+    public function logs(Store $store)
     {
-        $store = Store::with(['verification', 'category'])->where('uuid', $uuid)->firstOrFail();
+        $store->load(['verification', 'category']);
 
         $logs = StoreVerificationLog::with('performer')
             ->where('store_id', $store->id)

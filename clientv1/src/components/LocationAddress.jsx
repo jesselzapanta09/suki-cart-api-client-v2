@@ -2,13 +2,14 @@ import React, { useState, useEffect } from "react"
 import addressService from "../services/addressService"
 
 /**
- * Resolves PSGC codes to human-readable names and renders the address.
+ * Resolves PSGC codes (or location names) to human-readable names and renders the address.
  * Props:
- *   location – { region, province, city_municipality, barangay } (PSGC codes)
+ *   location – { region, province, city_municipality, barangay } (PSGC codes or names)
  *   className – optional extra class for the wrapper <span>
  */
 export default function LocationAddress({ location, className = "" }) {
     const [names, setNames] = useState(null)
+    const [error, setError] = useState(false)
 
     useEffect(() => {
         if (!location) return
@@ -17,14 +18,27 @@ export default function LocationAddress({ location, className = "" }) {
         const resolve = async () => {
             try {
                 const [region, province, city, barangay] = await Promise.all([
-                    location.region ? addressService.getRegion(location.region).then(d => d.name).catch(() => location.region) : Promise.resolve(""),
-                    location.province ? addressService.getProvince(location.province).then(d => d.name).catch(() => location.province) : Promise.resolve(""),
-                    location.city_municipality ? addressService.getCity(location.city_municipality).then(d => d.name).catch(() => location.city_municipality) : Promise.resolve(""),
-                    location.barangay ? addressService.getBarangay(location.barangay).then(d => d.name).catch(() => location.barangay) : Promise.resolve(""),
+                    location.region ? addressService.getRegion(location.region).then(d => d?.name || location.region) : Promise.resolve(""),
+                    location.province ? addressService.getProvince(location.province).then(d => d?.name || location.province) : Promise.resolve(""),
+                    location.city_municipality ? addressService.getCity(location.city_municipality).then(d => d?.name || location.city_municipality) : Promise.resolve(""),
+                    location.barangay ? addressService.getBarangay(location.barangay).then(d => d?.name || location.barangay) : Promise.resolve(""),
                 ])
-                if (!cancelled) setNames({ region, province, city, barangay })
-            } catch {
-                if (!cancelled) setNames(null)
+                if (!cancelled) {
+                    setNames({ region, province, city, barangay })
+                    setError(false)
+                }
+            } catch (err) {
+                console.error("Error resolving address:", err)
+                if (!cancelled) {
+                    setError(true)
+                    // Fallback to raw values if everything fails
+                    setNames({
+                        region: location.region || "",
+                        province: location.province || "",
+                        city: location.city_municipality || "",
+                        barangay: location.barangay || "",
+                    })
+                }
             }
         }
 

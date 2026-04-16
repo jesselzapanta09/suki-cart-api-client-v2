@@ -251,7 +251,22 @@ export default function ProductFormPage({ mode }) {
                   label="Stock"
                   rules={[{ required: true, message: "Stock is required" }]}
                 >
-                  <InputNumber min={0} className="w-full" style={{ width: "100%" }} placeholder="0" />
+                  <InputNumber
+                    min={0}
+                    className="w-full"
+                    style={{ width: "100%" }}
+                    placeholder="0"
+                    onChange={(value) => {
+                      if (value === 0) {
+                        form.setFieldValue('status', 'out_of_stock')
+                      } else if (value > 0) {
+                        const currentStatus = form.getFieldValue('status')
+                        if (currentStatus === 'out_of_stock') {
+                          form.setFieldValue('status', 'active')
+                        }
+                      }
+                    }}
+                  />
                 </Form.Item>
 
                 <Form.Item name="sku" label="SKU">
@@ -274,7 +289,25 @@ export default function ProductFormPage({ mode }) {
                   <Input placeholder="e.g. New" />
                 </Form.Item>
 
-                <Form.Item name="status" label="Status" rules={[{ required: true, message: "Status is required" }]}>
+                <Form.Item
+                  name="status"
+                  label="Status"
+                  rules={[
+                    { required: true, message: "Status is required" },
+                    {
+                      validator: (_, value) => {
+                        const currentStock = form.getFieldValue('stock')
+                        if (currentStock === 0 && value !== 'out_of_stock') {
+                          return Promise.reject(new Error('Status must be "Out of Stock" when stock is 0'))
+                        }
+                        if (currentStock > 0 && value === 'out_of_stock') {
+                          return Promise.reject(new Error('Status cannot be "Out of Stock" when stock is greater than 0'))
+                        }
+                        return Promise.resolve()
+                      },
+                    },
+                  ]}
+                >
                   <Select
                     options={[
                       { label: "Active", value: "active" },
@@ -375,7 +408,7 @@ export default function ProductFormPage({ mode }) {
 
           <div className="space-y-5">
             <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-4">
-              <div className="text-xs font-semibold text-gray-700">Publishing</div>
+              <div className="text-xs font-semibold text-gray-700">Product</div>
               <div className="text-sm text-gray-500">
                 Products with <span className="font-semibold text-gray-700">Active</span> status are ready to appear in your store.
               </div>

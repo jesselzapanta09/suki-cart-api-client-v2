@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\AdminCategoryController;
 use App\Http\Controllers\Admin\AdminStoreVerificationController;
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Home\HomeProductSearchController;
 use App\Http\Controllers\Notification\NotificationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Seller\SellerProductController;
@@ -20,6 +21,10 @@ Route::get('/verify-email',       [AuthController::class, 'verifyEmail']);
 Route::post('/resend-verification', [AuthController::class, 'resendVerification']);
 Route::post('/forgot-password',     [AuthController::class, 'forgotPassword']);
 Route::post('/reset-password',      [AuthController::class, 'resetPassword']);
+
+// Public product routes
+Route::get('/products/search', [HomeProductSearchController::class, 'index']);
+Route::get('/products/{id}', [HomeProductSearchController::class, 'show']);
 
 Route::get('/categories', function () {
     return response()->json(Category::where('status', 1)->orderBy('name')->get());

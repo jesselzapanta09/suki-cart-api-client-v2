@@ -3,22 +3,25 @@
 namespace App\Http\Controllers\Seller;
 
 use App\Http\Controllers\Controller;
+use App\Helpers\FileUploadHelper;
 use App\Http\Requests\Seller\StoreProductRequest;
 use App\Http\Requests\Seller\UpdateProductRequest;
 use App\Models\Product;
 use App\Models\ProductImage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
 class SellerProductController extends Controller
 {
-    // GET /api/seller/products
+    /**
+     * GET /api/seller/products
+     * Server-side paginated, sortable, searchable product list for authenticated seller.
+     */
     public function index(Request $request)
     {
         $user = $request->user();
-        $query = Product::where('store_id', $user->store->id);
+        $query = Product::query()->where('store_id', $user->store->id);
 
         // Search
         if ($search = $request->input('search')) {
@@ -30,13 +33,13 @@ class SellerProductController extends Controller
         }
 
         // Category filter
-        if ($request->has('category_id')) {
-            $query->where('category_id', $request->input('category_id'));
+        if ($categoryId = $request->input('category_id')) {
+            $query->where('category_id', $categoryId);
         }
 
         // Status filter
-        if ($request->has('status')) {
-            $query->where('status', $request->input('status'));
+        if ($status = $request->input('status')) {
+            $query->where('status', $status);
         }
 
         // Sort
@@ -53,17 +56,22 @@ class SellerProductController extends Controller
         return response()->json($products);
     }
 
-    // GET /api/seller/products/{id}
+    /**
+     * GET /api/seller/products/{id}
+     */
     public function show($id, Request $request)
     {
         $user = $request->user();
-        $product = Product::where('store_id', $user->store->id)
+        $product = Product::query()
+            ->where('store_id', $user->store->id)
             ->with(['images', 'category', 'store'])
             ->findOrFail($id);
         return response()->json(['product' => $product]);
     }
 
-    // POST /api/seller/products
+    /**
+     * POST /api/seller/products
+     */
     public function store(StoreProductRequest $request)
     {
         return DB::transaction(function () use ($request) {
@@ -85,7 +93,7 @@ class SellerProductController extends Controller
                 'store_id' => $data['store_id'],
             ]);
             foreach ($request->file('images', []) as $index => $image) {
-                $path = $image->store('products', 'public');
+                $path = FileUploadHelper::storeImage('products', $image);
                 ProductImage::create([
                     'product_id' => $product->id,
                     'image_path' => $path,
@@ -99,12 +107,16 @@ class SellerProductController extends Controller
         });
     }
 
-    // PUT /api/seller/products/{id}
+    /**
+     * PUT /api/seller/products/{id}
+     */
     public function update(UpdateProductRequest $request, $id)
     {
         return DB::transaction(function () use ($request, $id) {
             $user = $request->user();
-            $product = Product::where('store_id', $user->store->id)->findOrFail($id);
+            $product = Product::query()
+                ->where('store_id', $user->store->id)
+                ->findOrFail($id);
             $data = $request->validated();
             $deletedImageIds = collect($data['deleted_image_ids'] ?? [])
                 ->map(fn ($imageId) => (int) $imageId)
@@ -131,7 +143,7 @@ class SellerProductController extends Controller
                     ->get();
 
                 foreach ($imagesToDelete as $image) {
-                    Storage::disk('public')->delete($image->image_path);
+                    FileUploadHelper::delete($image->image_path);
                     $image->delete();
                 }
             }
@@ -156,7 +168,7 @@ class SellerProductController extends Controller
                 $nextSortOrder = ((int) $product->images()->max('sort_order')) + 1;
 
                 foreach ($newImages as $image) {
-                    $path = $image->store('products', 'public');
+                    $path = FileUploadHelper::storeImage('products', $image);
                     ProductImage::create([
                         'product_id' => $product->id,
                         'image_path' => $path,
@@ -172,16 +184,19 @@ class SellerProductController extends Controller
         });
     }
 
-    // DELETE /api/seller/products/{id}
+    /**
+     * DELETE /api/seller/products/{id}
+     */
     public function destroy(Request $request, $id)
     {
         $user = $request->user();
-        $product = Product::where('store_id', $user->store->id)
+        $product = Product::query()
+            ->where('store_id', $user->store->id)
             ->with('images')
             ->findOrFail($id);
 
         foreach ($product->images as $image) {
-            Storage::disk('public')->delete($image->image_path);
+            FileUploadHelper::delete($image->image_path);
             $image->delete();
         }
 

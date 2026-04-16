@@ -1,7 +1,7 @@
 ﻿import React, { useState, useEffect, useCallback } from "react";
 import { Badge, Dropdown } from "antd";
 import { Bell, ShoppingBag, Tag, Settings, Store, CheckCheck } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import {
     getNotifications,
@@ -34,6 +34,7 @@ function timeAgo(dateStr) {
 
 export default function NotificationBell() {
     const navigate = useNavigate();
+    const location = useLocation();
     const { isAdmin, isSeller } = useAuth();
     const [notifications, setNotifications] = useState([]);
     const [unread,        setUnread]        = useState(0);
@@ -124,10 +125,16 @@ export default function NotificationBell() {
                                 onClick={(e) => {
                                     // Mark as read if unread
                                     if (!n.read_at) handleMarkRead(e, n.id);
-                                    // Navigate to notification target if present
+                                    // Navigate or reload based on URL
                                     if (n.data && n.data.url) {
                                         setOpen(false);
-                                        navigate(n.data.url);
+                                        if (location.pathname === n.data.url) {
+                                            // Same URL - reload the page
+                                            window.location.reload();
+                                        } else {
+                                            // Different URL - navigate
+                                            navigate(n.data.url);
+                                        }
                                     }
                                 }}
                                 className={`flex gap-3 px-4 py-3 border-b border-gray-50 cursor-pointer transition-colors hover:bg-gray-50 ${!n.read_at ? "bg-green-50/60" : ""}`}

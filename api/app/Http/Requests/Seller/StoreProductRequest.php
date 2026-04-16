@@ -29,4 +29,20 @@ class StoreProductRequest extends FormRequest
             'images.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:4096',
         ];
     }
+
+    protected function withValidator($validator)
+    {
+        $validator->after(function ($validator) {
+            $stock = $this->input('stock');
+            $status = $this->input('status');
+            
+            if ($stock == 0 && $status !== 'out_of_stock') {
+                $validator->errors()->add('status', 'Status must be "Out of Stock" when stock is 0.');
+            }
+            
+            if ($stock > 0 && $status === 'out_of_stock') {
+                $validator->errors()->add('status', 'Status cannot be "Out of Stock" when stock is greater than 0.');
+            }
+        });
+    }
 }

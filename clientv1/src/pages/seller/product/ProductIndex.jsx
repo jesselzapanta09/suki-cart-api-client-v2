@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback, useRef } from "react"
 import { Table, Button, Popconfirm, Input, Tag, Tooltip, App } from "antd"
 import { useNavigate } from "react-router-dom"
-import { Plus, Edit, Trash2, Search, Package, Layers, CheckCircle, FileText, ArchiveX } from "lucide-react"
+import { Plus, Edit, Trash2, Search, Package, Layers } from "lucide-react"
 import { getCategories as getPublicCategories } from "../../../services/authService"
 import * as productService from "../../../services/productService"
 import { getStorageUrl } from "../../../utils/storage"
@@ -19,7 +19,6 @@ export default function ProductIndex() {
   const [sorter, setSorter] = useState({ field: "created_at", order: "descend" })
   const [statusFilter, setStatusFilter] = useState(null)
   const [categoryFilter, setCategoryFilter] = useState(null)
-  const [stats, setStats] = useState({ total: 0, active: 0, draft: 0, outOfStock: 0 })
 
   const searchTimer = useRef(null)
 
@@ -49,23 +48,6 @@ export default function ProductIndex() {
     }
   }, [message])
 
-  const fetchStats = useCallback(async () => {
-    try {
-      const all = await productService.getProducts({ per_page: 1 })
-      const totalCount = all.total || 0
-
-      const [active, draft, outOfStock] = await Promise.all([
-        productService.getProducts({ per_page: 1, status: "active" }).then((data) => data.total || 0).catch(() => 0),
-        productService.getProducts({ per_page: 1, status: "draft" }).then((data) => data.total || 0).catch(() => 0),
-        productService.getProducts({ per_page: 1, status: "out_of_stock" }).then((data) => data.total || 0).catch(() => 0),
-      ])
-
-      setStats({ total: totalCount, active, draft, outOfStock })
-    } catch {
-      // Ignore stats errors so the table still loads.
-    }
-  }, [])
-
   useEffect(() => {
     getPublicCategories()
       .then((data) => setCategories(Array.isArray(data) ? data : []))
@@ -74,7 +56,6 @@ export default function ProductIndex() {
 
   useEffect(() => {
     fetchProducts(pagination.current, pagination.pageSize, sorter.field, sorter.order, search, statusFilter, categoryFilter)
-    fetchStats()
     return () => clearTimeout(searchTimer.current)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -117,7 +98,6 @@ export default function ProductIndex() {
 
   const reload = () => {
     fetchProducts(pagination.current, pagination.pageSize, sorter.field, sorter.order, search, statusFilter, categoryFilter)
-    fetchStats()
   }
 
   const handleDelete = async (id) => {
@@ -236,13 +216,6 @@ export default function ProductIndex() {
     },
   ]
 
-  const statItems = [
-    { label: "Total", value: stats.total, icon: <Package size={16} />, color: "text-green-700", bg: "bg-green-50", ring: "ring-green-200" },
-    { label: "Active", value: stats.active, icon: <CheckCircle size={16} />, color: "text-emerald-700", bg: "bg-emerald-50", ring: "ring-emerald-200" },
-    { label: "Draft", value: stats.draft, icon: <FileText size={16} />, color: "text-amber-700", bg: "bg-amber-50", ring: "ring-amber-200" },
-    { label: "Out of Stock", value: stats.outOfStock, icon: <ArchiveX size={16} />, color: "text-red-600", bg: "bg-red-50", ring: "ring-red-200" },
-  ]
-
   return (
     <div className="p-6 lg:p-8 max-w-275 mx-auto space-y-5">
       {/* Header */}
@@ -257,22 +230,6 @@ export default function ProductIndex() {
           </div>
         </div>
         <Button onClick={() => navigate("/seller/products/create")} type="primary" icon={<Plus size={14} />} size="large">Add Product</Button>
-      </div>
-
-      {/* Stats row */}
-      <div>
-        <h2 className="font-sora font-semibold text-sm text-gray-700 mb-2">Overview</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {statItems.map((item) => (
-            <div key={item.label} className={`flex items-center gap-3 rounded-xl px-4 py-3 ${item.bg} ring-1 ${item.ring}`}>
-              <div className={item.color}>{item.icon}</div>
-              <div>
-                <div className={`font-sora font-bold text-lg leading-none ${item.color}`}>{item.value}</div>
-                <div className="text-xs text-gray-500 mt-0.5">{item.label}</div>
-              </div>
-            </div>
-          ))}
-        </div>
       </div>
 
       {/* Table card */}

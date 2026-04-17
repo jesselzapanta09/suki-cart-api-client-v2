@@ -3,6 +3,7 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { App, Spin, Pagination, Radio, InputNumber, Button, Divider } from "antd";
 import { ArrowLeft, Package, Search } from "lucide-react";
 import { useCart } from "../../context/CartContext";
+import { useAuth } from "../../context/AuthContext";
 import ProductCard from "../../components/home/ProductCard";
 import { searchPublicProducts } from "../../services/productService";
 
@@ -11,6 +12,7 @@ export default function SearchResultsPage() {
     const navigate = useNavigate();
     const { message } = App.useApp();
     const { addItem } = useCart();
+    const { isCustomer } = useAuth();
 
     const query = searchParams.get("q") || "";
     const initialPage = parseInt(searchParams.get("page") || "1", 10);
@@ -72,6 +74,12 @@ export default function SearchResultsPage() {
     };
 
     const handleAddToCart = (product) => {
+        if (!isCustomer) {
+            message.warning("Only customers can add items to cart. Please log in as a customer.");
+            navigate("/login");
+            return;
+        }
+        
         addItem({
             ...product,
             rating: product.rating || 4.5,

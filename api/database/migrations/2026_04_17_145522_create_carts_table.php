@@ -13,7 +13,13 @@ return new class extends Migration
     {
         Schema::create('carts', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('product_id')->constrained()->cascadeOnDelete();
+            $table->integer('quantity')->default(1);
             $table->timestamps();
+            
+            // Prevent duplicate entries for same user-product combination
+            $table->unique(['user_id', 'product_id']);
         });
     }
 

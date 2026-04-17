@@ -158,7 +158,7 @@ export default function HomeLayout() {
                         {isAuthenticated ? (
                             <>
                                 {isCustomer && (
-                                    <Link to="/user/cart" className="relative flex items-center justify-center">
+                                    <Link to="/customer/cart" className="relative flex items-center justify-center">
                                         <Badge count={totalItems} size="small" color="#16a34a" offset={[2, -2]}>
                                             <div className="w-9 h-9 rounded-xl bg-green-50 border border-green-100 flex items-center justify-center text-green-700 hover:bg-green-100 transition-colors">
                                                 <ShoppingCart size={18} />
@@ -264,7 +264,7 @@ export default function HomeLayout() {
                             <Link to="/register/customer" className={btnGradient + " text-sm"}>Get Started</Link>
                         )}
                         {isCustomer && (
-                            <Link to="/user/cart" className="relative flex items-center justify-center">
+                            <Link to="/customer/cart" className="relative flex items-center justify-center">
                                 <Badge count={totalItems} size="small" color="#16a34a" offset={[2, -2]}>
                                     <div className="w-9 h-9 rounded-xl bg-green-50 border border-green-100 flex items-center justify-center text-green-700 hover:bg-green-100 transition-colors">
                                         <ShoppingCart size={18} />
@@ -302,7 +302,7 @@ export default function HomeLayout() {
                     <span className="text-[10px] font-medium">Browse</span>
                 </Link>
                 {isCustomer && (
-                    <Link to="/user/cart" className={`flex flex-col items-center gap-0.5 min-w-12 relative transition-colors ${isActiveRoute("/user/cart") ? "text-green-600" : "text-gray-500 hover:text-gray-700"}`}>
+                    <Link to="/customer/cart" className={`flex flex-col items-center gap-0.5 min-w-12 relative transition-colors ${isActiveRoute("/customer/cart") ? "text-green-600" : "text-gray-500 hover:text-gray-700"}`}>
                         <Badge count={totalItems} size="small" color="#16a34a" offset={[6, -2]}>
                             <ShoppingCart size={20} />
                         </Badge>

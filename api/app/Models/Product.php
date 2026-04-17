@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -9,7 +10,18 @@ class Product extends Model
     use HasFactory;
 
     protected $fillable = [
-        'store_id', 'name', 'description', 'category_id', 'price', 'stock', 'sku', 'condition', 'brand', 'weight', 'dimensions', 'status'
+        'store_id',
+        'name',
+        'description',
+        'category_id',
+        'price',
+        'stock',
+        'sku',
+        'condition',
+        'brand',
+        'weight',
+        'dimensions',
+        'status'
     ];
 
     public function images()

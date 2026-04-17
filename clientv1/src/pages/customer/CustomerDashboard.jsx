@@ -46,7 +46,7 @@ export default function CustomerDashboard() {
                         <h1 className="text-2xl font-bold text-green-900">Welcome back, {user?.username}!</h1>
                         <p className="text-gray-500 text-sm mt-1">Browse fresh products from your local stores</p>
                     </div>
-                    <Link to="/cart">
+                    <Link to="/customer/cart">
                         <Button type="primary" size="large" className="rounded-xl font-semibold" icon={<ShoppingCart size={16} />}>
                             Cart ({totalItems})
                         </Button>

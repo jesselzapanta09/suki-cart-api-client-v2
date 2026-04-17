@@ -4,6 +4,7 @@ import { App, Spin } from "antd";
 import { ShoppingCart, Package, ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
 import { getPublicProduct, searchPublicProducts } from "../../services/productService";
 import { useCart } from "../../context/CartContext";
+import { useAuth } from "../../context/AuthContext";
 import ProductCard from "../../components/home/ProductCard";
 import SimilarProducts from "../../components/home/SimilarProducts";
 
@@ -13,6 +14,7 @@ export default function ProductDetailPage() {
     const navigate = useNavigate();
     const { message } = App.useApp();
     const { addItem } = useCart();
+    const { isCustomer } = useAuth();
 
     const [product, setProduct] = useState(null);
     const [similarProducts, setSimilarProducts] = useState([]);
@@ -69,6 +71,12 @@ export default function ProductDetailPage() {
     }, [product, state?.searchKeyword]);
 
     const handleAddToCart = () => {
+        if (!isCustomer) {
+            message.warning("Only customers can add items to cart. Please log in as a customer.");
+            navigate("/login");
+            return;
+        }
+        
         // Transform product to cart format (with mock rating and sold if not available)
         const cartProduct = {
             ...product,
@@ -271,11 +279,12 @@ export default function ProductDetailPage() {
                         {/* Add to Cart Button */}
                         <button
                             onClick={handleAddToCart}
-                            disabled={product.stock === 0}
+                            disabled={product.stock === 0 || !isCustomer}
+                            title={!isCustomer ? "Only customers can add to cart" : product.stock === 0 ? "Out of stock" : ""}
                             className="w-full px-6 py-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-colors"
                         >
                             <ShoppingCart size={20} />
-                            {product.stock > 0 ? "Add to Cart" : "Out of Stock"}
+                            {product.stock > 0 ? (isCustomer ? "Add to Cart" : "Sign in to Shop") : "Out of Stock"}
                         </button>
                     </div>
                 </div>
@@ -287,6 +296,11 @@ export default function ProductDetailPage() {
                     currentProductId={product.id}
                     searchKeyword={state?.searchKeyword}
                     onAddToCart={(p) => {
+                        if (!isCustomer) {
+                            message.warning("Only customers can add items to cart. Please log in as a customer.");
+                            navigate("/login");
+                            return;
+                        }
                         addItem({ ...p, rating: p.rating || 4.5, sold: p.sold || 0, category: p.category?.name || "Unknown" });
                         message.success(`${p.name} added to cart!`);
                     }}

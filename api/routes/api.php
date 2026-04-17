@@ -9,6 +9,7 @@ use App\Http\Controllers\Notification\NotificationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Seller\SellerProductController;
 use App\Http\Controllers\Seller\SellerStoreController;
+use App\Http\Controllers\Customer\CustomerCartController;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -94,6 +95,11 @@ Route::middleware('auth:api')->group(function () {
 
     // Customer routes
     Route::middleware('role:customer')->prefix('customer')->group(function () {
-        // TODO: add customer routes
+        // Cart routes
+        Route::get('/cart', [CustomerCartController::class, 'index']);
+        Route::post('/cart', [CustomerCartController::class, 'store']);
+        Route::put('/cart/{id}', [CustomerCartController::class, 'update']);
+        Route::delete('/cart/{id}', [CustomerCartController::class, 'destroy']);
+        Route::delete('/cart', [CustomerCartController::class, 'destroyAll']);
     });
 });

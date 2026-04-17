@@ -9,7 +9,7 @@ import NotificationBell from "../components/NotificationBell";
 
 const NAV = [
     { label: "Dashboard", to: "/customer/dashboard", icon: LayoutDashboard },
-    { label: "Cart", to: "/cart", icon: ShoppingCart, cartBadge: true },
+    { label: "Cart", to: "customer/cart", icon: ShoppingCart, cartBadge: true },
     { label: "Edit Profile", to: "/customer/edit-profile", icon: User },
 ];
 
@@ -101,13 +101,13 @@ export default function CustomerLayout() {
 
             {/* Mobile Bottom Nav (< md) */}
             <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 flex items-center justify-around py-2 px-2 shadow-[0_-2px_10px_rgba(0,0,0,0.06)]">
-                <Link to="/customer/dashboard" className={`flex flex-col items-center gap-0.5 min-w-[48px] ${isActive("/customer/dashboard") ? "text-green-600" : "text-gray-400"}`}><LayoutDashboard size={20} /><span className="text-[10px]">Dashboard</span></Link>
-                <Link to="/cart" className={`flex flex-col items-center gap-0.5 min-w-[48px] ${isActive("/cart") ? "text-green-600" : "text-gray-400"}`}>
+                <Link to="/customer/dashboard" className={`flex flex-col items-center gap-0.5 min-w-12 ${isActive("/customer/dashboard") ? "text-green-600" : "text-gray-400"}`}><LayoutDashboard size={20} /><span className="text-[10px]">Dashboard</span></Link>
+                <Link to="/cart" className={`flex flex-col items-center gap-0.5 min-w-12 ${isActive("/cart") ? "text-green-600" : "text-gray-400"}`}>
                     <Badge count={totalItems} size="small" color="#16a34a" offset={[6, -2]}><ShoppingCart size={20} /></Badge>
                     <span className="text-[10px]">Cart</span>
                 </Link>
-                <Link to="/customer/edit-profile" className={`flex flex-col items-center gap-0.5 min-w-[48px] ${isActive("/customer/edit-profile") ? "text-green-600" : "text-gray-400"}`}><User size={20} /><span className="text-[10px]">Profile</span></Link>
-                <button onClick={() => setLogoutModalOpen(true)} className="flex flex-col items-center gap-0.5 min-w-[48px] text-gray-400 hover:text-red-500 cursor-pointer bg-transparent border-none">
+                <Link to="/customer/edit-profile" className={`flex flex-col items-center gap-0.5 min-w-12 ${isActive("/customer/edit-profile") ? "text-green-600" : "text-gray-400"}`}><User size={20} /><span className="text-[10px]">Profile</span></Link>
+                <button onClick={() => setLogoutModalOpen(true)} className="flex flex-col items-center gap-0.5 min-w-12 text-gray-400 hover:text-red-500 cursor-pointer bg-transparent border-none">
                     <LogOut size={20} /><span className="text-[10px]">Logout</span>
                 </button>
             </nav>

@@ -5,6 +5,7 @@ import { ShoppingCart, Package, ArrowLeft, ChevronLeft, ChevronRight } from "luc
 import { getPublicProduct, searchPublicProducts } from "../../services/productService";
 import { useCart } from "../../context/CartContext";
 import ProductCard from "../../components/home/ProductCard";
+import SimilarProducts from "../../components/home/SimilarProducts";
 
 export default function ProductDetailPage() {
     const { id } = useParams();
@@ -134,7 +135,7 @@ export default function ProductDetailPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 bg-white rounded-2xl p-8 shadow-sm mb-8">
                     {/* Image Slider */}
                     <div className="flex flex-col gap-4">
-                        <div className="flex items-center justify-center bg-linear-to-br from-green-50 to-emerald-100 rounded-xl min-h-96 relative group">
+                        <div className="flex items-center justify-center bg-linear-to-br from-green-50 to-emerald-100 rounded-xl w-96 h-96 relative group">
                             {currentImage ? (
                                 <>
                                     <img
@@ -280,39 +281,16 @@ export default function ProductDetailPage() {
                 </div>
 
                 {/* Similar Products */}
-                <div className="mb-8">
-                    <h2 className="text-2xl font-bold text-gray-800 mb-6">Similar Products</h2>
-                    {similarLoading ? (
-                        <div className="flex justify-center py-12">
-                            <Spin />
-                        </div>
-                    ) : similarProducts.length > 0 ? (
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                            {similarProducts.map(p => (
-                                <div
-                                    key={p.id}
-                                    onClick={() => navigate(`/products/${p.id}`, { state: { searchKeyword: state?.searchKeyword } })}
-                                    className="cursor-pointer"
-                                >
-                                    <ProductCard
-                                        product={{
-                                            ...p,
-                                            rating: p.rating || 4.5,
-                                            sold: p.sold || 0,
-                                            category: p.category?.name || "Unknown",
-                                        }}
-                                        onAdd={() => {
-                                            addItem({ ...p, rating: p.rating || 4.5, sold: p.sold || 0, category: p.category?.name || "Unknown" });
-                                            message.success(`${p.name} added to cart!`);
-                                        }}
-                                    />
-                                </div>
-                            ))}
-                        </div>
-                    ) : (
-                        <p className="text-gray-500 text-center py-12">No similar products found</p>
-                    )}
-                </div>
+                <SimilarProducts
+                    similarProducts={similarProducts}
+                    similarLoading={similarLoading}
+                    currentProductId={product.id}
+                    searchKeyword={state?.searchKeyword}
+                    onAddToCart={(p) => {
+                        addItem({ ...p, rating: p.rating || 4.5, sold: p.sold || 0, category: p.category?.name || "Unknown" });
+                        message.success(`${p.name} added to cart!`);
+                    }}
+                />
             </div>
         </div>
     );

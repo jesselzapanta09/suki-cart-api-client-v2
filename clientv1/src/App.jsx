@@ -102,9 +102,9 @@ export default function App() {
                                 <Route path="/forgot-password" element={<ForgotPassword />} />
                                 <Route path="/reset-password"  element={<ResetPassword />} />
 
-                                {/* Cart (protected, any logged-in user) */}
-                                <Route element={<ProtectedRoute><CustomerLayout /></ProtectedRoute>}>
-                                    <Route path="/cart" element={<CartPage />} />
+                                {/* Cart (protected, customers only) */}
+                                <Route element={<ProtectedRoute role="customer"><CustomerLayout /></ProtectedRoute>}>
+                                    <Route path="/user/cart" element={<CartPage />} />
                                 </Route>
 
                                 {/* Smart redirect */}

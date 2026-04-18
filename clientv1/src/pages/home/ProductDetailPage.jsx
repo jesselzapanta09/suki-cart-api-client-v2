@@ -239,33 +239,20 @@ export default function ProductDetailPage() {
                                 </div>
                             )}
 
-                            {/* Product Info Grid */}
-                            <div className="grid grid-cols-2 gap-4 mb-6">
-                                {product.sku && (
-                                    <div>
-                                        <p className="text-xs text-gray-500 uppercase tracking-wide">SKU</p>
-                                        <p className="text-sm font-semibold text-gray-800">{product.sku}</p>
+                            {/* Specifications */}
+                            {product.specs && Object.keys(product.specs).length > 0 && (
+                                <div className="mb-6">
+                                    <h3 className="font-semibold text-gray-800 mb-3">Specifications</h3>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        {Object.entries(product.specs).map(([key, value]) => (
+                                            <div key={key} className="bg-gray-50 rounded-lg p-3">
+                                                <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">{key}</p>
+                                                <p className="text-sm font-semibold text-gray-800">{value}</p>
+                                            </div>
+                                        ))}
                                     </div>
-                                )}
-                                {product.brand && (
-                                    <div>
-                                        <p className="text-xs text-gray-500 uppercase tracking-wide">Brand</p>
-                                        <p className="text-sm font-semibold text-gray-800">{product.brand}</p>
-                                    </div>
-                                )}
-                                {product.condition && (
-                                    <div>
-                                        <p className="text-xs text-gray-500 uppercase tracking-wide">Condition</p>
-                                        <p className="text-sm font-semibold text-gray-800 capitalize">{product.condition}</p>
-                                    </div>
-                                )}
-                                {product.weight && (
-                                    <div>
-                                        <p className="text-xs text-gray-500 uppercase tracking-wide">Weight</p>
-                                        <p className="text-sm font-semibold text-gray-800">{product.weight}</p>
-                                    </div>
-                                )}
-                            </div>
+                                </div>
+                            )}
 
                             {/* Store Info */}
                             {product.store && (

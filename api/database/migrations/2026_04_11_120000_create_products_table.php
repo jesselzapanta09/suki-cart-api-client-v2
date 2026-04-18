@@ -8,19 +8,14 @@ return new class extends Migration {
     {
         Schema::create('products', function (Blueprint $table) {
             $table->id();
-            $table->uuid();
+            $table->uuid()->nullable();
             $table->unsignedBigInteger('store_id');
             $table->string('name');
             $table->text('description');
             $table->unsignedBigInteger('category_id');
             $table->decimal('price', 10, 2);
             $table->integer('stock');
-            $table->string('sku')->nullable(); //remove
-            $table->string('condition')->nullable(); //remove
-            $table->string('brand')->nullable(); //remove
-            $table->string('weight')->nullable(); //remove
-            $table->string('dimensions')->nullable(); //remove
-            // $table->json('specs')->nullable(); // add this one 
+            $table->json('specs')->nullable(); 
             $table->enum('status', ['active', 'draft', 'out_of_stock'])->default('active');
             $table->timestamps();
 

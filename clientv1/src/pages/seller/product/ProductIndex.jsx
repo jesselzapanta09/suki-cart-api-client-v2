@@ -16,7 +16,7 @@ export default function ProductIndex() {
   const [total, setTotal] = useState(0)
   const [search, setSearch] = useState("")
   const [pagination, setPagination] = useState({ current: 1, pageSize: 10 })
-  const [sorter, setSorter] = useState({ field: "created_at", order: "descend" })
+  const [sorter, setSorter] = useState({ field: "id", order: "descend" })
   const [statusFilter, setStatusFilter] = useState(null)
   const [categoryFilter, setCategoryFilter] = useState(null)
 
@@ -135,7 +135,7 @@ export default function ProductIndex() {
           </div>
           <div>
             <div className="font-semibold text-green-950 text-sm">{record.name}</div>
-            <div className="text-gray-400 text-xs">{record.sku || "No SKU"}</div>
+            <div className="text-gray-400 text-xs">{record.id}</div>
           </div>
         </div>
       ),

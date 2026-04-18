@@ -1,8 +1,8 @@
 import React from "react";
 import { Button, InputNumber, Empty, App } from "antd";
 import { Link, useNavigate } from "react-router-dom";
-import { useCart } from "../../context/CartContext";
 import { ShoppingCart, Trash2, ArrowLeft, Package, ShoppingBag } from "lucide-react";
+import { useCart } from "../../../context/CartContext";
 
 export default function CartPage() {
     const { items, removeItem, updateQty, clearCart, totalItems, totalPrice } = useCart();

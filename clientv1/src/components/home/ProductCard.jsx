@@ -36,7 +36,19 @@ export default function ProductCard({ product, onAdd }) {
             </div>
             <div className="p-4">
                 <p className="text-xs text-green-600 font-semibold mb-1 uppercase tracking-wide">{categoryName}</p>
-                <h3 className="font-bold text-gray-800 text-sm mb-3 leading-snug" style={{display:'-webkit-box',WebkitLineClamp:2,WebkitBoxOrient:'vertical',overflow:'hidden'}}>{product.name}</h3>
+                <h3 className="font-bold text-gray-800 text-sm mb-2 leading-snug" style={{display:'-webkit-box',WebkitLineClamp:2,WebkitBoxOrient:'vertical',overflow:'hidden'}}>{product.name}</h3>
+                
+                {/* Specs Display */}
+                {product.specs && Object.keys(product.specs).length > 0 && (
+                    <div className="mb-2 flex flex-wrap gap-1">
+                        {Object.entries(product.specs).slice(0, 2).map(([key, value]) => (
+                            <span key={key} className="inline-block bg-gray-100 text-gray-700 px-2 py-0.5 rounded text-xs">
+                                {value}
+                            </span>
+                        ))}
+                    </div>
+                )}
+                
                 <div className="flex items-center justify-between">
                     <div>
                         <span className="font-bold text-green-700 text-base">₱{product.price.toFixed(2)}</span>

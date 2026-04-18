@@ -84,12 +84,8 @@ class SellerProductController extends Controller
                 'category_id' => $data['category_id'] ?? null,
                 'price' => $data['price'] ?? 0,
                 'stock' => $data['stock'] ?? 0,
-                'sku' => $data['sku'] ?? null,
-                'condition' => $data['condition'] ?? null,
-                'brand' => $data['brand'] ?? null,
-                'weight' => $data['weight'] ?? null,
-                'dimensions' => $data['dimensions'] ?? null,
-                'status' => $data['status'] ?? 1,
+                'specs' => !empty($data['specs']) ? $data['specs'] : null,
+                'status' => $data['status'] ?? 'active',
                 'store_id' => $data['store_id'],
             ]);
             foreach ($request->file('images', []) as $index => $image) {
@@ -129,11 +125,7 @@ class SellerProductController extends Controller
                 'category_id' => $data['category_id'] ?? $product->category_id,
                 'price' => $data['price'] ?? $product->price,
                 'stock' => $data['stock'] ?? $product->stock,
-                'sku' => $data['sku'] ?? $product->sku,
-                'condition' => $data['condition'] ?? $product->condition,
-                'brand' => $data['brand'] ?? $product->brand,
-                'weight' => $data['weight'] ?? $product->weight,
-                'dimensions' => $data['dimensions'] ?? $product->dimensions,
+                'specs' => isset($data['specs']) ? $data['specs'] : $product->specs,
                 'status' => $data['status'] ?? $product->status,
             ]);
 

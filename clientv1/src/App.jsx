@@ -35,19 +35,21 @@ import SellerVerifyIndex from "./pages/admin/seller-verify/SellerVerifyIndex.jsx
 import SellerVerifyShow from "./pages/admin/seller-verify/SellerVerifyShow.jsx";
 import SellerVerifyLogs from "./pages/admin/seller-verify/SellerVerifyLogs.jsx";
 import SellerVerifyAllLogs from "./pages/admin/seller-verify/SellerVerifyAllLogs.jsx";import ManageSellerIndex from "./pages/admin/seller/ManageSellerIndex.jsx"
-import ManageSellerShow from "./pages/admin/seller/ManageSellerShow.jsx"// Pages - Customer
-import CustomerDashboard from "./pages/customer/CustomerDashboard.jsx";
+import ManageSellerShow from "./pages/admin/seller/ManageSellerShow.jsx"
 
 // Pages - Seller
 import SellerDashboard from "./pages/seller/SellerDashboard.jsx";
 import ProductIndex from "./pages/seller/product/ProductIndex.jsx";
 import ProductFormPage from "./pages/seller/product/ProductFormPage.jsx";
 
-// Pages - Cart
-import CartPage from "./pages/cart/CartPage.jsx";
+// Pages - Customer
+import CartPage from "./pages/customer/cart/CartPage.jsx";
+import CustomerDashboard from "./pages/customer/CustomerDashboard.jsx";
+
 
 // Pages - Notifications
 import NotificationsPage from "./pages/notifications/NotificationsPage.jsx";
+
 
 const antTheme = {
     token: {

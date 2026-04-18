@@ -14,17 +14,16 @@ function getStatusTag(status) {
 }
 
 function mapProductToForm(product) {
+  // Convert specs object to array of {key, value} pairs for the form
+  const specsArray = product.specs ? Object.entries(product.specs).map(([key, value]) => ({ key, value })) : [];
+  
   return {
     name: product.name ?? "",
     category_id: product.category_id ?? undefined,
     description: product.description ?? "",
     price: product.price !== undefined && product.price !== null ? Number(product.price) : null,
     stock: product.stock ?? 0,
-    sku: product.sku ?? "",
-    brand: product.brand ?? "",
-    condition: product.condition ?? "",
-    weight: product.weight ?? "",
-    dimensions: product.dimensions ?? "",
+    specs: specsArray,
     status: product.status ?? "active",
     images: [],
   }
@@ -36,11 +35,7 @@ const DEFAULT_FORM_VALUES = {
   description: "",
   price: null,
   stock: 0,
-  sku: "",
-  brand: "",
-  condition: "",
-  weight: "",
-  dimensions: "",
+  specs: [],
   status: "active",
   images: [],
 }
@@ -92,7 +87,8 @@ export default function ProductFormPage({ mode }) {
         setImageList([])
       })
       .catch((err) => {
-        message.error(err.message)
+        console.error("Failed to load product:", err)
+        message.error('Failed to load product details. It may have been removed.')
         navigate("/seller/products", { replace: true })
       })
       .finally(() => setPageLoading(false))
@@ -140,6 +136,22 @@ export default function ProductFormPage({ mode }) {
 
     Object.entries(values).forEach(([key, value]) => {
       if (key === "images") return
+      if (key === "specs") {
+        // Convert specs array to FormData object format (specs[key]=value)
+        if (Array.isArray(value) && value.length > 0) {
+          const specsObj = value.reduce((acc, spec) => {
+            if (spec.key && spec.value) {
+              acc[spec.key] = spec.value
+            }
+            return acc
+          }, {})
+          // Append each spec as a form array item
+          Object.entries(specsObj).forEach(([specKey, specValue]) => {
+            formData.append(`specs[${specKey}]`, specValue)
+          })
+        }
+        return
+      }
       if (value !== undefined && value !== null && value !== "") {
         formData.append(key, value)
       }
@@ -165,7 +177,8 @@ export default function ProductFormPage({ mode }) {
       navigate("/seller/products")
     } catch (err) {
       applyBackendErrors(err.errors)
-      message.error(err.message)
+      console.error("Failed to submit product form:", err)
+      message.error('Failed to save product. Please check the form for errors and try again.')
     } finally {
       setSubmitLoading(false)
     }
@@ -217,15 +230,15 @@ export default function ProductFormPage({ mode }) {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Form.Item
-                  name="name"
-                  label="Product Name"
-                  rules={[{ required: true, message: "Product name is required" }]}
-                >
-                  <Input placeholder="e.g. Lucky Me Noodles" />
-                </Form.Item>
+              <Form.Item
+                name="name"
+                label="Product Name"
+                rules={[{ required: true, message: "Product name is required" }]}
+              >
+                <Input placeholder="e.g. Lucky Me Noodles" />
+              </Form.Item>
 
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Form.Item
                   name="category_id"
                   label="Category"
@@ -269,26 +282,6 @@ export default function ProductFormPage({ mode }) {
                   />
                 </Form.Item>
 
-                <Form.Item name="sku" label="SKU">
-                  <Input placeholder="Optional stock keeping unit" />
-                </Form.Item>
-
-                <Form.Item name="brand" label="Brand">
-                  <Input placeholder="Optional brand name" />
-                </Form.Item>
-
-                <Form.Item name="weight" label="Weight">
-                  <Input placeholder="e.g. 500g" />
-                </Form.Item>
-
-                <Form.Item name="dimensions" label="Dimensions">
-                  <Input placeholder="e.g. 10 x 5 x 3 cm" />
-                </Form.Item>
-
-                <Form.Item name="condition" label="Condition">
-                  <Input placeholder="e.g. New" />
-                </Form.Item>
-
                 <Form.Item
                   name="status"
                   label="Status"
@@ -325,6 +318,54 @@ export default function ProductFormPage({ mode }) {
               >
                 <Input.TextArea rows={6} placeholder="Describe the product..." />
               </Form.Item>
+            </div>
+
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-5">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-blue-50 ring-1 ring-blue-100 flex items-center justify-center">
+                  <Layers size={20} className="text-blue-700" />
+                </div>
+                <div>
+                  <h2 className="font-sora font-bold text-lg text-gray-900">Product Specifications</h2>
+                  <p className="text-sm text-gray-400">Add optional specifications like color, size, material, etc.</p>
+                </div>
+              </div>
+
+              <Form.List name="specs">
+                {(fields, { add, remove }) => (
+                  <div className="space-y-3">
+                    {fields.map(({ key, name, ...restField }) => (
+                      <div key={key} className="flex gap-2">
+                        <Form.Item
+                          {...restField}
+                          name={[name, 'key']}
+                          rules={[{ required: true, message: 'Spec name required' }]}
+                          className="flex-1"
+                        >
+                          <Input placeholder="e.g. Color, Size, Material" />
+                        </Form.Item>
+                        <Form.Item
+                          {...restField}
+                          name={[name, 'value']}
+                          rules={[{ required: true, message: 'Spec value required' }]}
+                          className="flex-1"
+                        >
+                          <Input placeholder="e.g. Red, Large, Cotton" />
+                        </Form.Item>
+                        <Button
+                          danger
+                          onClick={() => remove(name)}
+                          icon={<Trash2 size={16} />}
+                          className="shrink-0"
+                        />
+                      </div>
+                    ))}
+                    <Button type="dashed" onClick={() => add()} className="w-full">
+                      + Add Specification
+                    </Button>
+                  </div>
+                )}
+              </Form.List>
             </div>
 
             <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-5">

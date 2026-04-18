@@ -51,7 +51,7 @@ class SellerProductController extends Controller
         }
 
         $perPage = (int) $request->input('per_page', 10);
-        $products = $query->with(['images', 'category'])->paginate($perPage);
+        $products = $query->with(['images', 'category', 'variants'])->paginate($perPage);
 
         return response()->json($products);
     }
@@ -64,7 +64,7 @@ class SellerProductController extends Controller
         $user = $request->user();
         $product = Product::query()
             ->where('store_id', $user->store->id)
-            ->with(['images', 'category', 'store'])
+            ->with(['images', 'category', 'store', 'variants'])
             ->findOrFail($id);
         return response()->json(['product' => $product]);
     }
@@ -82,8 +82,6 @@ class SellerProductController extends Controller
                 'name' => $data['name'],
                 'description' => $data['description'] ?? null,
                 'category_id' => $data['category_id'] ?? null,
-                'price' => $data['price'] ?? 0,
-                'stock' => $data['stock'] ?? 0,
                 'specs' => !empty($data['specs']) ? $data['specs'] : null,
                 'status' => $data['status'] ?? 'active',
                 'store_id' => $data['store_id'],
@@ -98,7 +96,7 @@ class SellerProductController extends Controller
             }
             return response()->json([
                 'message' => 'Product created successfully.',
-                'product' => $product->load(['images', 'category']),
+                'product' => $product->load(['images', 'category', 'variants']),
             ], 201);
         });
     }
@@ -123,8 +121,6 @@ class SellerProductController extends Controller
                 'name' => $data['name'] ?? $product->name,
                 'description' => $data['description'] ?? $product->description,
                 'category_id' => $data['category_id'] ?? $product->category_id,
-                'price' => $data['price'] ?? $product->price,
-                'stock' => $data['stock'] ?? $product->stock,
                 'specs' => isset($data['specs']) ? $data['specs'] : $product->specs,
                 'status' => $data['status'] ?? $product->status,
             ]);
@@ -171,7 +167,7 @@ class SellerProductController extends Controller
 
             return response()->json([
                 'message' => 'Product updated successfully.',
-                'product' => $product->load(['images', 'category']),
+                'product' => $product->load(['images', 'category', 'variants']),
             ]);
         });
     }

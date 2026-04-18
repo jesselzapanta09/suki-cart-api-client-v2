@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Customer;
 
 use App\Models\Product;
+use App\Models\ProductVariant;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreCartRequest extends FormRequest
@@ -16,6 +17,7 @@ class StoreCartRequest extends FormRequest
     {
         return [
             'product_id' => 'required|integer|exists:products,id',
+            'product_variant_id' => 'nullable|integer|exists:product_variants,id',
             'quantity' => 'required|integer|min:1',
         ];
     }
@@ -24,6 +26,7 @@ class StoreCartRequest extends FormRequest
     {
         $validator->after(function ($validator) {
             $productId = $this->input('product_id');
+            $variantId = $this->input('product_variant_id');
             $quantity = $this->input('quantity');
 
             // Check product exists and is active
@@ -35,11 +38,25 @@ class StoreCartRequest extends FormRequest
 
             if ($product->status !== 'active') {
                 $validator->errors()->add('product_id', 'This product is not available for purchase.');
+                return;
             }
 
-            // Check stock availability
-            if ($product->stock < $quantity) {
-                $validator->errors()->add('quantity', "Not enough stock. Only {$product->stock} available.");
+            // If variant is specified, check variant exists and has stock
+            if ($variantId) {
+                $variant = ProductVariant::find($variantId);
+                if (!$variant || $variant->product_id !== $productId) {
+                    $validator->errors()->add('product_variant_id', 'Invalid product variant.');
+                    return;
+                }
+
+                if ($variant->stock < $quantity) {
+                    $validator->errors()->add('quantity', "Not enough stock for this variant. Only {$variant->stock} available.");
+                }
+            } else {
+                // Check product stock if no variant specified
+                if ($product->stock < $quantity) {
+                    $validator->errors()->add('quantity', "Not enough stock. Only {$product->stock} available.");
+                }
             }
         });
     }

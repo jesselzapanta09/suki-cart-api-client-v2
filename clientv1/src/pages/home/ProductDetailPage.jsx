@@ -21,6 +21,7 @@ export default function ProductDetailPage() {
     const [loading, setLoading] = useState(true);
     const [similarLoading, setSimilarLoading] = useState(false);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
+    const [selectedVariant, setSelectedVariant] = useState(null);
 
     // Fetch main product
     useEffect(() => {
@@ -70,19 +71,47 @@ export default function ProductDetailPage() {
         fetchSimilar();
     }, [product, state?.searchKeyword]);
 
+    // Auto-select first variant if not already selected
+    useEffect(() => {
+        if (product && product.variants && product.variants.length > 0 && !selectedVariant) {
+            setSelectedVariant(product.variants[0]);
+        }
+    }, [product, selectedVariant]);
+
     const handleAddToCart = () => {
         if (!isCustomer) {
             message.warning("Only customers can add items to cart. Please log in as a customer.");
             navigate("/login");
             return;
         }
+
+        // Variants are required - products don't have price/stock anymore
+        if (!product.variants || product.variants.length === 0) {
+            message.error("This product has no available variants");
+            return;
+        }
+
+        if (!selectedVariant) {
+            message.warning("Please select a variant before adding to cart");
+            return;
+        }
+
+        // Always use variant price/stock
+        if (selectedVariant.stock === 0) {
+            message.error("This option is out of stock");
+            return;
+        }
         
-        // Transform product to cart format (with mock rating and sold if not available)
+        // Transform product to cart format
         const cartProduct = {
             ...product,
             rating: product.rating || 4.5,
             sold: product.sold || 0,
             category: product.category?.name || "Unknown",
+            price: selectedVariant.price,
+            stock: selectedVariant.stock,
+            variant_id: selectedVariant.id,
+            variant: selectedVariant,
         };
         addItem(cartProduct);
         message.success(`${product.name} added to cart!`);
@@ -222,11 +251,15 @@ export default function ProductDetailPage() {
                             {/* Price and Stock */}
                             <div className="mb-6">
                                 <div className="flex items-baseline gap-4">
-                                    <span className="text-4xl font-bold text-green-700">₱{product.price.toFixed(2)}</span>
+                                    <span className="text-4xl font-bold text-green-700">
+                                        ₱{selectedVariant?.price?.toFixed(2) || "0.00"}
+                                    </span>
                                 </div>
                                 <div className="mt-2">
-                                    <p className={`text-sm font-semibold ${product.stock > 10 ? "text-green-600" : "text-orange-600"}`}>
-                                        {product.stock > 0 ? `${product.stock} items in stock` : "Out of stock"}
+                                    <p className={`text-sm font-semibold ${(selectedVariant?.stock || 0) > 10 ? "text-green-600" : "text-orange-600"}`}>
+                                        {(selectedVariant?.stock || 0) > 0 
+                                            ? `${selectedVariant.stock} items in stock` 
+                                            : "Out of stock"}
                                     </p>
                                 </div>
                             </div>
@@ -254,6 +287,43 @@ export default function ProductDetailPage() {
                                 </div>
                             )}
 
+                            {/* Product Variants */}
+                            {product.variants && product.variants.length > 0 && (
+                                <div className="mb-6">
+                                    <h3 className="font-semibold text-gray-800 mb-3">Available Options</h3>
+                                    <div className="space-y-3">
+                                        {product.variants.map((variant) => (
+                                            <button
+                                                key={variant.id}
+                                                onClick={() => setSelectedVariant(variant)}
+                                                disabled={variant.stock === 0}
+                                                className={`w-full text-left p-3 rounded-lg border-2 transition-all ${
+                                                    selectedVariant?.id === variant.id
+                                                        ? "border-green-600 bg-green-50"
+                                                        : "border-gray-200 hover:border-green-400"
+                                                } ${variant.stock === 0 ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
+                                            >
+                                                <div className="flex items-center justify-between">
+                                                    <div>
+                                                        <p className="font-semibold text-gray-800">
+                                                            {variant.name}
+                                                        </p>
+                                                        <p className="text-sm text-gray-600">
+                                                            ₱{variant.price.toFixed(2)} • {variant.stock > 0 ? `${variant.stock} in stock` : "Out of stock"}
+                                                        </p>
+                                                    </div>
+                                                    {selectedVariant?.id === variant.id && (
+                                                        <div className="w-5 h-5 rounded-full bg-green-600 flex items-center justify-center">
+                                                            <span className="text-white text-xs">✓</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
                             {/* Store Info */}
                             {product.store && (
                                 <div className="bg-gray-50 rounded-lg p-4 mb-6">
@@ -266,12 +336,12 @@ export default function ProductDetailPage() {
                         {/* Add to Cart Button */}
                         <button
                             onClick={handleAddToCart}
-                            disabled={product.stock === 0 || !isCustomer}
-                            title={!isCustomer ? "Only customers can add to cart" : product.stock === 0 ? "Out of stock" : ""}
+                            disabled={(selectedVariant?.stock || 0) === 0 || !isCustomer}
+                            title={!isCustomer ? "Only customers can add to cart" : (selectedVariant?.stock || 0) === 0 ? "Out of stock" : ""}
                             className="w-full px-6 py-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-colors"
                         >
                             <ShoppingCart size={20} />
-                            {product.stock > 0 ? (isCustomer ? "Add to Cart" : "Sign in to Shop") : "Out of Stock"}
+                            {!isCustomer ? "Sign in to Shop" : (selectedVariant?.stock || 0) === 0 ? "Out of Stock" : "Add to Cart"}
                         </button>
                     </div>
                 </div>

@@ -58,8 +58,13 @@ export default function CartPage() {
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <h3 className="font-semibold text-gray-800 text-sm truncate">{item.name}</h3>
+                                    {item.variant && (
+                                        <p className="text-xs text-gray-500 mt-0.5">
+                                            {item.variant.name}
+                                        </p>
+                                    )}
                                     <p className="text-xs text-gray-400 mt-0.5">{item.category}</p>
-                                    <p className="text-green-700 font-bold text-sm mt-1">₱{item.price.toFixed(2)}</p>
+                                    <p className="text-green-700 font-bold text-sm mt-1">₱{(item.price || item.variant?.price || 0).toFixed(2)}</p>
                                 </div>
                                 <div className="flex flex-col items-end gap-2">
                                     <button onClick={() => removeItem(item.id)} className="text-gray-400 hover:text-red-500 transition-colors cursor-pointer">
@@ -67,13 +72,13 @@ export default function CartPage() {
                                     </button>
                                     <InputNumber
                                         min={1}
-                                        max={item.stock}
+                                        max={item.stock || item.variant?.stock || 999}
                                         value={item.qty}
                                         onChange={v => updateQty(item.id, v)}
                                         size="small"
                                         className="w-20"
                                     />
-                                    <span className="text-xs font-semibold text-gray-600">₱{(item.price * item.qty).toFixed(2)}</span>
+                                    <span className="text-xs font-semibold text-gray-600">₱{((item.price || item.variant?.price || 0) * item.qty).toFixed(2)}</span>
                                 </div>
                             </div>
                         ))}
@@ -90,8 +95,16 @@ export default function CartPage() {
                             <div className="space-y-2 mb-4">
                                 {items.map(item => (
                                     <div key={item.id} className="flex justify-between text-sm text-gray-600">
-                                        <span className="truncate max-w-[65%]">{item.name} ×{item.qty}</span>
-                                        <span className="font-medium">₱{(item.price * item.qty).toFixed(2)}</span>
+                                        <span className="truncate max-w-[65%]">
+                                            {item.name}
+                                            {item.variant && (
+                                                <span className="block text-xs text-gray-500">
+                                                    {item.variant.name}
+                                                </span>
+                                            )}
+                                            <span className="block text-xs">×{item.qty}</span>
+                                        </span>
+                                        <span className="font-medium">₱{((item.price || item.variant?.price || 0) * item.qty).toFixed(2)}</span>
                                     </div>
                                 ))}
                             </div>

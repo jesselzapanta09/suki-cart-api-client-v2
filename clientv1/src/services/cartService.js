@@ -5,9 +5,10 @@ export function getCart() {
     return api.get('/customer/cart');
 }
 
-export function addToCart(productId, quantity = 1) {
+export function addToCart(productId, quantity = 1, variantId = null) {
     return api.post('/customer/cart', {
         product_id: productId,
+        product_variant_id: variantId,
         quantity,
     });
 }

@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react"
-import { useNavigate, useParams } from "react-router-dom"
+import { useNavigate, useParams, Link } from "react-router-dom"
 import { App, Button, Form, Input, InputNumber, Select, Spin, Tag, Upload } from "antd"
-import { ArrowLeft, ImagePlus, Layers, Package, Save, Trash2 } from "lucide-react"
+import { ArrowLeft, Grid, ImagePlus, Layers, Package, RotateCcw, Save, Sliders, Trash2 } from "lucide-react"
 import { UploadOutlined } from "@ant-design/icons"
 import { getCategories as getPublicCategories } from "../../../services/authService"
 import * as productService from "../../../services/productService"
@@ -17,14 +17,21 @@ function mapProductToForm(product) {
   // Convert specs object to array of {key, value} pairs for the form
   const specsArray = product.specs ? Object.entries(product.specs).map(([key, value]) => ({ key, value })) : [];
   
+  // Convert variants array to form structure
+  const variantsArray = product.variants ? product.variants.map(variant => ({
+    id: variant.id,
+    name: variant.name,
+    price: variant.price !== undefined && variant.price !== null ? Number(variant.price) : null,
+    stock: variant.stock ?? 0,
+  })) : [];
+  
   return {
     name: product.name ?? "",
     category_id: product.category_id ?? undefined,
     description: product.description ?? "",
-    price: product.price !== undefined && product.price !== null ? Number(product.price) : null,
-    stock: product.stock ?? 0,
     specs: specsArray,
     status: product.status ?? "active",
+    variants: variantsArray,
     images: [],
   }
 }
@@ -33,10 +40,9 @@ const DEFAULT_FORM_VALUES = {
   name: "",
   category_id: undefined,
   description: "",
-  price: null,
-  stock: 0,
-  specs: [],
+  specs: [{ key: "", value: "" }], // Default one spec row
   status: "active",
+  variants: [{ name: "", price: null, stock: 0 }], // Default one variant row
   images: [],
 }
 
@@ -133,9 +139,11 @@ export default function ProductFormPage({ mode }) {
 
   const handleSubmit = async (values) => {
     const formData = new FormData()
+    const variants = values.variants || []
 
     Object.entries(values).forEach(([key, value]) => {
       if (key === "images") return
+      if (key === "variants") return // Handle separately
       if (key === "specs") {
         // Convert specs array to FormData object format (specs[key]=value)
         if (Array.isArray(value) && value.length > 0) {
@@ -167,13 +175,37 @@ export default function ProductFormPage({ mode }) {
 
     setSubmitLoading(true)
     try {
+      let productId = id
+      
       if (isEdit) {
         await productService.updateProduct(id, formData)
-        message.success("Product updated successfully!")
       } else {
-        await productService.addProduct(formData)
-        message.success("Product created successfully!")
+        const response = await productService.addProduct(formData)
+        productId = response.product.id
       }
+
+      // Handle variants separately
+      if (variants && variants.length > 0) {
+        for (const variant of variants) {
+          if (variant.id) {
+            // Update existing variant
+            await productService.updateProductVariant(productId, variant.id, {
+              name: variant.name,
+              price: variant.price,
+              stock: variant.stock,
+            })
+          } else {
+            // Create new variant
+            await productService.addProductVariant(productId, {
+              name: variant.name,
+              price: variant.price,
+              stock: variant.stock,
+            })
+          }
+        }
+      }
+
+      message.success(isEdit ? "Product updated successfully!" : "Product created successfully!")
       navigate("/seller/products")
     } catch (err) {
       applyBackendErrors(err.errors)
@@ -252,54 +284,9 @@ export default function ProductFormPage({ mode }) {
                 </Form.Item>
 
                 <Form.Item
-                  name="price"
-                  label="Price"
-                  rules={[{ required: true, message: "Price is required" }]}
-                >
-                  <InputNumber min={0} step={0.01} className="w-full" style={{ width: "100%" }} prefix="PHP" placeholder="0.00" />
-                </Form.Item>
-
-                <Form.Item
-                  name="stock"
-                  label="Stock"
-                  rules={[{ required: true, message: "Stock is required" }]}
-                >
-                  <InputNumber
-                    min={0}
-                    className="w-full"
-                    style={{ width: "100%" }}
-                    placeholder="0"
-                    onChange={(value) => {
-                      if (value === 0) {
-                        form.setFieldValue('status', 'out_of_stock')
-                      } else if (value > 0) {
-                        const currentStatus = form.getFieldValue('status')
-                        if (currentStatus === 'out_of_stock') {
-                          form.setFieldValue('status', 'active')
-                        }
-                      }
-                    }}
-                  />
-                </Form.Item>
-
-                <Form.Item
                   name="status"
                   label="Status"
-                  rules={[
-                    { required: true, message: "Status is required" },
-                    {
-                      validator: (_, value) => {
-                        const currentStock = form.getFieldValue('stock')
-                        if (currentStock === 0 && value !== 'out_of_stock') {
-                          return Promise.reject(new Error('Status must be "Out of Stock" when stock is 0'))
-                        }
-                        if (currentStock > 0 && value === 'out_of_stock') {
-                          return Promise.reject(new Error('Status cannot be "Out of Stock" when stock is greater than 0'))
-                        }
-                        return Promise.resolve()
-                      },
-                    },
-                  ]}
+                  rules={[{ required: true, message: "Status is required" }]}
                 >
                   <Select
                     options={[
@@ -322,42 +309,202 @@ export default function ProductFormPage({ mode }) {
 
             <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-5">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-blue-50 ring-1 ring-blue-100 flex items-center justify-center">
-                  <Layers size={20} className="text-blue-700" />
+                <div className="w-10 h-10 rounded-xl bg-purple-50 ring-1 ring-purple-100 flex items-center justify-center">
+                  <Grid size={20} className="text-purple-700" />
                 </div>
                 <div>
-                  <h2 className="font-sora font-bold text-lg text-gray-900">Product Specifications</h2>
-                  <p className="text-sm text-gray-400">Add optional specifications like color, size, material, etc.</p>
+                  <h2 className="font-sora font-bold text-lg text-gray-900">Product Variants</h2>
+                  <p className="text-sm text-gray-400">Create different versions (sizes, colors, etc.) with their own prices and stock levels.</p>
                 </div>
               </div>
 
-              <Form.List name="specs">
+              {isEdit ? (
+                <div className="space-y-4">
+                  <div className="rounded-xl bg-blue-50 text-blue-700 ring-1 ring-blue-200 px-4 py-3 text-sm">
+                    Manage variants on a dedicated page.
+                  </div>
+                  <Link to={`/seller/products/${id}/variants`}>
+                    <Button type="primary" size="large" block>
+                      Update Variants
+                    </Button>
+                  </Link>
+                </div>
+              ) : (
+                <Form.List
+                  name="variants"
+                  rules={[
+                    {
+                      validator: async (_, variants) => {
+                        if (!variants || variants.length < 1) {
+                          return Promise.reject(new Error('At least one variant is required'))
+                        }
+                        // Check all variants have name, price, and stock
+                        for (const variant of variants) {
+                          if (!variant.name || variant.price === null || variant.price === undefined || variant.stock === null || variant.stock === undefined) {
+                            return Promise.reject(new Error('All variants must have a name, price, and stock'))
+                          }
+                        }
+                      },
+                    },
+                  ]}
+                >
+                  {(fields, { add, remove, }) => (
+                    <div className="space-y-3">
+                      {fields.map(({ key, name, ...restField }) => (
+                        <div key={key} className="flex flex-col gap-2 p-4 rounded-lg bg-gray-50 border border-gray-200">
+                          <Form.Item
+                            {...restField}
+                            name={[name, 'name']}
+                            label="Variant Name"
+                            rules={[{ required: true, message: 'Name required' }]}
+                            className="w-full mb-0"
+                          >
+                            <Input placeholder="e.g. Size M, Color Red" />
+                          </Form.Item>
+                          <div className="flex gap-3">
+                            <Form.Item
+                              {...restField}
+                              name={[name, 'price']}
+                              label="Price"
+                              rules={[{ required: true, message: 'Price required' }]}
+                              className="flex-1 mb-0"
+                              style={{ width: '100%' }}
+                            >
+                              <InputNumber
+                                min={0}
+                                step={0.01}
+                                style={{ width: '100%' }}
+                                placeholder="0.00"
+                                prefix="PHP"
+                              />
+                            </Form.Item>
+                            <Form.Item
+                              {...restField}
+                              name={[name, 'stock']}
+                              label="Stock"
+                              rules={[{ required: true, message: 'Stock required' }]}
+                              className="flex-1 mb-0"
+                              style={{ width: '100%' }}
+                            >
+                              <InputNumber
+                                min={0}
+                                style={{ width: '100%' }}
+                                placeholder="0"
+                              />
+                            </Form.Item>
+                          </div>
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              onClick={() => {
+                                form.setFieldValue(["variants", name], { name: "", price: null, stock: 0 })
+                              }}
+                              icon={<RotateCcw size={16} />}
+                              className="shrink-0"
+                            />
+                            <Button
+                              danger
+                              disabled={fields.length === 1}
+                              onClick={() => {
+                                if (fields.length === 1) {
+                                  message.warning("At least one variant is required and cannot be removed")
+                                } else {
+                                  remove(name)
+                                }
+                              }}
+                              icon={<Trash2 size={16} />}
+                              className="shrink-0"
+                              title={fields.length === 1 ? "Cannot remove the last variant" : ""}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                      <Button type="dashed" onClick={() => add()} className="w-full">
+                        + Add Variant
+                      </Button>
+                    </div>
+                  )}
+                </Form.List>
+              )}
+            </div>
+
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-5">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-blue-50 ring-1 ring-blue-100 flex items-center justify-center">
+                  <Sliders size={20} className="text-blue-700" />
+                </div>
+                <div>
+                  <h2 className="font-sora font-bold text-lg text-gray-900">Product Specifications</h2>
+                  <p className="text-sm text-gray-400">Add optional details like material, brand, weight,  etc.</p>
+                </div>
+              </div>
+
+              <Form.List
+                name="specs"
+                rules={[
+                  {
+                    validator: async (_, specs) => {
+                      if (!isEdit && (!specs || specs.length < 1)) {
+                        return Promise.reject(new Error('At least one specification is required'))
+                      }
+                      // Check all specs have key and value if any are provided
+                      if (specs && specs.length > 0) {
+                        for (const spec of specs) {
+                          if (!spec.key || !spec.value) {
+                            return Promise.reject(new Error('All specifications must have a name and value'))
+                          }
+                        }
+                      }
+                    },
+                  },
+                ]}
+              >
                 {(fields, { add, remove }) => (
                   <div className="space-y-3">
                     {fields.map(({ key, name, ...restField }) => (
-                      <div key={key} className="flex gap-2">
-                        <Form.Item
-                          {...restField}
-                          name={[name, 'key']}
-                          rules={[{ required: true, message: 'Spec name required' }]}
-                          className="flex-1"
-                        >
-                          <Input placeholder="e.g. Color, Size, Material" />
-                        </Form.Item>
-                        <Form.Item
-                          {...restField}
-                          name={[name, 'value']}
-                          rules={[{ required: true, message: 'Spec value required' }]}
-                          className="flex-1"
-                        >
-                          <Input placeholder="e.g. Red, Large, Cotton" />
-                        </Form.Item>
-                        <Button
-                          danger
-                          onClick={() => remove(name)}
-                          icon={<Trash2 size={16} />}
-                          className="shrink-0"
-                        />
+                      <div key={key} className="flex flex-col gap-2 p-4 rounded-lg bg-gray-50 border border-gray-200">
+                        <div className="flex gap-2">
+                          <Form.Item
+                            {...restField}
+                            name={[name, 'key']}
+                            label="Specifications Name"
+                            rules={[{ required: true, message: 'Specifications name required' }]}
+                            className="flex-1 mb-0"
+                          >
+                            <Input placeholder="e.g. Color, Size, Material" />
+                          </Form.Item>
+                          <Form.Item
+                            {...restField}
+                            name={[name, 'value']}
+                            label="Spec Value"
+                            rules={[{ required: true, message: 'Spec value required' }]}
+                            className="flex-1 mb-0"
+                          >
+                            <Input placeholder="e.g. Red, Large, Cotton" />
+                          </Form.Item>
+                        </div>
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            onClick={() => {
+                              form.setFieldValue(["specs", name], { key: "", value: "" })
+                            }}
+                            icon={<RotateCcw size={16} />}
+                            className="shrink-0"
+                          />
+                          <Button
+                            danger
+                            disabled={fields.length === 1}
+                            onClick={() => {
+                              if (fields.length === 1) {
+                                message.warning("At least one specification is required and cannot be removed")
+                              } else {
+                                remove(name)
+                              }
+                            }}
+                            icon={<Trash2 size={16} />}
+                            className="shrink-0"
+                            title={fields.length === 1 ? "Cannot remove the last specification" : ""}
+                          />
+                        </div>
                       </div>
                     ))}
                     <Button type="dashed" onClick={() => add()} className="w-full">
@@ -367,17 +514,15 @@ export default function ProductFormPage({ mode }) {
                 )}
               </Form.List>
             </div>
-
+            
             <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-5">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-emerald-50 ring-1 ring-emerald-100 flex items-center justify-center">
-                  <ImagePlus size={20} className="text-emerald-700" />
+                <div className="w-10 h-10 rounded-xl bg-orange-50 ring-1 ring-orange-100 flex items-center justify-center">
+                  <ImagePlus size={20} className="text-orange-700" />
                 </div>
                 <div>
                   <h2 className="font-sora font-bold text-lg text-gray-900">Product Images</h2>
-                  <p className="text-sm text-gray-400">
-                    {isEdit ? "Keep current images, upload more, or remove the ones you no longer want." : "Add at least one product image."}
-                  </p>
+                  <p className="text-sm text-gray-400">Upload up to 5 high-quality images to showcase your product.</p>
                 </div>
               </div>
 
@@ -388,14 +533,23 @@ export default function ProductFormPage({ mode }) {
                     {existingImages.map((image) => (
                       <div key={image.id} className="relative rounded-xl overflow-hidden ring-1 ring-gray-200 bg-gray-50 aspect-square">
                         <img src={getStorageUrl(image.image_path)} alt="Product" className="w-full h-full object-cover" />
-                        <Button
-                          danger
-                          size="small"
-                          type="primary"
-                          icon={<Trash2 size={14} />}
-                          onClick={() => handleRemoveExistingImage(image.id)}
-                          className="absolute! top-2 right-2 rounded-lg!"
-                        />
+                        <div className="absolute! top-2 right-2 flex gap-2">
+                          <Button
+                            size="small"
+                            onClick={() => setImageList([])}
+                            className="rounded-lg!"
+                          >
+                            Clear
+                          </Button>
+                          <Button
+                            danger
+                            size="small"
+                            type="primary"
+                            icon={<Trash2 size={14} />}
+                            onClick={() => handleRemoveExistingImage(image.id)}
+                            className="rounded-lg!"
+                          />
+                        </div>
                       </div>
                     ))}
                   </div>

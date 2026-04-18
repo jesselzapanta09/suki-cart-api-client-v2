@@ -16,8 +16,6 @@ class Product extends Model
         'name',
         'description',
         'category_id',
-        'price',
-        'stock',
         'specs',
         'status'
     ];
@@ -58,5 +56,10 @@ class Product extends Model
     public function store()
     {
         return $this->belongsTo(Store::class);
+    }
+
+    public function variants()
+    {
+        return $this->hasMany(ProductVariant::class)->orderBy('id');
     }
 }

@@ -15,11 +15,12 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->foreignId('product_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('product_variant_id')->nullable()->constrained('product_variants')->cascadeOnDelete();
             $table->integer('quantity')->default(1);
             $table->timestamps();
             
-            // Prevent duplicate entries for same user-product combination
-            $table->unique(['user_id', 'product_id']);
+            // Prevent duplicate entries for same user-product-variant combination
+            $table->unique(['user_id', 'product_id', 'product_variant_id']);
         });
     }
 

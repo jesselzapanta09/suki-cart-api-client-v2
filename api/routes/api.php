@@ -8,6 +8,7 @@ use App\Http\Controllers\Home\HomeProductSearchController;
 use App\Http\Controllers\Notification\NotificationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Seller\SellerProductController;
+use App\Http\Controllers\Seller\SellerProductVariantController;
 use App\Http\Controllers\Seller\SellerStoreController;
 use App\Http\Controllers\Customer\CustomerCartController;
 use App\Models\Category;
@@ -88,6 +89,13 @@ Route::middleware('auth:api')->group(function () {
             Route::post('/products', [SellerProductController::class, 'store']);
             Route::put('/products/{id}', [SellerProductController::class, 'update']);
             Route::delete('/products/{id}', [SellerProductController::class, 'destroy']);
+
+            // Product variants routes
+            Route::get('/products/{product_id}/variants', [SellerProductVariantController::class, 'index']);
+            Route::get('/products/{product_id}/variants/{variant_id}', [SellerProductVariantController::class, 'show']);
+            Route::post('/products/{product_id}/variants', [SellerProductVariantController::class, 'store']);
+            Route::put('/products/{product_id}/variants/{variant_id}', [SellerProductVariantController::class, 'update']);
+            Route::delete('/products/{product_id}/variants/{variant_id}', [SellerProductVariantController::class, 'destroy']);
         });
     });
 

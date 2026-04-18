@@ -79,14 +79,11 @@ export default function SearchResultsPage() {
             navigate("/login");
             return;
         }
-        
-        addItem({
-            ...product,
-            rating: product.rating || 4.5,
-            sold: product.sold || 0,
-            category: product.category?.name || "Unknown",
+
+        // All products now require variant selection
+        navigate(`/products/${product.id}`, {
+            state: { searchKeyword: query },
         });
-        message.success(`${product.name} added to cart!`);
     };
 
     const handlePaginationChange = (page) => {

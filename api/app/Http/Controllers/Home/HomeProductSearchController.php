@@ -50,7 +50,7 @@ class HomeProductSearchController extends Controller
         }
 
         $perPage = (int) $request->input('per_page', 10);
-        $products = $query->with(['images', 'category', 'store'])
+        $products = $query->with(['images', 'category', 'store', 'variants'])
             ->paginate($perPage);
 
         return response()->json($products);
@@ -66,7 +66,7 @@ class HomeProductSearchController extends Controller
         $product = Product::query()
             ->where('status', 'active')
             ->where('stock', '>', 0)
-            ->with(['images', 'category', 'store'])
+            ->with(['images', 'category', 'store', 'variants'])
             ->findOrFail($id);
 
         return response()->json(['product' => $product]);

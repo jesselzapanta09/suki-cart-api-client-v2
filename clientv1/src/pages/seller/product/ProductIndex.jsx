@@ -151,20 +151,26 @@ export default function ProductIndex() {
       render: (_, record) => (record.category?.name ? <Tag color="blue">{record.category.name}</Tag> : <Tag>None</Tag>),
     },
     {
-      title: "Price",
-      dataIndex: "price",
-      key: "price",
+      title: "Total Stock",
+      dataIndex: "variants",
+      key: "stock",
       width: 120,
       sorter: true,
-      render: (price) => <span className="text-green-700 font-semibold">PHP {Number(price).toLocaleString()}</span>,
+      render: (variants) => {
+        const totalStock = variants?.reduce((sum, v) => sum + (v.stock || 0), 0) || 0
+        return <span className="font-mono text-sm font-semibold">{totalStock}</span>
+      },
     },
     {
-      title: "Stock",
-      dataIndex: "stock",
-      key: "stock",
-      width: 90,
-      sorter: true,
-      render: (stock) => <span className="font-mono text-sm">{stock}</span>,
+      title: "Variants",
+      dataIndex: "variants",
+      key: "variants",
+      width: 100,
+      render: (variants) => (
+        <Tag color="cyan" icon={<Layers size={12} />}>
+          {variants?.length || 0} variant{variants?.length !== 1 ? "s" : ""}
+        </Tag>
+      ),
     },
     {
       title: "Status",
@@ -188,9 +194,17 @@ export default function ProductIndex() {
     {
       title: "Actions",
       key: "actions",
-      width: 110,
+      width: 150,
       render: (_, record) => (
         <div className="flex gap-2">
+          <Tooltip title="Manage Variants">
+            <Button
+              size="small"
+              type="default"
+              onClick={() => navigate(`/seller/products/${record.id}/variants`)}
+              icon={<Layers size={14} />}
+            />
+          </Tooltip>
           <Tooltip title="Edit">
             <Button
               size="small"

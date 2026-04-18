@@ -41,6 +41,7 @@ import ManageSellerShow from "./pages/admin/seller/ManageSellerShow.jsx"
 import SellerDashboard from "./pages/seller/SellerDashboard.jsx";
 import ProductIndex from "./pages/seller/product/ProductIndex.jsx";
 import ProductFormPage from "./pages/seller/product/ProductFormPage.jsx";
+import ProductVariantManagementPage from "./pages/seller/product/ProductVariantManagementPage.jsx";
 
 // Pages - Customer
 import CartPage from "./pages/customer/cart/CartPage.jsx";
@@ -137,6 +138,7 @@ export default function App() {
                                     <Route path="/seller/products"     element={<ProductIndex />} />
                                     <Route path="/seller/products/create" element={<ProductFormPage mode="create" />} />
                                     <Route path="/seller/products/:id/edit" element={<ProductFormPage mode="edit" />} />
+                                    <Route path="/seller/products/:id/variants" element={<ProductVariantManagementPage />} />
                                     <Route path="/seller/edit-profile" element={<EditProfile />} />
                                     <Route path="/seller/notifications" element={<NotificationsPage />} />
                                 </Route>

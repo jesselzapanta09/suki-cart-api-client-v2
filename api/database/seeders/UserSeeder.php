@@ -88,7 +88,7 @@ class UserSeeder extends Seeder
                 'store_name'  => $s['store_name'],
                 'category_id' => $category->id,
                 'description' => $s['description'],
-            ], $reviewedAt);
+            ], $reviewedAt, $s['email']);
 
             $this->upsertLocation($user->id, 'store', [
                 'status'            => 1,
@@ -98,7 +98,7 @@ class UserSeeder extends Seeder
                 'barangay'          => $s['barangay'],
             ]);
 
-            $this->upsertStoreApproval($store, $reviewer?->uuid, $reviewedAt);
+            $this->upsertStoreApproval($store, $reviewer?->uuid, $reviewedAt, $s['email']);
         }
     }
 
@@ -131,7 +131,7 @@ class UserSeeder extends Seeder
         );
     }
 
-    protected function upsertStore(int $userId, array $attributes, Carbon $verifiedAt): Store
+    protected function upsertStore(int $userId, array $attributes, Carbon $verifiedAt, string $email = ''): Store
     {
         $store = Store::firstOrNew(['user_id' => $userId]);
         $store->fill([
@@ -139,24 +139,26 @@ class UserSeeder extends Seeder
             'store_name' => $attributes['store_name'],
             'category_id' => $attributes['category_id'],
             'description' => $attributes['description'],
-            'verified_at' => null,
+            'verified_at' => $email === 'pedro@example.com' ? $verifiedAt : null,
         ]);
         $store->save();
 
         return $store;
     }
 
-    protected function upsertStoreApproval(Store $store, ?string $reviewedBy, Carbon $reviewedAt): void
+    protected function upsertStoreApproval(Store $store, ?string $reviewedBy, Carbon $reviewedAt, string $email = ''): void
     {
+        $isPedro = $email === 'pedro@example.com';
+        
         StoreVerification::updateOrCreate(
             [
                 'store_id' => $store->id,
             ],
             [
-                'store_status' => 'pending',
+                'store_status' => $isPedro ? 'approved' : 'pending',
                 'rejection_reason' => null,
-                'reviewed_by' => null,
-                'reviewed_at' => null,
+                'reviewed_by' => $isPedro ? $reviewedBy : null,
+                'reviewed_at' => $isPedro ? $reviewedAt : null,
             ]
         );
     }

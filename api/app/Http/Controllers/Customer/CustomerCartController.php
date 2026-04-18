@@ -20,8 +20,8 @@ class CustomerCartController extends Controller
         $cartItems = Cart::query()
             ->where('user_id', $user->id)
             ->with(['product' => function ($q) {
-                $q->with(['images', 'category', 'store']);
-            }])
+                $q->with(['images', 'category', 'store', 'variants']);
+            }, 'variant'])
             ->get();
 
         return response()->json([
@@ -39,9 +39,10 @@ class CustomerCartController extends Controller
         $user = $request->user();
         $data = $request->validated();
 
-        // Check if product already in cart
+        // Check if product/variant combination already in cart
         $existingCart = Cart::where('user_id', $user->id)
             ->where('product_id', $data['product_id'])
+            ->where('product_variant_id', $data['product_variant_id'] ?? null)
             ->first();
 
         if ($existingCart) {
@@ -49,18 +50,28 @@ class CustomerCartController extends Controller
             $newQuantity = $existingCart->quantity + $data['quantity'];
             
             // Validate stock
-            $product = $existingCart->product;
-            if ($product->stock < $newQuantity) {
-                return response()->json([
-                    'message' => 'Not enough stock available.',
-                    'error' => "Only {$product->stock} items available.",
-                ], 422);
+            if ($data['product_variant_id']) {
+                $variant = $existingCart->variant;
+                if ($variant->stock < $newQuantity) {
+                    return response()->json([
+                        'message' => 'Not enough stock available.',
+                        'error' => "Only {$variant->stock} items available.",
+                    ], 422);
+                }
+            } else {
+                $product = $existingCart->product;
+                if ($product->stock < $newQuantity) {
+                    return response()->json([
+                        'message' => 'Not enough stock available.',
+                        'error' => "Only {$product->stock} items available.",
+                    ], 422);
+                }
             }
 
             $existingCart->update(['quantity' => $newQuantity]);
             $cartItem = $existingCart->load(['product' => function ($q) {
-                $q->with(['images', 'category', 'store']);
-            }]);
+                $q->with(['images', 'category', 'store', 'variants']);
+            }, 'variant']);
 
             return response()->json([
                 'message' => 'Item quantity updated in cart.',
@@ -72,12 +83,13 @@ class CustomerCartController extends Controller
         $cartItem = Cart::create([
             'user_id' => $user->id,
             'product_id' => $data['product_id'],
+            'product_variant_id' => $data['product_variant_id'] ?? null,
             'quantity' => $data['quantity'],
         ]);
 
         $cartItem->load(['product' => function ($q) {
-            $q->with(['images', 'category', 'store']);
-        }]);
+            $q->with(['images', 'category', 'store', 'variants']);
+        }, 'variant']);
 
         return response()->json([
             'message' => 'Item added to cart successfully.',
@@ -107,8 +119,8 @@ class CustomerCartController extends Controller
         $cartItem->update(['quantity' => $data['quantity']]);
 
         $cartItem->load(['product' => function ($q) {
-            $q->with(['images', 'category', 'store']);
-        }]);
+            $q->with(['images', 'category', 'store', 'variants']);
+        }, 'variant']);
 
         return response()->json([
             'message' => 'Cart item updated successfully.',

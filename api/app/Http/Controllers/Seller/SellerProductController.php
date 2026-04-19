@@ -57,15 +57,16 @@ class SellerProductController extends Controller
     }
 
     /**
-     * GET /api/seller/products/{id}
+     * GET /api/seller/products/{uuid}
      */
-    public function show($id, Request $request)
+    public function show($uuid, Request $request)
     {
         $user = $request->user();
         $product = Product::query()
             ->where('store_id', $user->store->id)
+            ->where('uuid', $uuid)
             ->with(['images', 'category', 'store', 'variants'])
-            ->findOrFail($id);
+            ->firstOrFail();
         return response()->json(['product' => $product]);
     }
 
@@ -102,15 +103,16 @@ class SellerProductController extends Controller
     }
 
     /**
-     * PUT /api/seller/products/{id}
+     * PUT /api/seller/products/{uuid}
      */
-    public function update(UpdateProductRequest $request, $id)
+    public function update(UpdateProductRequest $request, $uuid)
     {
-        return DB::transaction(function () use ($request, $id) {
+        return DB::transaction(function () use ($request, $uuid) {
             $user = $request->user();
             $product = Product::query()
                 ->where('store_id', $user->store->id)
-                ->findOrFail($id);
+                ->where('uuid', $uuid)
+                ->firstOrFail();
             $data = $request->validated();
             $deletedImageIds = collect($data['deleted_image_ids'] ?? [])
                 ->map(fn ($imageId) => (int) $imageId)
@@ -173,15 +175,16 @@ class SellerProductController extends Controller
     }
 
     /**
-     * DELETE /api/seller/products/{id}
+     * DELETE /api/seller/products/{uuid}
      */
-    public function destroy(Request $request, $id)
+    public function destroy(Request $request, $uuid)
     {
         $user = $request->user();
         $product = Product::query()
             ->where('store_id', $user->store->id)
+            ->where('uuid', $uuid)
             ->with('images')
-            ->findOrFail($id);
+            ->firstOrFail();
 
         foreach ($product->images as $image) {
             FileUploadHelper::delete($image->image_path);

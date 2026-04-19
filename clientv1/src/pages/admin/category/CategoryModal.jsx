@@ -49,20 +49,20 @@ export default function CategoryModal({ open, onClose, onSubmit, initialValues, 
             </div>
 
             <div className="pt-20">
-                <Form form={form} layout="vertical" onFinish={handleFinish} className="space-y-1">
+                <Form form={form} layout="vertical" requiredMark={false} onFinish={handleFinish} className="space-y-1">
                     <Form.Item
                         name="name"
                         label={<span className="font-medium text-gray-700">Category Name</span>}
                         rules={[{ required: true, message: "Please enter category name" }]}
                     >
-                        <Input placeholder="e.g. Convenience Store" className="rounded-xl" />
+                        <Input size="large" placeholder="e.g. Convenience Store" className="rounded-xl" />
                     </Form.Item>
 
                     <Form.Item
                         name="description"
                         label={<span className="font-medium text-gray-700">Description</span>}
                     >
-                        <Input.TextArea rows={3} placeholder="Optional description" className="rounded-xl" />
+                        <Input.TextArea size="large" rows={3} placeholder="Optional description" className="rounded-xl" />
                     </Form.Item>
 
                     <Form.Item
@@ -71,6 +71,7 @@ export default function CategoryModal({ open, onClose, onSubmit, initialValues, 
                         rules={[{ required: true, message: "Please select status" }]}
                     >
                         <Select
+                            size="large"
                             options={[
                                 { label: "Active", value: 1 },
                                 { label: "Inactive", value: 0 },
@@ -80,8 +81,8 @@ export default function CategoryModal({ open, onClose, onSubmit, initialValues, 
                     </Form.Item>
 
                     <div className="flex justify-end gap-2 pt-2">
-                        <Button onClick={onClose}>Cancel</Button>
-                        <Button type="primary" htmlType="submit" loading={loading}>
+                        <Button size="large" onClick={onClose}>Cancel</Button>
+                        <Button size="large" type="primary" htmlType="submit" loading={loading}>
                             {mode === "add" ? "Create" : "Update"}
                         </Button>
                     </div>

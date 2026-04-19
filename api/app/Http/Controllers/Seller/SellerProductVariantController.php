@@ -13,15 +13,16 @@ use Illuminate\Validation\ValidationException;
 class SellerProductVariantController extends Controller
 {
     /**
-     * GET /api/seller/products/{product_id}/variants
+     * GET /api/seller/products/{product_uuid}/variants
      * Get all variants for a product
      */
-    public function index($productId, Request $request)
+    public function index($productUuid, Request $request)
     {
         $user = $request->user();
         $product = Product::query()
             ->where('store_id', $user->store->id)
-            ->findOrFail($productId);
+            ->where('uuid', $productUuid)
+            ->firstOrFail();
 
         $variants = $product->variants;
 
@@ -32,15 +33,16 @@ class SellerProductVariantController extends Controller
     }
 
     /**
-     * GET /api/seller/products/{product_id}/variants/{variant_id}
+     * GET /api/seller/products/{product_uuid}/variants/{variant_id}
      * Get a specific variant
      */
-    public function show($productId, $variantId, Request $request)
+    public function show($productUuid, $variantId, Request $request)
     {
         $user = $request->user();
         $product = Product::query()
             ->where('store_id', $user->store->id)
-            ->findOrFail($productId);
+            ->where('uuid', $productUuid)
+            ->firstOrFail();
 
         $variant = $product->variants()
             ->findOrFail($variantId);
@@ -49,15 +51,16 @@ class SellerProductVariantController extends Controller
     }
 
     /**
-     * POST /api/seller/products/{product_id}/variants
+     * POST /api/seller/products/{product_uuid}/variants
      * Create a new variant
      */
-    public function store($productId, StoreProductVariantRequest $request)
+    public function store($productUuid, StoreProductVariantRequest $request)
     {
         $user = $request->user();
         $product = Product::query()
             ->where('store_id', $user->store->id)
-            ->findOrFail($productId);
+            ->where('uuid', $productUuid)
+            ->firstOrFail();
 
         $data = $request->validated();
         
@@ -75,15 +78,16 @@ class SellerProductVariantController extends Controller
     }
 
     /**
-     * PUT /api/seller/products/{product_id}/variants/{variant_id}
+     * PUT /api/seller/products/{product_uuid}/variants/{variant_id}
      * Update a variant
      */
-    public function update($productId, $variantId, UpdateProductVariantRequest $request)
+    public function update($productUuid, $variantId, UpdateProductVariantRequest $request)
     {
         $user = $request->user();
         $product = Product::query()
             ->where('store_id', $user->store->id)
-            ->findOrFail($productId);
+            ->where('uuid', $productUuid)
+            ->firstOrFail();
 
         $variant = $product->variants()
             ->findOrFail($variantId);
@@ -102,15 +106,16 @@ class SellerProductVariantController extends Controller
     }
 
     /**
-     * DELETE /api/seller/products/{product_id}/variants/{variant_id}
+     * DELETE /api/seller/products/{product_uuid}/variants/{variant_id}
      * Delete a variant
      */
-    public function destroy($productId, $variantId, Request $request)
+    public function destroy($productUuid, $variantId, Request $request)
     {
         $user = $request->user();
         $product = Product::query()
             ->where('store_id', $user->store->id)
-            ->findOrFail($productId);
+            ->where('uuid', $productUuid)
+            ->firstOrFail();
 
         $variant = $product->variants()
             ->findOrFail($variantId);

@@ -9,12 +9,15 @@ class ProductVariant extends Model
     protected $fillable = [
         'product_id',
         'name',
+        'sku',
+        'attributes',
         'price',
         'stock',
     ];
 
     protected $casts = [
         'price' => 'decimal:2',
+        'attributes' => 'array',
     ];
 
     /**

@@ -7,9 +7,9 @@ const CartContext = createContext(null);
 export const CartProvider = ({ children }) => {
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(false);
-    const { user, loading: authLoading } = useAuth();
+    const { user, loading: authLoading, isCustomer } = useAuth();
 
-    // Fetch cart from API after auth is restored
+    // Fetch cart from API only for customers after auth is restored
     useEffect(() => {
         const fetchCart = async () => {
             try {
@@ -48,14 +48,14 @@ export const CartProvider = ({ children }) => {
             }
         };
 
-        // Only fetch cart when auth loading is done and user is authenticated
-        if (!authLoading && user) {
+        // Only fetch cart when auth loading is done, user is a customer
+        if (!authLoading && isCustomer) {
             fetchCart();
-        } else if (!authLoading && !user) {
-            // User is not authenticated, clear cart
+        } else if (!authLoading) {
+            // User is not a customer or not authenticated, clear cart
             setItems([]);
         }
-    }, [authLoading, user]);
+    }, [authLoading, isCustomer]);
 
     const addItem = useCallback(async (product, qty = 1) => {
         try {

@@ -5,43 +5,43 @@ export function getProducts(params = {}) {
     return api.get('/seller/products', { params });
 }
 
-export function getProduct(id) {
-    return api.get(`/seller/products/${id}`);
+export function getProduct(uuid) {
+    return api.get(`/seller/products/${uuid}`);
 }
 
 export function addProduct(formData) {
     return api.post('/seller/products', formData);
 }
 
-export function updateProduct(id, formData) {
-    return api.post(`/seller/products/${id}`, formData, {
+export function updateProduct(uuid, formData) {
+    return api.post(`/seller/products/${uuid}`, formData, {
         headers: { 'X-HTTP-Method-Override': 'PUT' },
     });
 }
 
-export function deleteProduct(id) {
-    return api.delete(`/seller/products/${id}`);
+export function deleteProduct(uuid) {
+    return api.delete(`/seller/products/${uuid}`);
 }
 
 // Product Variants (authenticated)
-export function getProductVariants(productId) {
-    return api.get(`/seller/products/${productId}/variants`);
+export function getProductVariants(productUuid) {
+    return api.get(`/seller/products/${productUuid}/variants`);
 }
 
-export function getProductVariant(productId, variantId) {
-    return api.get(`/seller/products/${productId}/variants/${variantId}`);
+export function getProductVariant(productUuid, variantId) {
+    return api.get(`/seller/products/${productUuid}/variants/${variantId}`);
 }
 
-export function addProductVariant(productId, data) {
-    return api.post(`/seller/products/${productId}/variants`, data);
+export function addProductVariant(productUuid, data) {
+    return api.post(`/seller/products/${productUuid}/variants`, data);
 }
 
-export function updateProductVariant(productId, variantId, data) {
-    return api.put(`/seller/products/${productId}/variants/${variantId}`, data);
+export function updateProductVariant(productUuid, variantId, data) {
+    return api.put(`/seller/products/${productUuid}/variants/${variantId}`, data);
 }
 
-export function deleteProductVariant(productId, variantId) {
-    return api.delete(`/seller/products/${productId}/variants/${variantId}`);
+export function deleteProductVariant(productUuid, variantId) {
+    return api.delete(`/seller/products/${productUuid}/variants/${variantId}`);
 }
 
 // Public Products (no authentication required)

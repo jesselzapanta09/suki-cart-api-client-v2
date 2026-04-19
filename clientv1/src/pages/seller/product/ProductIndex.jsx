@@ -100,9 +100,9 @@ export default function ProductIndex() {
     fetchProducts(pagination.current, pagination.pageSize, sorter.field, sorter.order, search, statusFilter, categoryFilter)
   }
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (uuid) => {
     try {
-      await productService.deleteProduct(id)
+      await productService.deleteProduct(uuid)
       message.success("Product deleted successfully!")
       reload()
     } catch (err) {
@@ -135,7 +135,7 @@ export default function ProductIndex() {
           </div>
           <div>
             <div className="font-semibold text-green-950 text-sm">{record.name}</div>
-            <div className="text-gray-400 text-xs">{record.id}</div>
+            <div className="text-gray-400 text-xs">{record.variants?.length || 0} variant{record.variants?.length !== 1 ? "s" : ""}</div>
           </div>
         </div>
       ),
@@ -151,7 +151,7 @@ export default function ProductIndex() {
       render: (_, record) => (record.category?.name ? <Tag color="blue">{record.category.name}</Tag> : <Tag>None</Tag>),
     },
     {
-      title: "Total Stock",
+      title: "Stock",
       dataIndex: "variants",
       key: "stock",
       width: 120,
@@ -161,17 +161,7 @@ export default function ProductIndex() {
         return <span className="font-mono text-sm font-semibold">{totalStock}</span>
       },
     },
-    {
-      title: "Variants",
-      dataIndex: "variants",
-      key: "variants",
-      width: 100,
-      render: (variants) => (
-        <Tag color="cyan" icon={<Layers size={12} />}>
-          {variants?.length || 0} variant{variants?.length !== 1 ? "s" : ""}
-        </Tag>
-      ),
-    },
+
     {
       title: "Status",
       dataIndex: "status",
@@ -201,7 +191,7 @@ export default function ProductIndex() {
             <Button
               size="small"
               type="default"
-              onClick={() => navigate(`/seller/products/${record.id}/variants`)}
+              onClick={() => navigate(`/seller/products/${record.uuid}/variants`)}
               icon={<Layers size={14} />}
             />
           </Tooltip>
@@ -209,7 +199,7 @@ export default function ProductIndex() {
             <Button
               size="small"
               type="primary"
-              onClick={() => navigate(`/seller/products/${record.id}/edit`)}
+              onClick={() => navigate(`/seller/products/${record.uuid}/edit`)}
               icon={<Edit size={14} />}
             />
           </Tooltip>
@@ -217,7 +207,7 @@ export default function ProductIndex() {
             <Popconfirm
               title={`Delete ${record.name}?`}
               description="This action cannot be undone."
-              onConfirm={() => handleDelete(record.id)}
+              onConfirm={() => handleDelete(record.uuid)}
               okText="Delete"
               cancelText="Cancel"
               okButtonProps={{ danger: true }}

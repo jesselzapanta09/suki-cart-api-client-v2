@@ -85,17 +85,17 @@ Route::middleware('auth:api')->group(function () {
         // Only accessible when store is verified
         Route::middleware('store.verified')->group(function () {
             Route::get('/products', [SellerProductController::class, 'index']);
-            Route::get('/products/{id}', [SellerProductController::class, 'show']);
+            Route::get('/products/{uuid}', [SellerProductController::class, 'show'])->where('uuid', '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}');
             Route::post('/products', [SellerProductController::class, 'store']);
-            Route::put('/products/{id}', [SellerProductController::class, 'update']);
-            Route::delete('/products/{id}', [SellerProductController::class, 'destroy']);
+            Route::put('/products/{uuid}', [SellerProductController::class, 'update'])->where('uuid', '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}');
+            Route::delete('/products/{uuid}', [SellerProductController::class, 'destroy'])->where('uuid', '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}');
 
             // Product variants routes
-            Route::get('/products/{product_id}/variants', [SellerProductVariantController::class, 'index']);
-            Route::get('/products/{product_id}/variants/{variant_id}', [SellerProductVariantController::class, 'show']);
-            Route::post('/products/{product_id}/variants', [SellerProductVariantController::class, 'store']);
-            Route::put('/products/{product_id}/variants/{variant_id}', [SellerProductVariantController::class, 'update']);
-            Route::delete('/products/{product_id}/variants/{variant_id}', [SellerProductVariantController::class, 'destroy']);
+            Route::get('/products/{product_uuid}/variants', [SellerProductVariantController::class, 'index'])->where('product_uuid', '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}');
+            Route::get('/products/{product_uuid}/variants/{variant_id}', [SellerProductVariantController::class, 'show'])->where('product_uuid', '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}');
+            Route::post('/products/{product_uuid}/variants', [SellerProductVariantController::class, 'store'])->where('product_uuid', '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}');
+            Route::put('/products/{product_uuid}/variants/{variant_id}', [SellerProductVariantController::class, 'update'])->where('product_uuid', '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}');
+            Route::delete('/products/{product_uuid}/variants/{variant_id}', [SellerProductVariantController::class, 'destroy'])->where('product_uuid', '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}');
         });
     });
 

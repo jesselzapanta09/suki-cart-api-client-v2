@@ -245,7 +245,14 @@ export default function CategoryIndex() {
                 </div>
             </div>
 
-            <CategoryModal open={modalOpen} onClose={() => setModalOpen(false)} onSubmit={handleSubmit} initialValues={editRecord} loading={submitLoading} mode={modalMode} />
+            <CategoryModal 
+                open={modalOpen} 
+                onClose={() => setModalOpen(false)} 
+                onSubmit={handleSubmit} i
+                nitialValues={editRecord} l
+                oading={submitLoading} 
+                mode={modalMode} 
+            />
 
             {/* View Modal */}
             <Modal open={viewModalOpen} onCancel={() => setViewModalOpen(false)} footer={null}>

@@ -47,7 +47,7 @@ const DEFAULT_FORM_VALUES = {
 }
 
 export default function ProductFormPage({ mode }) {
-  const { id } = useParams()
+  const { uuid } = useParams()
   const navigate = useNavigate()
   const { message } = App.useApp()
   const [form] = Form.useForm()
@@ -84,7 +84,7 @@ export default function ProductFormPage({ mode }) {
     }
 
     setPageLoading(true)
-    productService.getProduct(id)
+    productService.getProduct(uuid)
       .then((data) => {
         const nextProduct = data.product
         setProduct(nextProduct)
@@ -98,7 +98,7 @@ export default function ProductFormPage({ mode }) {
         navigate("/seller/products", { replace: true })
       })
       .finally(() => setPageLoading(false))
-  }, [form, id, isEdit, message, navigate])
+  }, [form, uuid, isEdit, message, navigate])
 
   useEffect(() => {
     if (isEdit) {
@@ -175,13 +175,13 @@ export default function ProductFormPage({ mode }) {
 
     setSubmitLoading(true)
     try {
-      let productId = id
+      let productId = uuid
       
       if (isEdit) {
-        await productService.updateProduct(id, formData)
+        await productService.updateProduct(uuid, formData)
       } else {
         const response = await productService.addProduct(formData)
-        productId = response.product.id
+        productId = response.product.uuid
       }
 
       // Handle variants separately
@@ -323,7 +323,7 @@ export default function ProductFormPage({ mode }) {
                   <div className="rounded-xl bg-blue-50 text-blue-700 ring-1 ring-blue-200 px-4 py-3 text-sm">
                     Manage variants on a dedicated page.
                   </div>
-                  <Link to={`/seller/products/${id}/variants`}>
+                  <Link to={`/seller/products/${uuid}/variants`}>
                     <Button type="primary" size="large" block>
                       Update Variants
                     </Button>
@@ -534,13 +534,6 @@ export default function ProductFormPage({ mode }) {
                       <div key={image.id} className="relative rounded-xl overflow-hidden ring-1 ring-gray-200 bg-gray-50 aspect-square">
                         <img src={getStorageUrl(image.image_path)} alt="Product" className="w-full h-full object-cover" />
                         <div className="absolute! top-2 right-2 flex gap-2">
-                          <Button
-                            size="small"
-                            onClick={() => setImageList([])}
-                            className="rounded-lg!"
-                          >
-                            Clear
-                          </Button>
                           <Button
                             danger
                             size="small"

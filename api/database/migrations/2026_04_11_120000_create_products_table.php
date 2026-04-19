@@ -8,7 +8,7 @@ return new class extends Migration {
     {
         Schema::create('products', function (Blueprint $table) {
             $table->id();
-            $table->uuid()->nullable();
+            $table->uuid();
             $table->unsignedBigInteger('store_id');
             $table->string('name');
             $table->text('description');

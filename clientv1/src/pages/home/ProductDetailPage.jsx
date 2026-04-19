@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { App, Spin, InputNumber, Button } from "antd";
-import { ShoppingCart, Package, ArrowLeft, ChevronLeft, ChevronRight, Store, Star } from "lucide-react";
+import { ShoppingCart, ShoppingBag, Package, ArrowLeft, ChevronLeft, ChevronRight, Store, Star } from "lucide-react";
 import { getPublicProduct, searchPublicProducts } from "../../services/productService";
 import { useCart } from "../../context/CartContext";
 import { useAuth } from "../../context/AuthContext";
@@ -351,6 +351,7 @@ export default function ProductDetailPage() {
                                     type="primary"
                                     size="large"
                                     className="flex-1"
+                                    icon={<ShoppingBag size={20} />}
                                 >
                                     Buy Now
                                 </Button>

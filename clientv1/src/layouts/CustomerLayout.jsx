@@ -9,7 +9,7 @@ import NotificationBell from "../components/NotificationBell";
 
 const NAV = [
     { label: "Dashboard", to: "/customer/dashboard", icon: LayoutDashboard },
-    { label: "Cart", to: "customer/cart", icon: ShoppingCart, cartBadge: true },
+    { label: "Cart", to: "/customer/cart", icon: ShoppingCart, cartBadge: true },
     { label: "Edit Profile", to: "/customer/edit-profile", icon: User },
 ];
 
@@ -61,12 +61,14 @@ export default function CustomerLayout() {
                             const Icon = n.icon;
                             const active = isActive(n.to);
                             return (
-                                <Link key={n.to} to={n.to} className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm font-medium transition-all no-underline ${active ? "bg-green-100 text-green-700" : "text-gray-500 hover:bg-gray-100 hover:text-gray-700"}`}>
+                                <div key={n.to} className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 rounded-md text-xs sm:text-sm font-medium transition-all ${active ? "bg-green-50 text-green-700" : "text-gray-500 hover:bg-gray-100 hover:text-gray-700"}`}>
+                                    <Link to={n.to} className="flex items-center gap-1 sm:gap-2 no-underline text-inherit">
                                     {n.cartBadge ? (
                                         <Badge count={totalItems} size="small" color="#16a34a" offset={[4, -2]}><Icon size={16} /></Badge>
                                     ) : <Icon size={16} />}
                                     <span className="hidden sm:inline">{n.label}</span>
-                                </Link>
+                                    </Link>
+                                </div>
                             );
                         })}
                     </div>

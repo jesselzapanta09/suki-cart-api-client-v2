@@ -151,7 +151,7 @@ export const CartProvider = ({ children }) => {
         }
     }, []);
 
-    const totalItems = items.reduce((s, i) => s + i.qty, 0);
+    const totalItems = items.length;
     const totalPrice = items.reduce((s, i) => s + i.price * i.qty, 0);
 
     return (

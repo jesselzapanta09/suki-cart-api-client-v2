@@ -42,40 +42,20 @@ class CustomerCartController extends Controller
         // Check if product/variant combination already in cart
         $existingCart = Cart::where('user_id', $user->id)
             ->where('product_id', $data['product_id'])
-            ->where('product_variant_id', $data['product_variant_id'] ?? null)
+            ->where('product_variant_id', $data['product_variant_id'])
             ->first();
 
         if ($existingCart) {
             // Increment quantity
             $newQuantity = $existingCart->quantity + $data['quantity'];
             
-            // Validate stock - check variant if specified, otherwise check product variants
-            if ($data['product_variant_id']) {
-                $variant = $existingCart->variant;
-                if ($variant && $variant->stock < $newQuantity) {
-                    return response()->json([
-                        'message' => 'Not enough stock available.',
-                        'error' => "Only {$variant->stock} items available.",
-                    ], 422);
-                }
-            } else {
-                // Product should have variants - check total stock across variants
-                $product = $existingCart->product;
-                $product->load('variants');
-                if ($product->variants && $product->variants->count() > 0) {
-                    $totalStock = $product->variants->sum('stock');
-                    if ($totalStock < $newQuantity) {
-                        return response()->json([
-                            'message' => 'Not enough stock available.',
-                            'error' => "Only {$totalStock} total items available across variants.",
-                        ], 422);
-                    }
-                } else {
-                    return response()->json([
-                        'message' => 'Product has no available variants.',
-                        'error' => 'This product is no longer available.',
-                    ], 422);
-                }
+            // Validate stock for the variant
+            $variant = $existingCart->variant;
+            if ($variant && $variant->stock < $newQuantity) {
+                return response()->json([
+                    'message' => 'Not enough stock available.',
+                    'error' => "Only {$variant->stock} items available.",
+                ], 422);
             }
 
             $existingCart->update(['quantity' => $newQuantity]);
@@ -93,7 +73,7 @@ class CustomerCartController extends Controller
         $cartItem = Cart::create([
             'user_id' => $user->id,
             'product_id' => $data['product_id'],
-            'product_variant_id' => $data['product_variant_id'] ?? null,
+            'product_variant_id' => $data['product_variant_id'],
             'quantity' => $data['quantity'],
         ]);
 

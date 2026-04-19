@@ -20,6 +20,10 @@ class HomeProductSearchController extends Controller
             ->where('status', 'active')
             ->whereHas('variants', function ($q) {
                 $q->where('stock', '>', 0);
+            })
+            // Verify seller - only show products from approved stores
+            ->whereHas('store.verification', function ($q) {
+                $q->where('store_status', 'approved');
             });
 
         // Search by name or description
@@ -63,19 +67,25 @@ class HomeProductSearchController extends Controller
     }
 
     /**
-     * GET /api/products/{id}
+     * GET /api/products/{uuid}
      * Get a single product detail with images, category, and store info
      * No authentication required (public)
+     * Only accessible if the store is verified/approved
      */
-    public function show($id)
+    public function show($uuid)
     {
         $product = Product::query()
             ->where('status', 'active')
+            ->where('uuid', $uuid)
             ->whereHas('variants', function ($q) {
                 $q->where('stock', '>', 0);
             })
+            // Verify seller - only show products from approved stores
+            ->whereHas('store.verification', function ($q) {
+                $q->where('store_status', 'approved');
+            })
             ->with(['images', 'category', 'store', 'variants'])
-            ->findOrFail($id);
+            ->firstOrFail();
 
         return response()->json(['product' => $product]);
     }

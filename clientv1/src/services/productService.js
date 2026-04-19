@@ -49,6 +49,6 @@ export function searchPublicProducts(params = {}) {
     return api.get('/products/search', { params });
 }
 
-export function getPublicProduct(id) {
-    return api.get(`/products/${id}`);
+export function getPublicProduct(uuid) {
+    return api.get(`/products/${uuid}`);
 }

@@ -55,7 +55,7 @@ export default function HomeLayout() {
     };
 
     const handleResultClick = (product) => {
-        navigate(`/products/${product.id}`, {
+        navigate(`/products/${product.uuid}`, {
             state: { searchKeyword: search },
         });
         setShowResults(false);

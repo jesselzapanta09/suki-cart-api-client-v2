@@ -67,7 +67,7 @@ export default function SearchResultsPage() {
     }, [query, pagination.current, pagination.pageSize, minPrice, maxPrice, sortBy, navigate, message]);
 
     const handleProductClick = (product) => {
-        navigate(`/products/${product.id}`, {
+        navigate(`/products/${product.uuid}`, {
             state: { searchKeyword: query },
         });
     };
@@ -80,7 +80,7 @@ export default function SearchResultsPage() {
         }
 
         // All products now require variant selection
-        navigate(`/products/${product.id}`, {
+        navigate(`/products/${product.uuid}`, {
             state: { searchKeyword: query },
         });
     };
@@ -275,7 +275,7 @@ export default function SearchResultsPage() {
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
                                     {results.map(product => (
                                         <div
-                                            key={product.id}
+                                            key={product.uuid}
                                             onClick={() => handleProductClick(product)}
                                             className="cursor-pointer"
                                         >

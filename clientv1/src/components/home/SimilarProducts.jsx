@@ -23,8 +23,8 @@ export default function SimilarProducts({
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                     {similarProducts.map(p => (
                         <div
-                            key={p.id}
-                            onClick={() => navigate(`/products/${p.id}`, { state: { searchKeyword } })}
+                            key={p.uuid}
+                            onClick={() => navigate(`/products/${p.uuid}`, { state: { searchKeyword } })}
                             className="cursor-pointer"
                         >
                             <ProductCard

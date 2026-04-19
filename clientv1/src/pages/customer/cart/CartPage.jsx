@@ -58,7 +58,7 @@ export default function CartPage() {
                     {/* Items */}
                     <div className="lg:col-span-2 space-y-3">
                         {items.map(item => (
-                            <div key={item.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-4">
+                            <div key={item.uuid} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-4">
                                 <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-green-100 to-emerald-100 flex items-center justify-center flex-shrink-0">
                                     <Package size={22} className="text-green-700" />
                                 </div>
@@ -73,14 +73,14 @@ export default function CartPage() {
                                     <p className="text-green-700 font-bold text-sm mt-1">₱{getPrice(item).toFixed(2)}</p>
                                 </div>
                                 <div className="flex flex-col items-end gap-2">
-                                    <button onClick={() => removeItem(item.id)} className="text-gray-400 hover:text-red-500 transition-colors cursor-pointer">
+                                    <button onClick={() => removeItem(item.uuid)} className="text-gray-400 hover:text-red-500 transition-colors cursor-pointer">
                                         <Trash2 size={15} />
                                     </button>
                                     <InputNumber
                                         min={1}
                                         max={item.stock || item.variant?.stock || 999}
                                         value={item.qty}
-                                        onChange={v => updateQty(item.id, v)}
+                                        onChange={v => updateQty(item.uuid, v)}
                                         size="small"
                                         className="w-20"
                                     />
@@ -100,7 +100,7 @@ export default function CartPage() {
                             <h2 className="font-bold text-green-900 text-lg mb-4">Order Summary</h2>
                             <div className="space-y-2 mb-4">
                                 {items.map(item => (
-                                    <div key={item.id} className="flex justify-between text-sm text-gray-600">
+                                    <div key={item.uuid} className="flex justify-between text-sm text-gray-600">
                                         <span className="truncate max-w-[65%]">
                                             {item.name}
                                             {item.variant && (

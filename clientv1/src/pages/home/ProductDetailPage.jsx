@@ -9,7 +9,7 @@ import ProductCard from "../../components/home/ProductCard";
 import SimilarProducts from "../../components/home/SimilarProducts";
 
 export default function ProductDetailPage() {
-    const { id } = useParams();
+    const { uuid } = useParams();
     const { state } = useLocation();
     const navigate = useNavigate();
     const { message } = App.useApp();
@@ -29,7 +29,7 @@ export default function ProductDetailPage() {
         const fetchProduct = async () => {
             try {
                 setLoading(true);
-                const response = await getPublicProduct(id);
+                const response = await getPublicProduct(uuid);
                 // API client extracts response.data, so response has product property
                 setProduct(response.product);
             } catch (error) {
@@ -40,7 +40,7 @@ export default function ProductDetailPage() {
             }
         };
         fetchProduct();
-    }, [id, message]);
+    }, [uuid, message]);
 
     // Fetch similar products based on search keyword or category
     useEffect(() => {
@@ -80,10 +80,16 @@ export default function ProductDetailPage() {
     }, [product, selectedVariant]);
 
     const handleAddToCart = () => {
+        // Validate variant is selected
+        if (!selectedVariant) {
+            message.error("Please select a variant before adding to cart.");
+            return;
+        }
+
         if (!isCustomer) {
             // Store pending add-to-cart data in sessionStorage
             const pendingAddToCart = {
-                product_id: product.id,
+                product_uuid: product.uuid,
                 product_name: product.name,
                 variant_id: selectedVariant.id,
                 quantity: quantity,
@@ -587,7 +593,7 @@ export default function ProductDetailPage() {
                 <SimilarProducts
                     similarProducts={similarProducts}
                     similarLoading={similarLoading}
-                    currentProductId={product.id}
+                    currentProductId={product.uuid}
                     searchKeyword={state?.searchKeyword}
                     onAddToCart={(p) => {
                         if (!isCustomer) {

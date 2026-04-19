@@ -40,7 +40,7 @@ export async function processPendingAddToCart() {
         const pending = JSON.parse(pendingAddToCart);
         
         // Fetch the full product data to ensure we have all details
-        const productResponse = await getPublicProduct(pending.product_id);
+        const productResponse = await getPublicProduct(pending.product_uuid);
         const product = productResponse.product;
         
         // Find the variant in the fetched product

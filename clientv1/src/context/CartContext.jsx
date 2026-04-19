@@ -25,6 +25,7 @@ export const CartProvider = ({ children }) => {
                     
                     return {
                         id: item.product_id,
+                        uuid: item.product.uuid,
                         cartId: item.id, // Store cart ID for updates/deletes
                         name: item.product.name,
                         price: price,
@@ -69,8 +70,8 @@ export const CartProvider = ({ children }) => {
             const cartItem = response.data;
             
             // Check if item with same product and variant already exists
-            const key = product.variant_id ? `${product.id}-${product.variant_id}` : product.id;
-            const existingKey = item => item.variant_id ? `${item.id}-${item.variant_id}` : item.id;
+            const key = product.variant_id ? `${product.uuid}-${product.variant_id}` : product.uuid;
+            const existingKey = item => item.variant_id ? `${item.uuid}-${item.variant_id}` : item.uuid;
             
             setItems(prev => {
                 const existingIndex = prev.findIndex(i => existingKey(i) === key);
@@ -87,6 +88,7 @@ export const CartProvider = ({ children }) => {
                 // Add new item
                 return [...prev, {
                     id: product.id,
+                    uuid: product.uuid,
                     cartId: cartItem.id,
                     name: product.name,
                     price: product.price || product.variant?.price || 0,
@@ -108,31 +110,31 @@ export const CartProvider = ({ children }) => {
         }
     }, []);
 
-    const removeItem = useCallback(async (id) => {
+    const removeItem = useCallback(async (uuid) => {
         try {
-            const item = items.find(i => i.id === id);
+            const item = items.find(i => i.uuid === uuid);
             if (item?.cartId) {
                 await cartService.removeCartItem(item.cartId);
             }
-            setItems(prev => prev.filter(i => i.id !== id));
+            setItems(prev => prev.filter(i => i.uuid !== uuid));
         } catch (error) {
             console.error("Error removing item from cart:", error);
             throw error;
         }
     }, [items]);
 
-    const updateQty = useCallback(async (id, qty) => {
+    const updateQty = useCallback(async (uuid, qty) => {
         if (qty < 1) { 
-            await removeItem(id);
+            await removeItem(uuid);
             return;
         }
 
         try {
-            const item = items.find(i => i.id === id);
+            const item = items.find(i => i.uuid === uuid);
             if (item?.cartId) {
                 await cartService.updateCartItem(item.cartId, qty);
             }
-            setItems(prev => prev.map(i => i.id === id ? { ...i, qty } : i));
+            setItems(prev => prev.map(i => i.uuid === uuid ? { ...i, qty } : i));
         } catch (error) {
             console.error("Error updating cart item quantity:", error);
             throw error;

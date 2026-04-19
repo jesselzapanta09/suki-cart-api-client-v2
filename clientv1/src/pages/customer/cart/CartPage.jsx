@@ -9,6 +9,12 @@ export default function CartPage() {
     const { message } = App.useApp();
     const navigate = useNavigate();
 
+    // Helper to safely extract price as a number
+    const getPrice = (item) => {
+        const price = item.price ?? item.variant?.price ?? 0;
+        return typeof price === 'number' ? price : Number(price || 0);
+    };
+
     const handleCheckout = () => {
         message.success("Order placed! (Mock) Thank you for shopping at SukiCart.");
         clearCart();
@@ -64,7 +70,7 @@ export default function CartPage() {
                                         </p>
                                     )}
                                     <p className="text-xs text-gray-400 mt-0.5">{item.category}</p>
-                                    <p className="text-green-700 font-bold text-sm mt-1">₱{(item.price || item.variant?.price || 0).toFixed(2)}</p>
+                                    <p className="text-green-700 font-bold text-sm mt-1">₱{getPrice(item).toFixed(2)}</p>
                                 </div>
                                 <div className="flex flex-col items-end gap-2">
                                     <button onClick={() => removeItem(item.id)} className="text-gray-400 hover:text-red-500 transition-colors cursor-pointer">
@@ -78,7 +84,7 @@ export default function CartPage() {
                                         size="small"
                                         className="w-20"
                                     />
-                                    <span className="text-xs font-semibold text-gray-600">₱{((item.price || item.variant?.price || 0) * item.qty).toFixed(2)}</span>
+                                    <span className="text-xs font-semibold text-gray-600">₱{(getPrice(item) * item.qty).toFixed(2)}</span>
                                 </div>
                             </div>
                         ))}
@@ -104,7 +110,7 @@ export default function CartPage() {
                                             )}
                                             <span className="block text-xs">×{item.qty}</span>
                                         </span>
-                                        <span className="font-medium">₱{((item.price || item.variant?.price || 0) * item.qty).toFixed(2)}</span>
+                                        <span className="font-medium">₱{(getPrice(item) * item.qty).toFixed(2)}</span>
                                     </div>
                                 ))}
                             </div>

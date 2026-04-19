@@ -45,7 +45,7 @@ class SellerProductController extends Controller
         // Sort
         $sortField = $request->input('sort_field', 'created_at');
         $sortOrder = $request->input('sort_order', 'desc');
-        $allowedSorts = ['id', 'name', 'price', 'stock', 'status', 'created_at'];
+        $allowedSorts = ['id', 'name', 'status', 'created_at'];
         if (in_array($sortField, $allowedSorts)) {
             $query->orderBy($sortField, $sortOrder === 'ascend' ? 'asc' : 'desc');
         }

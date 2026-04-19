@@ -19,8 +19,8 @@ export default function AdminDashboard() {
     }, [])
 
     const total = products.length
-    const avgPrice = total ? (products.reduce((s, p) => s + p.price, 0) / total).toFixed(2) : "0.00"
-    const maxPrice = total ? Math.max(...products.map(p => p.price)).toFixed(2) : "0.00"
+    const avgPrice = total ? (products.reduce((s, p) => s + (p.variants?.[0]?.price || p.price || 0), 0) / total).toFixed(2) : "0.00"
+    const maxPrice = total ? Math.max(...products.map(p => p.variants?.[0]?.price || p.price || 0)).toFixed(2) : "0.00"
     const categories = new Set(products.map(p => p.category)).size
 
     const stats = [

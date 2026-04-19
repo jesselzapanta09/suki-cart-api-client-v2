@@ -18,22 +18,28 @@ export const CartProvider = ({ children }) => {
                 const cartItems = response.data || [];
                 
                 // Transform API response to match cart item structure
-                const transformedItems = cartItems.map(item => ({
-                    id: item.product_id,
-                    cartId: item.id, // Store cart ID for updates/deletes
-                    name: item.product.name,
-                    price: item.product_variant_id && item.variant ? item.variant.price : item.product.price,
-                    qty: item.quantity,
-                    stock: item.product_variant_id && item.variant ? item.variant.stock : item.product.stock,
-                    category: item.product.category?.name || "Unknown",
-                    rating: item.product.rating || 4.5,
-                    sold: item.product.sold || 0,
-                    images: item.product.images || [],
-                    store: item.product.store || {},
-                    description: item.product.description || "",
-                    variant_id: item.product_variant_id,
-                    variant: item.variant || null,
-                }));
+                const transformedItems = cartItems.map(item => {
+                    // Get price/stock from variant if available, otherwise from product (fallback for legacy data)
+                    const price = item.variant?.price || (item.product.variants && item.product.variants.length > 0 ? item.product.variants[0].price : 0);
+                    const stock = item.variant?.stock || (item.product.variants && item.product.variants.length > 0 ? item.product.variants[0].stock : 0);
+                    
+                    return {
+                        id: item.product_id,
+                        cartId: item.id, // Store cart ID for updates/deletes
+                        name: item.product.name,
+                        price: price,
+                        qty: item.quantity,
+                        stock: stock,
+                        category: item.product.category?.name || "Unknown",
+                        rating: item.product.rating || 4.5,
+                        sold: item.product.sold || 0,
+                        images: item.product.images || [],
+                        store: item.product.store || {},
+                        description: item.product.description || "",
+                        variant_id: item.product_variant_id,
+                        variant: item.variant || null,
+                    };
+                });
                 
                 setItems(transformedItems);
             } catch (error) {

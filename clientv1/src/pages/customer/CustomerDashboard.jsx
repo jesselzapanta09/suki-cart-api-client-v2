@@ -116,7 +116,7 @@ export default function CustomerDashboard() {
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-3">
-                                        <span className="font-bold text-green-700">₱{p.price.toFixed(2)}</span>
+                                        <span className="font-bold text-green-700">₱{(p.variants?.[0]?.price || p.price || 0).toFixed(2)}</span>
                                         <Button type="primary" size="small" className="rounded-lg" onClick={() => handleAddToCart(p)} icon={<ShoppingCart size={12} />}>Add</Button>
                                     </div>
                                 </div>

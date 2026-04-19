@@ -111,7 +111,9 @@ export default function HomeLayout() {
                                         </div>
                                     ) : searchResults.length > 0 ? (
                                         <div>
-                                            {searchResults.map(p => (
+                                            {searchResults.map(p => {
+                                                const price = typeof (p.variants?.[0]?.price) === 'number' ? p.variants[0].price : Number(p.variants?.[0]?.price || 0);
+                                                return (
                                                 <div
                                                     key={p.id}
                                                     className="flex items-center gap-3 px-4 py-3 hover:bg-green-50 cursor-pointer transition-colors border-b border-gray-100 last:border-0"
@@ -125,11 +127,12 @@ export default function HomeLayout() {
                                                         <div className="text-xs text-gray-500">{p.category?.name || "Unknown"}</div>
                                                     </div>
                                                     <div className="flex flex-col items-end shrink-0">
-                                                        <span className="text-green-600 font-semibold text-sm">₱{p.price.toFixed(2)}</span>
-                                                        <span className="text-xs text-gray-400">{p.stock} in stock</span>
+                                                        <span className="text-green-600 font-semibold text-sm">₱{price.toFixed(2)}</span>
+                                                        <span className="text-xs text-gray-400"> {(p.variants?.reduce((sum, v) => sum + (v.stock || 0), 0) || 0)} in stock</span>
                                                     </div>
                                                 </div>
-                                            ))}
+                                                );
+                                            })}
                                             <div className="px-4 py-3 bg-gray-50 border-t border-gray-100 text-center">
                                                 <button
                                                     onClick={() => navigate(`/search?q=${encodeURIComponent(search)}`)}
@@ -216,7 +219,9 @@ export default function HomeLayout() {
                                         </div>
                                     ) : searchResults.length > 0 ? (
                                         <div>
-                                            {searchResults.map(p => (
+                                            {searchResults.map(p => {
+                                                const price = typeof (p.variants?.[0]?.price) === 'number' ? p.variants[0].price : Number(p.variants?.[0]?.price || 0);
+                                                return (
                                                 <div
                                                     key={p.id}
                                                     className="flex items-center gap-3 px-4 py-3 hover:bg-green-50 cursor-pointer transition-colors border-b border-gray-100 last:border-0"
@@ -230,11 +235,12 @@ export default function HomeLayout() {
                                                         <div className="text-xs text-gray-500">{p.category?.name || "Unknown"}</div>
                                                     </div>
                                                     <div className="flex flex-col items-end shrink-0">
-                                                        <span className="text-green-600 font-semibold text-sm">₱{p.price.toFixed(2)}</span>
-                                                        <span className="text-xs text-gray-400">{p.stock} in stock</span>
+                                                        <span className="text-green-600 font-semibold text-sm">₱{price.toFixed(2)}</span>
+                                                        <span className="text-xs text-gray-400"> {(p.variants?.reduce((sum, v) => sum + (v.stock || 0), 0) || 0)} in stock</span>
                                                     </div>
                                                 </div>
-                                            ))}
+                                                );
+                                            })}
                                             <div className="px-4 py-3 bg-gray-50 border-t border-gray-100 text-center">
                                                 <button
                                                     onClick={() => navigate(`/search?q=${encodeURIComponent(search)}`)}

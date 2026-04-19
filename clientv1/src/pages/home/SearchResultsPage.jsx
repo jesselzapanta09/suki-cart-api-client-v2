@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { App, Spin, Pagination, Radio, InputNumber, Button, Divider } from "antd";
 import { ArrowLeft, Package, Search } from "lucide-react";
-import { useCart } from "../../context/CartContext";
 import { useAuth } from "../../context/AuthContext";
 import ProductCard from "../../components/home/ProductCard";
 import { searchPublicProducts } from "../../services/productService";
@@ -11,7 +10,7 @@ export default function SearchResultsPage() {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const { message } = App.useApp();
-    const { addItem } = useCart();
+    
     const { isCustomer } = useAuth();
 
     const query = searchParams.get("q") || "";

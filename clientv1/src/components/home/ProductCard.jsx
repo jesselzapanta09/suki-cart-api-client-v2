@@ -15,6 +15,13 @@ export default function ProductCard({ product, onAdd }) {
         ? product.images[0].full_url 
         : null;
 
+    // Get price from first variant (products no longer have direct price)
+    let price = null;
+    if (product.variants && Array.isArray(product.variants) && product.variants.length > 0) {
+        const variantPrice = product.variants[0].price;
+        price = typeof variantPrice === 'number' ? variantPrice : (variantPrice ? Number(variantPrice) : null);
+    }
+
     return (
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:-translate-y-1 hover:shadow-lg transition-all group overflow-hidden">
             <div className="h-40 bg-linear-to-br from-green-50 to-emerald-100 flex items-center justify-center relative overflow-hidden">
@@ -51,10 +58,24 @@ export default function ProductCard({ product, onAdd }) {
                 
                 <div className="flex items-center justify-between">
                     <div>
-                        <span className="font-bold text-green-700 text-base">₱{product.price.toFixed(2)}</span>
-                        <p className="text-xs text-gray-400 mt-0.5">{sold} sold</p>
+                        {price && typeof price === 'number' ? (
+                            <>
+                                <span className="font-bold text-green-700 text-base">₱{price.toFixed(2)}</span>
+                                <p className="text-xs text-gray-400 mt-0.5">{sold} sold</p>
+                            </>
+                        ) : (
+                            <span className="text-sm text-gray-500">No variants</span>
+                        )}
                     </div>
-                    <button onClick={() => onAdd(product)} className="w-9 h-9 rounded-xl bg-green-600 hover:bg-green-700 flex items-center justify-center text-white transition-colors cursor-pointer border-none shadow-sm">
+                    <button 
+                        onClick={() => onAdd(product)} 
+                        disabled={!price}
+                        className={`w-9 h-9 rounded-xl flex items-center justify-center text-white transition-colors cursor-pointer border-none shadow-sm ${
+                            price 
+                                ? 'bg-green-600 hover:bg-green-700' 
+                                : 'bg-gray-400 cursor-not-allowed'
+                        }`}
+                    >
                         <ShoppingCart size={15} />
                     </button>
                 </div>

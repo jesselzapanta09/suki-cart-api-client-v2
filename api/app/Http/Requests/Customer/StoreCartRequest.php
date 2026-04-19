@@ -53,9 +53,17 @@ class StoreCartRequest extends FormRequest
                     $validator->errors()->add('quantity', "Not enough stock for this variant. Only {$variant->stock} available.");
                 }
             } else {
-                // Check product stock if no variant specified
-                if ($product->stock < $quantity) {
-                    $validator->errors()->add('quantity', "Not enough stock. Only {$product->stock} available.");
+                // If no variant specified, check if product has variants with stock
+                $product->load('variants');
+                if (!$product->variants || $product->variants->count() === 0) {
+                    $validator->errors()->add('product_id', 'This product has no available variants.');
+                    return;
+                }
+                
+                // Check if any variant has enough stock
+                $totalStock = $product->variants->sum('stock');
+                if ($totalStock < $quantity) {
+                    $validator->errors()->add('quantity', "Not enough stock available. Only {$totalStock} total available across variants.");
                 }
             }
         });

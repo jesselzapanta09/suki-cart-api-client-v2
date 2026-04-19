@@ -2,9 +2,11 @@ import React, { useState } from "react";
 import { Form, Input, App } from "antd";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { useCart } from "../../context/CartContext";
 import { Loader2, ShoppingBag, Store, Mail, Package, Truck, Tags } from "lucide-react";
 import { login as loginApi, resendVerification } from "../../services/authService";
 import { registerPushSubscription } from "../../services/notificationService";
+import { processPendingAddToCart } from "../../services/cartService";
 
 export default function Login() {
     const { message } = App.useApp();
@@ -12,6 +14,7 @@ export default function Login() {
     const [resending, setResending] = useState(false);
     const [unverifiedEmail, setUnverifiedEmail] = useState(null);
     const { loginUser } = useAuth();
+    const { addItem } = useCart();
     const navigate = useNavigate();
     const [form] = Form.useForm();
 
@@ -27,7 +30,26 @@ export default function Login() {
                 console.warn("Push subscription failed:", pushErr);
             }
             message.success(`Welcome back, ${data.user.firstname}!`);
-            navigate("/dashboard");
+            
+            // Check for pending add-to-cart data
+            try {
+                const pendingData = await processPendingAddToCart();
+                if (pendingData) {
+                    // Add the product to cart
+                    addItem(pendingData.product, pendingData.quantity);
+                    message.success(`${pendingData.productName} added to your cart!`);
+                    
+                    // Redirect to cart page
+                    navigate("/customer/cart");
+                } else {
+                    // No pending cart item, go to dashboard
+                    navigate("/dashboard");
+                }
+            } catch (err) {
+                console.error("Error processing pending add-to-cart:", err);
+                message.warning("Redirecting to dashboard...");
+                navigate("/dashboard");
+            }
         } catch (err) {
             if (err.status === 401) {
                 message.error("Invalid email or password.");

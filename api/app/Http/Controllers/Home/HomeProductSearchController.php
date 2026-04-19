@@ -18,7 +18,9 @@ class HomeProductSearchController extends Controller
     {
         $query = Product::query()
             ->where('status', 'active')
-            ->where('stock', '>', 0);
+            ->whereHas('variants', function ($q) {
+                $q->where('stock', '>', 0);
+            });
 
         // Search by name or description
         if ($search = $request->input('search')) {
@@ -33,18 +35,22 @@ class HomeProductSearchController extends Controller
             $query->where('category_id', $categoryId);
         }
 
-        // Price range filter
+        // Price range filter - now checking variant prices
         if ($minPrice = $request->input('min_price')) {
-            $query->where('price', '>=', (float) $minPrice);
+            $query->whereHas('variants', function ($q) use ($minPrice) {
+                $q->where('price', '>=', (float) $minPrice);
+            });
         }
         if ($maxPrice = $request->input('max_price')) {
-            $query->where('price', '<=', (float) $maxPrice);
+            $query->whereHas('variants', function ($q) use ($maxPrice) {
+                $q->where('price', '<=', (float) $maxPrice);
+            });
         }
 
         // Sort
         $sortField = $request->input('sort_field', 'created_at');
         $sortOrder = $request->input('sort_order', 'desc');
-        $allowedSorts = ['id', 'name', 'price', 'stock', 'created_at'];
+        $allowedSorts = ['id', 'name', 'created_at'];
         if (in_array($sortField, $allowedSorts)) {
             $query->orderBy($sortField, $sortOrder === 'ascend' ? 'asc' : 'desc');
         }
@@ -65,7 +71,9 @@ class HomeProductSearchController extends Controller
     {
         $product = Product::query()
             ->where('status', 'active')
-            ->where('stock', '>', 0)
+            ->whereHas('variants', function ($q) {
+                $q->where('stock', '>', 0);
+            })
             ->with(['images', 'category', 'store', 'variants'])
             ->findOrFail($id);
 

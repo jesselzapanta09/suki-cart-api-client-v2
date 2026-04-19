@@ -49,21 +49,31 @@ class CustomerCartController extends Controller
             // Increment quantity
             $newQuantity = $existingCart->quantity + $data['quantity'];
             
-            // Validate stock
+            // Validate stock - check variant if specified, otherwise check product variants
             if ($data['product_variant_id']) {
                 $variant = $existingCart->variant;
-                if ($variant->stock < $newQuantity) {
+                if ($variant && $variant->stock < $newQuantity) {
                     return response()->json([
                         'message' => 'Not enough stock available.',
                         'error' => "Only {$variant->stock} items available.",
                     ], 422);
                 }
             } else {
+                // Product should have variants - check total stock across variants
                 $product = $existingCart->product;
-                if ($product->stock < $newQuantity) {
+                $product->load('variants');
+                if ($product->variants && $product->variants->count() > 0) {
+                    $totalStock = $product->variants->sum('stock');
+                    if ($totalStock < $newQuantity) {
+                        return response()->json([
+                            'message' => 'Not enough stock available.',
+                            'error' => "Only {$totalStock} total items available across variants.",
+                        ], 422);
+                    }
+                } else {
                     return response()->json([
-                        'message' => 'Not enough stock available.',
-                        'error' => "Only {$product->stock} items available.",
+                        'message' => 'Product has no available variants.',
+                        'error' => 'This product is no longer available.',
                     ], 422);
                 }
             }

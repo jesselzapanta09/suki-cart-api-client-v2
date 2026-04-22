@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
 import { App } from "antd";
-import { LayoutDashboard, Package, User, LogOut, Menu, X, Lock } from "lucide-react";
+import { LayoutDashboard, Package, User, LogOut, Menu, X, Lock, ShoppingBag } from "lucide-react";
 import NotificationBell from "../components/NotificationBell";
 import { useAuth } from "../context/AuthContext";
 import Avatar from "../components/Avatar";
@@ -13,6 +13,7 @@ const STORE_VERIFICATION_CACHE_KEY = "seller_store_verification";
 const NAV = [
     { label: "Dashboard", to: "/seller/dashboard", icon: LayoutDashboard, alwaysVisible: true },
     { label: "Products", to: "/seller/products", icon: Package, alwaysVisible: false },
+    { label: "Orders", to: "/seller/orders", icon: ShoppingBag, alwaysVisible: false },
     { label: "Edit Profile", to: "/seller/edit-profile", icon: User, alwaysVisible: true },
 ];
 

@@ -247,7 +247,7 @@ export default function CartPage() {
                                     type="primary"
                                     size="large"
                                     className="h-11 rounded-lg font-semibold flex-1 sm:flex-initial bg-green-600 hover:bg-green-700 border-green-600"
-                                    onClick={handleCheckout}
+                                    // onClick={handleCheckout}
                                     disabled={getCheckedItems().length === 0}
                                     icon={<ShoppingCart size={18} />}
                                 >

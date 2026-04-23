@@ -162,7 +162,7 @@ class AuthController extends Controller
             return response()->json(['message' => 'Invalid email or password.'], 401);
         }
 
-        $user = JWTAuth::user();
+        $user = JWTAuth::user()->load('locations');
 
         // Block unverified accounts — invalidate the token immediately so it can't be reused
         if (is_null($user->email_verified_at)) {

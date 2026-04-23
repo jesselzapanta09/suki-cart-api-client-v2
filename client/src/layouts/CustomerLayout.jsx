@@ -10,7 +10,7 @@ import NotificationBell from "../components/NotificationBell";
 const NAV = [
     { label: "Dashboard", to: "/customer/dashboard", icon: LayoutDashboard },
     { label: "Cart", to: "/customer/cart", icon: ShoppingCart, cartBadge: true },
-    { label: "Order", to: "/customer/order", icon: ShoppingBag },
+    { label: "Order", to: "/customer/orders", icon: ShoppingBag },
     { label: "Edit Profile", to: "/customer/edit-profile", icon: User },
 ];
 

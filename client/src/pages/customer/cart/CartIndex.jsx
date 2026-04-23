@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { ShoppingCart, Trash2, ArrowLeft, Package, ShoppingBag } from "lucide-react";
 import { useCart } from "../../../context/CartContext";
 
-export default function CartPage() {
+export default function CartIndex() {
     const { items, removeItem, updateQty, clearCart, totalItems } = useCart();
     const { message } = App.useApp();
     const navigate = useNavigate();
@@ -24,10 +24,20 @@ export default function CartPage() {
         }
     };
 
-    const handleCheckout = () => {
-        message.success("Order placed! (Mock) Thank you for shopping at SukiCart.");
-        clearCart();
-        navigate("/customer/dashboard");
+    const handleProceedToCheckout = () => {
+        const checkedItemsList = getCheckedItems();
+        if (checkedItemsList.length === 0) {
+            message.warning("Please select items to order");
+            return;
+        }
+
+        // Navigate to checkout with selected items and total
+        navigate("/customer/checkout", {
+            state: {
+                items: checkedItemsList,
+                total: getCheckedTotal(),
+            },
+        });
     };
 
     const handleProductClick = (uuid) => {
@@ -247,7 +257,7 @@ export default function CartPage() {
                                     type="primary"
                                     size="large"
                                     className="h-11 rounded-lg font-semibold flex-1 sm:flex-initial bg-green-600 hover:bg-green-700 border-green-600"
-                                    // onClick={handleCheckout}
+                                    onClick={handleProceedToCheckout}
                                     disabled={getCheckedItems().length === 0}
                                     icon={<ShoppingCart size={18} />}
                                 >

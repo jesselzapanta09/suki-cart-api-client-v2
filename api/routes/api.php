@@ -11,6 +11,7 @@ use App\Http\Controllers\Seller\SellerProductController;
 use App\Http\Controllers\Seller\SellerProductVariantController;
 use App\Http\Controllers\Seller\SellerStoreController;
 use App\Http\Controllers\Customer\CustomerCartController;
+use App\Http\Controllers\Customer\CustomerOrderController;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -109,5 +110,12 @@ Route::middleware('auth:api')->group(function () {
         Route::put('/cart/{id}', [CustomerCartController::class, 'update']);
         Route::delete('/cart/{id}', [CustomerCartController::class, 'destroy']);
         Route::delete('/cart', [CustomerCartController::class, 'destroyAll']);
+
+        // Order routes
+        Route::get('/orders', [CustomerOrderController::class, 'index']);
+        Route::get('/orders/{id}', [CustomerOrderController::class, 'show']);
+        Route::post('/orders', [CustomerOrderController::class, 'store']);
+        Route::put('/orders/{id}', [CustomerOrderController::class, 'update']);
+        Route::delete('/orders/{id}', [CustomerOrderController::class, 'destroy']);
     });
 });

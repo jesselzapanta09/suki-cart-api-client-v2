@@ -8,9 +8,11 @@ use App\Http\Requests\Customer\UpdateOrderRequest;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Cart;
+use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Services\ShippingCalculationService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class CustomerOrderController extends Controller
 {
@@ -40,7 +42,7 @@ class CustomerOrderController extends Controller
 
         return response()->json([
             'message' => 'Orders retrieved successfully.',
-            'data' => $orders->items(),
+            'data' => collect($orders->items())->map(fn ($order) => $this->decorateOrder($order))->values(),
             'pagination' => [
                 'total' => $orders->total(),
                 'per_page' => $orders->perPage(),
@@ -70,7 +72,7 @@ class CustomerOrderController extends Controller
 
         return response()->json([
             'message' => 'Order retrieved successfully.',
-            'data' => $order,
+            'data' => $this->decorateOrder($order),
         ]);
     }
 
@@ -92,8 +94,7 @@ class CustomerOrderController extends Controller
         // Calculate total price and validate stock
         $totalPrice = 0;
         foreach ($items as $item) {
-            $product = $user->orders()->getModel()->getConnection()->table('products')
-                ->find($item['product_id']);
+            $product = Product::find($item['product_id']);
             
             if (!$product) {
                 return response()->json([
@@ -151,7 +152,8 @@ class CustomerOrderController extends Controller
                     'quantity' => $item['quantity'],
                     'price' => $item['product_variant_id'] ?? null
                         ? ProductVariant::find($item['product_variant_id'])->price
-                        : $item['product_id'], // Use variant price if available
+                        : 0,
+                    'status' => 'pending',
                 ]);
 
                 // Reduce variant stock
@@ -185,7 +187,7 @@ class CustomerOrderController extends Controller
 
             return response()->json([
                 'message' => 'Order created successfully.',
-                'data' => $order,
+                'data' => $this->decorateOrder($order),
             ], 201);
         } catch (\Exception $e) {
             return response()->json([
@@ -221,22 +223,32 @@ class CustomerOrderController extends Controller
             ], 422);
         }
 
-        // Update order
-        $order->update([
-            'status' => $newStatus,
-            'cancelled_by' => $data['cancelled_by'] ?? null,
-            'cancellation_reason' => $data['cancellation_reason'] ?? null,
-        ]);
+        DB::transaction(function () use ($order, $data, $newStatus, $currentStatus) {
+            $order->load('items');
 
-        // If cancelling, restore variant stock
-        if ($newStatus === 'cancelled' && $currentStatus !== 'cancelled') {
-            foreach ($order->items as $item) {
-                if ($item->product_variant_id) {
-                    ProductVariant::find($item->product_variant_id)
-                        ->increment('stock', $item->quantity);
+            if ($newStatus === 'cancelled' && $currentStatus !== 'cancelled') {
+                foreach ($order->items->where('status', '!=', 'cancelled') as $item) {
+                    $this->restoreItemStock($item);
+                    $item->update([
+                        'status' => 'cancelled',
+                        'cancelled_by' => $data['cancelled_by'] ?? 'customer',
+                        'cancellation_reason' => $data['cancellation_reason'] ?? null,
+                        'cancelled_at' => now(),
+                    ]);
                 }
             }
-        }
+
+            $order->update([
+                'status' => $newStatus,
+                'cancelled_by' => $data['cancelled_by'] ?? null,
+                'cancellation_reason' => $data['cancellation_reason'] ?? null,
+            ]);
+
+            $this->recalculateOrderTotals($order, [
+                'cancelled_by' => $data['cancelled_by'] ?? 'customer',
+                'cancellation_reason' => $data['cancellation_reason'] ?? null,
+            ]);
+        });
 
         $order->load(['location', 'items' => function ($q) {
             $q->with(['product' => function ($p) {
@@ -246,7 +258,75 @@ class CustomerOrderController extends Controller
 
         return response()->json([
             'message' => 'Order updated successfully.',
-            'data' => $order,
+            'data' => $this->decorateOrder($order),
+        ]);
+    }
+
+    /**
+     * PUT /api/customer/orders/{order}/items/{item}/cancel
+     * Cancel a single item inside an order and recalculate totals.
+     */
+    public function cancelItem(Request $request, $orderId, $itemId)
+    {
+        $validated = $request->validate([
+            'cancellation_reason' => 'required|string|max:1000',
+        ]);
+
+        $user = $request->user();
+
+        $order = Order::query()
+            ->where('user_id', $user->id)
+            ->where('id', $orderId)
+            ->with('items')
+            ->firstOrFail();
+
+        if (!in_array($order->status, ['pending', 'processing'])) {
+            return response()->json([
+                'message' => 'Cannot cancel item.',
+                'error' => "Items cannot be cancelled once an order is {$order->status}.",
+            ], 422);
+        }
+
+        $item = $order->items->firstWhere('id', (int) $itemId);
+
+        if (!$item) {
+            return response()->json([
+                'message' => 'Order item not found.',
+            ], 404);
+        }
+
+        if ($item->status === 'cancelled') {
+            return response()->json([
+                'message' => 'Cannot cancel item.',
+                'error' => 'This item is already cancelled.',
+            ], 422);
+        }
+
+        DB::transaction(function () use ($order, $item, $validated) {
+            $this->restoreItemStock($item);
+
+            $item->update([
+                'status' => 'cancelled',
+                'cancelled_by' => 'customer',
+                'cancellation_reason' => $validated['cancellation_reason'],
+                'cancelled_at' => now(),
+            ]);
+
+            $this->recalculateOrderTotals($order, [
+                'cancelled_by' => 'customer',
+                'cancellation_reason' => $validated['cancellation_reason'],
+            ]);
+        });
+
+        $order->load(['location', 'items' => function ($q) {
+            $q->with(['product' => function ($p) {
+                $p->with(['images', 'store']);
+            }, 'variant']);
+        }]);
+
+        return response()->json([
+            'message' => 'Order item cancelled successfully.',
+            'data' => $this->decorateOrder($order),
         ]);
     }
 
@@ -305,5 +385,86 @@ class CustomerOrderController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    private function restoreItemStock(OrderItem $item): void
+    {
+        if ($item->product_variant_id) {
+            ProductVariant::find($item->product_variant_id)?->increment('stock', $item->quantity);
+        }
+    }
+
+    private function recalculateOrderTotals(Order $order, array $cancellationData = []): void
+    {
+        $order->load(['items.product']);
+
+        $activeItems = $order->items
+            ->where('status', '!=', 'cancelled')
+            ->values();
+
+        $subtotal = $activeItems->sum(fn ($item) => (float) $item->price * $item->quantity);
+        $shippingCost = 0;
+        $status = $order->status;
+
+        if ($activeItems->isNotEmpty()) {
+            $shippingItems = $activeItems->map(fn ($item) => [
+                'product_id' => $item->product_id,
+                'product_variant_id' => $item->product_variant_id,
+                'quantity' => $item->quantity,
+            ])->all();
+
+            $shippingCost = (new ShippingCalculationService())->calculateShipping($shippingItems)['total_shipping_fee'];
+
+            if ($status === 'cancelled') {
+                $status = 'pending';
+            }
+        } else {
+            $status = 'cancelled';
+        }
+
+        $order->update([
+            'price' => $subtotal,
+            'shipping_cost' => $shippingCost,
+            'total_price' => $subtotal + $shippingCost,
+            'status' => $status,
+            'cancelled_by' => $activeItems->isEmpty()
+                ? ($cancellationData['cancelled_by'] ?? $order->cancelled_by ?? 'customer')
+                : $order->cancelled_by,
+            'cancellation_reason' => $activeItems->isEmpty()
+                ? ($cancellationData['cancellation_reason'] ?? $order->cancellation_reason)
+                : $order->cancellation_reason,
+        ]);
+    }
+
+    private function decorateOrder(Order $order): array
+    {
+        $orderArray = $order->toArray();
+        $items = $order->items ?? collect();
+
+        $orderArray['active_items_count'] = $items->where('status', '!=', 'cancelled')->count();
+        $orderArray['cancelled_items_count'] = $items->where('status', 'cancelled')->count();
+        $orderArray['item_groups'] = $items
+            ->groupBy(fn ($item) => $item->product?->store?->id ?? 'unknown')
+            ->values()
+            ->map(function ($items) {
+                $store = $items->first()?->product?->store;
+
+                return [
+                    'store' => $store ? [
+                        'id' => $store->id,
+                        'uuid' => $store->uuid,
+                        'store_name' => $store->store_name,
+                        'description' => $store->description,
+                        'banner' => $store->banner,
+                    ] : null,
+                    'items' => $items->values()->toArray(),
+                    'subtotal' => $items
+                        ->where('status', '!=', 'cancelled')
+                        ->sum(fn ($item) => (float) $item->price * $item->quantity),
+                ];
+            })
+            ->toArray();
+
+        return $orderArray;
     }
 }

@@ -32,3 +32,9 @@ export function cancelOrder(orderId, reason) {
         cancellation_reason: reason,
     })
 }
+
+export function cancelOrderItem(orderId, itemId, reason) {
+    return api.put(`/customer/orders/${orderId}/items/${itemId}/cancel`, {
+        cancellation_reason: reason,
+    })
+}

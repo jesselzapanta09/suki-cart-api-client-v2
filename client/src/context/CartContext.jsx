@@ -4,10 +4,18 @@ import * as cartService from "../services/cartService";
 
 const CartContext = createContext(null);
 
+const getCartItemKey = (item) => {
+    if (item?.cartId) {
+        return `cart-${item.cartId}`;
+    }
+
+    return `product-${item?.id || item?.product_id}-${item?.variant_id || item?.product_variant_id || "none"}`;
+};
+
 export const CartProvider = ({ children }) => {
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(false);
-    const { user, loading: authLoading, isCustomer } = useAuth();
+    const { loading: authLoading, isCustomer } = useAuth();
 
     // Fetch cart from API only for customers after auth is restored
     useEffect(() => {
@@ -151,6 +159,11 @@ export const CartProvider = ({ children }) => {
         }
     }, []);
 
+    const removeOrderedItems = useCallback((orderedItems = []) => {
+        const orderedKeys = new Set(orderedItems.map(getCartItemKey));
+        setItems(prev => prev.filter(item => !orderedKeys.has(getCartItemKey(item))));
+    }, []);
+
     const totalItems = items.length;
     const totalPrice = items.reduce((s, i) => s + i.price * i.qty, 0);
 
@@ -161,6 +174,7 @@ export const CartProvider = ({ children }) => {
             removeItem, 
             updateQty, 
             clearCart, 
+            removeOrderedItems,
             totalItems, 
             totalPrice, 
             loading 

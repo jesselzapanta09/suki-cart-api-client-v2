@@ -6,10 +6,10 @@ import { useCart } from "../../../context/CartContext";
 import { useAuth } from "../../../context/AuthContext";
 import * as orderService from "../../../services/orderService";
 
-export default function CheckoutPage() {
+export default function CheckoutIndex() {
     const navigate = useNavigate();
     const { state } = useLocation();
-    const { clearCart } = useCart();
+    const { removeOrderedItems } = useCart();
     const { user } = useAuth();
     const { message } = App.useApp();
     const [form] = Form.useForm();
@@ -19,11 +19,15 @@ export default function CheckoutPage() {
     const [orderMessage, setOrderMessage] = useState("");
     const [checkoutLoading, setCheckoutLoading] = useState(false);
     const [locations, setLocations] = useState([]);
+    const [shippingData, setShippingData] = useState(null);
+    const [shippingLoading, setShippingLoading] = useState(false);
 
     // Get items from location state
     const items = useMemo(() => state?.items || [], [state?.items]);
     const totalItems = items.length;
     const checkedTotal = state?.total || 0;
+    const shippingCost = shippingData?.total_shipping_fee || 0;
+    const finalTotal = checkedTotal + shippingCost;
 
     useEffect(() => {
         if (items.length === 0) {
@@ -34,7 +38,37 @@ export default function CheckoutPage() {
         if (user?.locations) {
             setLocations(user.locations);
         }
+
+        // Calculate shipping fees
+        calculateShippingFees();
     }, [user, items, navigate]);
+
+    const calculateShippingFees = async () => {
+        if (items.length === 0) return;
+
+        setShippingLoading(true);
+        try {
+            const shippingPayload = {
+                items: items.map(item => ({
+                    cart_id: item.cartId || null,
+                    product_id: item.id,
+                    product_variant_id: item.variant_id || null,
+                    quantity: item.qty,
+                })),
+            };
+
+            const response = await orderService.calculateShipping(shippingPayload);
+            
+            if (response?.data) {
+                setShippingData(response.data);
+            }
+        } catch (err) {
+            console.error('Failed to calculate shipping:', err);
+            message.error("Failed to calculate shipping fees");
+        } finally {
+            setShippingLoading(false);
+        }
+    };
 
     const getPrice = (item) => {
         const price = item.price ?? item.variant?.price ?? 0;
@@ -77,7 +111,7 @@ export default function CheckoutPage() {
 
             if (response?.data?.id) {
                 message.success("Order placed successfully!");
-                clearCart();
+                removeOrderedItems(items);
                 
                 // Redirect to order details
                 setTimeout(() => {
@@ -307,6 +341,47 @@ export default function CheckoutPage() {
                                 </div>
                             </div>
                         </div>
+
+                        {/* Shipping Breakdown */}
+                        {shippingData && (
+                            <div className="rounded-2xl border border-gray-200 shadow-sm p-6 bg-white space-y-5">
+                                <div className="flex items-start gap-3">
+                                    <div className="w-10 h-10 rounded-xl bg-orange-50 ring-1 ring-orange-100 flex items-center justify-center shrink-0">
+                                        <Package size={20} className="text-orange-700" />
+                                    </div>
+                                    <div>
+                                        <h2 className="text-lg font-bold text-gray-900">Shipping Fees</h2>
+                                        <p className="text-sm text-gray-400 mt-1">Breakdown by seller</p>
+                                    </div>
+                                </div>
+                                <div className="space-y-3">
+                                    {shippingData.breakdown.map((store) => (
+                                        <div key={store.store_id} className="bg-orange-50 rounded-lg p-4 border border-orange-100">
+                                            <div className="flex justify-between items-start mb-3">
+                                                <div>
+                                                    <p className="font-semibold text-gray-900">{store.store_name}</p>
+                                                    <p className="text-xs text-gray-500 mt-1">Total Weight: {store.total_weight}kg</p>
+                                                </div>
+                                            </div>
+                                            <div className="space-y-1 text-sm">
+                                                <div className="flex justify-between text-gray-700">
+                                                    <span>Base Fee:</span>
+                                                    <span>₱{store.base_fee.toFixed(2)}</span>
+                                                </div>
+                                                <div className="flex justify-between text-gray-700">
+                                                    <span>Weight Fee ({store.total_weight}kg × ₱50):</span>
+                                                    <span>₱{store.weight_fee.toFixed(2)}</span>
+                                                </div>
+                                                <div className="flex justify-between font-semibold text-orange-600 border-t border-orange-200 pt-2 mt-2">
+                                                    <span>Subtotal:</span>
+                                                    <span>₱{store.shipping_fee.toFixed(2)}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* Total and Action */}
@@ -321,9 +396,26 @@ export default function CheckoutPage() {
                             </div>
                         </div>
 
-                        <div className="bg-green-50 rounded-lg p-6 border border-green-200">
-                            <p className="text-sm text-gray-700 mb-2 font-medium">Total Amount</p>
-                            <p className="text-3xl font-bold text-green-600">₱{checkedTotal.toFixed(2)}</p>
+                        <div className="bg-green-50 rounded-lg p-6 border border-green-200 space-y-3">
+                            <div className="flex justify-between items-center">
+                                <span className="text-sm text-gray-700 font-medium">Subtotal (Products):</span>
+                                <span className="text-lg font-semibold text-gray-900">₱{checkedTotal.toFixed(2)}</span>
+                            </div>
+                            {shippingLoading ? (
+                                <div className="flex justify-between items-center">
+                                    <span className="text-sm text-gray-700 font-medium">Shipping:</span>
+                                    <span className="text-sm text-gray-500">Calculating...</span>
+                                </div>
+                            ) : (
+                                <div className="flex justify-between items-center">
+                                    <span className="text-sm text-gray-700 font-medium">Shipping:</span>
+                                    <span className="text-lg font-semibold text-orange-600">₱{shippingCost.toFixed(2)}</span>
+                                </div>
+                            )}
+                            <div className="border-t border-green-200 pt-3 flex justify-between items-center">
+                                <span className="text-gray-700 font-bold">Total Amount:</span>
+                                <span className="text-3xl font-bold text-green-600">₱{finalTotal.toFixed(2)}</span>
+                            </div>
                         </div>
 
                         {/* Action Buttons */}
@@ -340,7 +432,7 @@ export default function CheckoutPage() {
                                 size="large"
                                 className="flex-1"
                                 loading={checkoutLoading}
-                                disabled={!selectedLocation}
+                                disabled={!selectedLocation || shippingLoading}
                                 onClick={handlePlaceOrder}
                                 icon={<ShoppingBag size={16} />}
                             >

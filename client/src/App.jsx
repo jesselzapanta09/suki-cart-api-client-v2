@@ -45,7 +45,7 @@ import ProductVariantManagementIndex from "./pages/seller/variant/ProductVariant
 
 // Pages - Customer
 import CartIndex from "./pages/customer/cart/CartIndex.jsx";
-import CheckoutPage from "./pages/customer/order/CheckoutPage.jsx";
+import CheckoutIndex from "./pages/customer/checkout/CheckoutIndex.jsx";
 import OrderIndex from "./pages/customer/order/OrderIndex.jsx";
 import OrderDetailsPage from "./pages/customer/order/OrderDetailsPage.jsx";
 import CustomerDashboard from "./pages/customer/CustomerDashboard.jsx";
@@ -133,7 +133,7 @@ export default function App() {
                                     <Route path="/customer/notifications" element={<NotificationsPage />} />
 
                                     <Route path="/customer/cart" element={<CartIndex />} />
-                                    <Route path="/customer/checkout" element={<CheckoutPage />} />
+                                    <Route path="/customer/checkout" element={<CheckoutIndex />} />
                                     <Route path="/customer/orders" element={<OrderIndex />} />
                                     <Route path="/customer/orders/:id" element={<OrderDetailsPage />} />
                                 </Route>

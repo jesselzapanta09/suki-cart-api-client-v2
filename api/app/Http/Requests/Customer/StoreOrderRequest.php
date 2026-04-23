@@ -18,6 +18,7 @@ class StoreOrderRequest extends FormRequest
             'address_extra' => 'nullable|string|max:500',
             'message' => 'nullable|string|max:1000',
             'items' => 'required|array|min:1',
+            'items.*.cart_id' => 'nullable|integer|exists:carts,id',
             'items.*.product_id' => 'required|integer|exists:products,id',
             'items.*.product_variant_id' => 'nullable|integer|exists:product_variants,id',
             'items.*.quantity' => 'required|integer|min:1',

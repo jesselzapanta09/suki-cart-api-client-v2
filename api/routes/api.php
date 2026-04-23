@@ -115,6 +115,7 @@ Route::middleware('auth:api')->group(function () {
         Route::get('/orders', [CustomerOrderController::class, 'index']);
         Route::get('/orders/{id}', [CustomerOrderController::class, 'show']);
         Route::post('/orders', [CustomerOrderController::class, 'store']);
+        Route::post('/orders/calculate-shipping', [CustomerOrderController::class, 'calculateShipping']);
         Route::put('/orders/{id}', [CustomerOrderController::class, 'update']);
         Route::delete('/orders/{id}', [CustomerOrderController::class, 'destroy']);
     });

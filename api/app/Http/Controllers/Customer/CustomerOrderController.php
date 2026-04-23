@@ -9,6 +9,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Cart;
 use App\Models\ProductVariant;
+use App\Services\ShippingCalculationService;
 use Illuminate\Http\Request;
 
 class CustomerOrderController extends Controller
@@ -124,13 +125,18 @@ class CustomerOrderController extends Controller
         }
 
         try {
+            // Calculate shipping fees
+            $shippingService = new ShippingCalculationService();
+            $shippingResult = $shippingService->calculateShipping($items);
+            $shippingCost = $shippingResult['total_shipping_fee'];
+
             // Create order
             $order = Order::create([
                 'user_id' => $user->id,
                 'location_id' => $data['location_id'],
                 'price' => $totalPrice,
-                'shipping_cost' => 0, // Default, can be updated later
-                'total_price' => $totalPrice,
+                'shipping_cost' => $shippingCost,
+                'total_price' => $totalPrice + $shippingCost,
                 'status' => 'pending',
                 'address_extra' => $data['address_extra'] ?? null,
                 'message' => $data['message'] ?? null,
@@ -155,10 +161,20 @@ class CustomerOrderController extends Controller
                 }
 
                 // Remove from cart
-                Cart::where('user_id', $user->id)
-                    ->where('product_id', $item['product_id'])
-                    ->where('product_variant_id', $item['product_variant_id'])
-                    ->delete();
+                if (!empty($item['cart_id'])) {
+                    Cart::where('user_id', $user->id)
+                        ->where('id', $item['cart_id'])
+                        ->delete();
+                } else {
+                    Cart::where('user_id', $user->id)
+                        ->where('product_id', $item['product_id'])
+                        ->when(
+                            $item['product_variant_id'] ?? null,
+                            fn ($query, $variantId) => $query->where('product_variant_id', $variantId),
+                            fn ($query) => $query->whereNull('product_variant_id')
+                        )
+                        ->delete();
+                }
             }
 
             $order->load(['location', 'items' => function ($q) {
@@ -260,5 +276,34 @@ class CustomerOrderController extends Controller
         return response()->json([
             'message' => 'Order deleted successfully.',
         ]);
+    }
+
+    /**
+     * POST /api/customer/orders/calculate-shipping
+     * Calculate shipping fees for given items
+     */
+    public function calculateShipping(Request $request)
+    {
+        $validated = $request->validate([
+            'items' => 'required|array|min:1',
+            'items.*.product_id' => 'required|integer|exists:products,id',
+            'items.*.product_variant_id' => 'nullable|integer|exists:product_variants,id',
+            'items.*.quantity' => 'required|integer|min:1',
+        ]);
+
+        try {
+            $shippingService = new ShippingCalculationService();
+            $result = $shippingService->calculateShipping($validated['items']);
+
+            return response()->json([
+                'message' => 'Shipping calculated successfully.',
+                'data' => $result,
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to calculate shipping.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 }

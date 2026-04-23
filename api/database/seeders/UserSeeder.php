@@ -139,7 +139,7 @@ class UserSeeder extends Seeder
             'store_name' => $attributes['store_name'],
             'category_id' => $attributes['category_id'],
             'description' => $attributes['description'],
-            'verified_at' => $email === 'pedro@example.com' ? $verifiedAt : null,
+            'verified_at' => $verifiedAt,
         ]);
         $store->save();
 
@@ -148,17 +148,15 @@ class UserSeeder extends Seeder
 
     protected function upsertStoreApproval(Store $store, ?string $reviewedBy, Carbon $reviewedAt, string $email = ''): void
     {
-        $isPedro = $email === 'pedro@example.com';
-        
         StoreVerification::updateOrCreate(
             [
                 'store_id' => $store->id,
             ],
             [
-                'store_status' => $isPedro ? 'approved' : 'pending',
+                'store_status' => 'approved',
                 'rejection_reason' => null,
-                'reviewed_by' => $isPedro ? $reviewedBy : null,
-                'reviewed_at' => $isPedro ? $reviewedAt : null,
+                'reviewed_by' => $reviewedBy,
+                'reviewed_at' => $reviewedAt,
             ]
         );
     }

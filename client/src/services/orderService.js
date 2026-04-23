@@ -13,6 +13,10 @@ export function createOrder(orderData) {
     return api.post('/customer/orders', orderData)
 }
 
+export function calculateShipping(shippingData) {
+    return api.post('/customer/orders/calculate-shipping', shippingData)
+}
+
 export function updateOrder(orderId, data) {
     return api.put(`/customer/orders/${orderId}`, data)
 }

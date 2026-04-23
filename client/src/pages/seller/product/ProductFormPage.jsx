@@ -29,6 +29,8 @@ function mapProductToForm(product) {
     name: product.name ?? "",
     category_id: product.category_id ?? undefined,
     description: product.description ?? "",
+    weight: product.weight ?? "",
+    dimension: product.dimension ?? "",
     specs: specsArray,
     status: product.status ?? "active",
     variants: variantsArray,
@@ -40,6 +42,8 @@ const DEFAULT_FORM_VALUES = {
   name: "",
   category_id: undefined,
   description: "",
+  weight: "",
+  dimension: "",
   specs: [{ key: "", value: "" }], // Default one spec row
   status: "active",
   variants: [{ name: "", price: null, stock: 0 }], // Default one variant row
@@ -269,6 +273,35 @@ export default function ProductFormPage({ mode }) {
               >
                 <Input placeholder="e.g. Lucky Me Noodles" />
               </Form.Item>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Form.Item
+                  name="weight"
+                  label="Weight (kg)"
+                  rules={[
+                    { required: true, message: "Weight is required" },
+                    {
+                      pattern: /^[0-9]+(\.[0-9]{1,4})?$/,
+                      message: "Weight must be a valid number (e.g., 1.5, 0.005)",
+                    },
+                  ]}
+                >
+                  <Input
+                    placeholder="e.g. 1.5 or 0.005"
+                    type="number"
+                    step="0.001"
+                    min="0.001"
+                  />
+                </Form.Item>
+
+                <Form.Item
+                  name="dimension"
+                  label="Dimension"
+                  rules={[{ required: true, message: "Dimension is required" }]}
+                >
+                  <Input placeholder="e.g. 10x10x10cm" />
+                </Form.Item>
+              </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Form.Item

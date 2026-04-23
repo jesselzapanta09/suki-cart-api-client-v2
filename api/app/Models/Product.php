@@ -17,7 +17,9 @@ class Product extends Model
         'description',
         'category_id',
         'specs',
-        'status'
+        'status',
+        'weight',
+        'dimension'
     ];
 
     protected static function boot()

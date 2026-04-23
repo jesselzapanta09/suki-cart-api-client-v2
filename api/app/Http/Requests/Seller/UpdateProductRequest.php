@@ -17,6 +17,8 @@ class UpdateProductRequest extends FormRequest
             'name' => 'sometimes|required|string|max:255',
             'description' => 'sometimes|required|string',
             'category_id' => 'sometimes|required|exists:categories,id',
+            'weight' => 'sometimes|required|numeric|min:0.001|max:999999.9999',
+            'dimension' => 'sometimes|required|string|max:255',
             'specs' => 'nullable|array',
             'status' => 'sometimes|required|in:active,draft,out_of_stock',
             'images' => 'sometimes|array|min:1|max:5',

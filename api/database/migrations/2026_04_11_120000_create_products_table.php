@@ -13,6 +13,8 @@ return new class extends Migration {
             $table->string('name');
             $table->text('description');
             $table->unsignedBigInteger('category_id');
+            $table->decimal('weight', 10, 4)->comment('Product weight in kg');
+            $table->string('dimension')->comment('Product dimensions (e.g., 10x10x10cm)');
             $table->json('specs');
             $table->enum('status', ['active', 'draft', 'out_of_stock'])->default('active');
             $table->timestamps();

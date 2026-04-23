@@ -83,6 +83,8 @@ class SellerProductController extends Controller
                 'name' => $data['name'],
                 'description' => $data['description'] ?? null,
                 'category_id' => $data['category_id'] ?? null,
+                'weight' => $data['weight'] ?? null,
+                'dimension' => $data['dimension'] ?? null,
                 'specs' => !empty($data['specs']) ? $data['specs'] : null,
                 'status' => $data['status'] ?? 'active',
                 'store_id' => $data['store_id'],
@@ -123,6 +125,8 @@ class SellerProductController extends Controller
                 'name' => $data['name'] ?? $product->name,
                 'description' => $data['description'] ?? $product->description,
                 'category_id' => $data['category_id'] ?? $product->category_id,
+                'weight' => $data['weight'] ?? $product->weight,
+                'dimension' => $data['dimension'] ?? $product->dimension,
                 'specs' => isset($data['specs']) ? $data['specs'] : $product->specs,
                 'status' => $data['status'] ?? $product->status,
             ]);

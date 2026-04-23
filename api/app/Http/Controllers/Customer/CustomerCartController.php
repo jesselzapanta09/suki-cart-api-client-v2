@@ -24,9 +24,29 @@ class CustomerCartController extends Controller
             }, 'variant'])
             ->get();
 
+        $storeGroups = $cartItems
+            ->groupBy(fn ($item) => $item->product?->store?->id ?? 'unknown')
+            ->values()
+            ->map(function ($items) {
+                $store = $items->first()?->product?->store;
+
+                return [
+                    'store' => $store ? [
+                        'id' => $store->id,
+                        'uuid' => $store->uuid,
+                        'store_name' => $store->store_name,
+                        'description' => $store->description,
+                        'banner' => $store->banner,
+                    ] : null,
+                    'items' => $items->values(),
+                    'total_items' => $items->count(),
+                    'total_quantity' => $items->sum('quantity'),
+                ];
+            });
+
         return response()->json([
             'message' => 'Cart items retrieved successfully.',
-            'data' => $cartItems,
+            'data' => $storeGroups,
         ]);
     }
 

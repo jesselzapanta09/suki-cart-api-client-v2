@@ -12,6 +12,22 @@ const getCartItemKey = (item) => {
     return `product-${item?.id || item?.product_id}-${item?.variant_id || item?.product_variant_id || "none"}`;
 };
 
+const findCartItemByKey = (items, key) => {
+    return items.find(item => item.itemKey === key || item.uuid === key || item.cartId === key);
+};
+
+const normalizeCartItems = (cartData = []) => {
+    if (!Array.isArray(cartData)) {
+        return [];
+    }
+
+    if (cartData.some(group => Array.isArray(group?.items))) {
+        return cartData.flatMap(group => group.items || []);
+    }
+
+    return cartData;
+};
+
 export const CartProvider = ({ children }) => {
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -23,7 +39,7 @@ export const CartProvider = ({ children }) => {
             try {
                 setLoading(true);
                 const response = await cartService.getCart();
-                const cartItems = response.data || [];
+                const cartItems = normalizeCartItems(response.data || []);
                 
                 // Transform API response to match cart item structure
                 const transformedItems = cartItems.map(item => {
@@ -35,6 +51,7 @@ export const CartProvider = ({ children }) => {
                         id: item.product_id,
                         uuid: item.product.uuid,
                         cartId: item.id, // Store cart ID for updates/deletes
+                        itemKey: getCartItemKey({ ...item, cartId: item.id }),
                         name: item.product.name,
                         price: price,
                         qty: item.quantity,
@@ -98,6 +115,7 @@ export const CartProvider = ({ children }) => {
                     id: product.id,
                     uuid: product.uuid,
                     cartId: cartItem.id,
+                    itemKey: getCartItemKey({ ...product, cartId: cartItem.id }),
                     name: product.name,
                     price: product.price || product.variant?.price || 0,
                     qty: cartItem.quantity,
@@ -118,31 +136,33 @@ export const CartProvider = ({ children }) => {
         }
     }, []);
 
-    const removeItem = useCallback(async (uuid) => {
+    const removeItem = useCallback(async (key) => {
         try {
-            const item = items.find(i => i.uuid === uuid);
+            const item = findCartItemByKey(items, key);
             if (item?.cartId) {
                 await cartService.removeCartItem(item.cartId);
             }
-            setItems(prev => prev.filter(i => i.uuid !== uuid));
+            setItems(prev => prev.filter(i => i.itemKey !== key && i.uuid !== key && i.cartId !== key));
         } catch (error) {
             console.error("Error removing item from cart:", error);
             throw error;
         }
     }, [items]);
 
-    const updateQty = useCallback(async (uuid, qty) => {
+    const updateQty = useCallback(async (key, qty) => {
         if (qty < 1) { 
-            await removeItem(uuid);
+            await removeItem(key);
             return;
         }
 
         try {
-            const item = items.find(i => i.uuid === uuid);
+            const item = findCartItemByKey(items, key);
             if (item?.cartId) {
                 await cartService.updateCartItem(item.cartId, qty);
             }
-            setItems(prev => prev.map(i => i.uuid === uuid ? { ...i, qty } : i));
+            setItems(prev => prev.map(i => (
+                i.itemKey === key || i.uuid === key || i.cartId === key ? { ...i, qty } : i
+            )));
         } catch (error) {
             console.error("Error updating cart item quantity:", error);
             throw error;

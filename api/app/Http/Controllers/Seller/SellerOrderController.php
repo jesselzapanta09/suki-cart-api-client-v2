@@ -6,9 +6,7 @@ use App\Helpers\NotificationHelper;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\OrderItem;
-use App\Models\OrderShipment;
 use App\Models\ProductVariant;
-use App\Services\ShippingCalculationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -25,9 +23,9 @@ class SellerOrderController extends Controller
             ->with([
                 'user',
                 'location',
-                'shipments' => fn ($q) => $q->where('store_id', $store->id),
                 'items' => fn ($q) => $q
                     ->whereHas('product', fn ($p) => $p->where('store_id', $store->id))
+                    ->when($status, fn ($itemQuery) => $itemQuery->where('status', $status))
                     ->with(['product.images', 'product.store', 'variant']),
             ])
             ->orderByDesc('created_at');
@@ -42,7 +40,7 @@ class SellerOrderController extends Controller
 
         return response()->json([
             'message' => 'Seller orders retrieved successfully.',
-            'data' => collect($orders->items())->map(fn ($order) => $this->decorateSellerOrder($order, $store->id))->values(),
+            'data' => collect($orders->items())->map(fn ($order) => $this->decorateSellerOrder($order))->values(),
             'pagination' => [
                 'total' => $orders->total(),
                 'per_page' => $orders->perPage(),
@@ -62,7 +60,6 @@ class SellerOrderController extends Controller
             ->with([
                 'user',
                 'location',
-                'shipments' => fn ($q) => $q->where('store_id', $store->id),
                 'items' => fn ($q) => $q
                     ->whereHas('product', fn ($p) => $p->where('store_id', $store->id))
                     ->with(['product.images', 'product.store', 'variant']),
@@ -71,13 +68,14 @@ class SellerOrderController extends Controller
 
         return response()->json([
             'message' => 'Seller order retrieved successfully.',
-            'data' => $this->decorateSellerOrder($order, $store->id),
+            'data' => $this->decorateSellerOrder($order),
         ]);
     }
 
     public function updateStatus(Request $request, $orderId)
     {
         $validated = $request->validate([
+            'order_item_id' => 'required|integer|exists:order_items,id',
             'status' => 'required|in:pending,processing,shipped,cancelled',
             'courier_name' => 'nullable|required_if:status,shipped|string|max:255',
             'tracking_number' => 'nullable|required_if:status,shipped|string|max:255',
@@ -86,88 +84,77 @@ class SellerOrderController extends Controller
 
         $store = $this->sellerStore($request);
         $order = $this->sellerOrder($orderId, $store->id);
-        $previousStatus = $this->sellerStatus($order->items);
+        $item = $this->sellerOrderItem($order, $validated['order_item_id']);
+        $previousStatus = $item->status;
 
-        if (in_array($order->status, ['delivered', 'cancelled'])) {
+        if (in_array($item->status, ['delivered', 'cancelled'])) {
             return response()->json([
-                'message' => 'Cannot update order.',
-                'error' => "Order is already {$order->status}.",
+                'message' => 'Cannot update item.',
+                'error' => "This item is already {$item->status}.",
             ], 422);
         }
 
-        $activeItems = $order->items->where('status', '!=', 'cancelled');
-        if ($validated['status'] === 'cancelled' && $activeItems->contains(fn ($item) => in_array($item->status, ['shipped', 'delivered']))) {
+        if ($validated['status'] === 'cancelled' && in_array($item->status, ['shipped', 'delivered'])) {
             return response()->json([
-                'message' => 'Cannot cancel order.',
+                'message' => 'Cannot cancel item.',
                 'error' => 'Shipped or delivered items cannot be cancelled.',
             ], 422);
         }
 
-        DB::transaction(function () use ($order, $store, $validated) {
-            $items = $order->items->where('status', '!=', 'cancelled');
-
-            foreach ($items as $item) {
-                if ($validated['status'] === 'cancelled') {
-                    $this->restoreItemStock($item);
-                    $item->update([
-                        'status' => 'cancelled',
-                        'cancelled_by' => 'seller',
-                        'cancellation_reason' => $validated['cancellation_reason'],
-                        'cancelled_at' => now(),
-                    ]);
-                } else {
-                    $item->update(['status' => $validated['status']]);
-                }
+        DB::transaction(function () use ($order, $item, $validated) {
+            if ($validated['status'] === 'cancelled') {
+                $this->restoreItemStock($item);
+                $item->update([
+                    'status' => 'cancelled',
+                    'cancelled_by' => 'seller',
+                    'cancellation_reason' => $validated['cancellation_reason'],
+                    'cancelled_at' => now(),
+                ]);
+            } else {
+                $item->update([
+                    'status' => $validated['status'],
+                    'courier_name' => $validated['status'] === 'shipped' ? $validated['courier_name'] : $item->courier_name,
+                    'tracking_number' => $validated['status'] === 'shipped' ? $validated['tracking_number'] : $item->tracking_number,
+                ]);
             }
 
-            if (($validated['status'] ?? null) === 'shipped') {
-                OrderShipment::updateOrCreate(
-                    ['order_id' => $order->id, 'store_id' => $store->id],
-                    [
-                        'courier_name' => $validated['courier_name'],
-                        'tracking_number' => $validated['tracking_number'],
-                    ]
-                );
-            }
-
-            $this->recalculateOrderTotalsAndStatus($order, [
-                'cancelled_by' => 'seller',
-                'cancellation_reason' => $validated['cancellation_reason'] ?? null,
-            ]);
+            $this->recalculateOrderTotalsAndStatus($order);
         });
 
         if ($validated['status'] !== $previousStatus) {
-            $this->notifyCustomerStatusChanged($order, $store, $validated);
+            $this->notifyCustomerStatusChanged($order, $item->fresh(['product.store']), $store, $validated);
         }
 
-        return $this->freshSellerOrderResponse($order->id, $store->id, 'Seller order updated successfully.');
+        return $this->freshSellerOrderResponse($order->id, $store->id, 'Order item updated successfully.');
     }
 
     public function updateShipment(Request $request, $orderId)
     {
         $validated = $request->validate([
+            'order_item_id' => 'required|integer|exists:order_items,id',
             'courier_name' => 'required|string|max:255',
             'tracking_number' => 'required|string|max:255',
         ]);
 
         $store = $this->sellerStore($request);
         $order = $this->sellerOrder($orderId, $store->id);
+        $item = $this->sellerOrderItem($order, $validated['order_item_id']);
 
-        OrderShipment::updateOrCreate(
-            ['order_id' => $order->id, 'store_id' => $store->id],
-            $validated
-        );
+        $item->update([
+            'courier_name' => $validated['courier_name'],
+            'tracking_number' => $validated['tracking_number'],
+        ]);
 
         NotificationHelper::send(
             userId: $order->user_id,
             type: 'order',
             title: 'Courier Details Updated',
-            message: "{$store->store_name} updated the courier details for Order #{$order->id}.",
+            message: "{$store->store_name} updated courier details for {$item->product?->name}.",
             data: [
                 'order_id' => $order->id,
-                'store_id' => $store->id,
-                'status' => $this->sellerStatus($order->items),
-                'url' => "/customer/orders/{$order->id}",
+                'order_item_id' => $item->id,
+                'status' => $item->status,
+                'url' => "/customer/orders/{$order->id}?item={$item->id}",
             ],
         );
 
@@ -182,23 +169,12 @@ class SellerOrderController extends Controller
 
         $store = $this->sellerStore($request);
         $order = $this->sellerOrder($orderId, $store->id);
-        $item = $order->items->firstWhere('id', (int) $itemId);
+        $item = $this->sellerOrderItem($order, (int) $itemId);
 
-        if (!$item) {
-            return response()->json(['message' => 'Order item not found.'], 404);
-        }
-
-        if ($item->status === 'cancelled') {
+        if (in_array($item->status, ['cancelled', 'shipped', 'delivered'])) {
             return response()->json([
                 'message' => 'Cannot cancel item.',
-                'error' => 'This item is already cancelled.',
-            ], 422);
-        }
-
-        if (in_array($item->status, ['shipped', 'delivered'])) {
-            return response()->json([
-                'message' => 'Cannot cancel item.',
-                'error' => 'Shipped or delivered items cannot be cancelled.',
+                'error' => "This item cannot be cancelled once it is {$item->status}.",
             ], 422);
         }
 
@@ -211,23 +187,19 @@ class SellerOrderController extends Controller
                 'cancelled_at' => now(),
             ]);
 
-            $this->recalculateOrderTotalsAndStatus($order, [
-                'cancelled_by' => 'seller',
-                'cancellation_reason' => $validated['cancellation_reason'],
-            ]);
+            $this->recalculateOrderTotalsAndStatus($order);
         });
 
         NotificationHelper::send(
             userId: $order->user_id,
             type: 'order',
-            title: 'Order Item Cancelled',
-            message: "{$store->store_name} cancelled {$item->product?->name} from Order #{$order->id}.",
+            title: 'Product Order Cancelled',
+            message: "{$store->store_name} cancelled {$item->product?->name}.",
             data: [
                 'order_id' => $order->id,
                 'order_item_id' => $item->id,
-                'store_id' => $store->id,
                 'status' => 'cancelled',
-                'url' => "/customer/orders/{$order->id}",
+                'url' => "/customer/orders/{$order->id}?item={$item->id}",
             ],
         );
 
@@ -239,9 +211,7 @@ class SellerOrderController extends Controller
         $store = $request->user()->store;
 
         if (!$store) {
-            abort(response()->json([
-                'message' => 'Store not found.',
-            ], 404));
+            abort(response()->json(['message' => 'Store not found.'], 404));
         }
 
         return $store;
@@ -260,6 +230,17 @@ class SellerOrderController extends Controller
             ->firstOrFail();
     }
 
+    private function sellerOrderItem(Order $order, int $itemId): OrderItem
+    {
+        $item = $order->items->firstWhere('id', $itemId);
+
+        if (!$item) {
+            abort(response()->json(['message' => 'Order item not found.'], 404));
+        }
+
+        return $item;
+    }
+
     private function freshSellerOrderResponse(int $orderId, int $storeId, string $message)
     {
         $order = Order::query()
@@ -267,7 +248,6 @@ class SellerOrderController extends Controller
             ->with([
                 'user',
                 'location',
-                'shipments' => fn ($q) => $q->where('store_id', $storeId),
                 'items' => fn ($q) => $q
                     ->whereHas('product', fn ($p) => $p->where('store_id', $storeId))
                     ->with(['product.images', 'product.store', 'variant']),
@@ -276,68 +256,46 @@ class SellerOrderController extends Controller
 
         return response()->json([
             'message' => $message,
-            'data' => $this->decorateSellerOrder($order, $storeId),
+            'data' => $this->decorateSellerOrder($order),
         ]);
     }
 
     private function restoreItemStock(OrderItem $item): void
     {
-        if ($item->product_variant_id) {
-            ProductVariant::find($item->product_variant_id)?->increment('stock', $item->quantity);
-        }
+        ProductVariant::find($item->product_variant_id)?->increment('stock', $item->quantity);
     }
 
-    private function recalculateOrderTotalsAndStatus(Order $order, array $cancellationData = []): void
+    private function recalculateOrderTotalsAndStatus(Order $order): void
     {
-        $order->load(['items.product']);
+        $order->load('items');
+        $activeItems = $order->items->where('status', '!=', 'cancelled')->values();
+        $statuses = $activeItems->pluck('status');
 
-        $activeItems = $order->items
-            ->where('status', '!=', 'cancelled')
-            ->values();
-
-        $subtotal = $activeItems->sum(fn ($item) => (float) $item->price * $item->quantity);
-        $shippingCost = 0;
-
-        if ($activeItems->isNotEmpty()) {
-            $shippingItems = $activeItems->map(fn ($item) => [
-                'product_id' => $item->product_id,
-                'product_variant_id' => $item->product_variant_id,
-                'quantity' => $item->quantity,
-            ])->all();
-
-            $shippingCost = (new ShippingCalculationService())->calculateShipping($shippingItems)['total_shipping_fee'];
-        }
-
-        $activeStatuses = $activeItems->pluck('status')->unique()->values();
         $status = match (true) {
             $activeItems->isEmpty() => 'cancelled',
-            $activeStatuses->contains('pending') => 'pending',
-            $activeStatuses->contains('processing') => 'processing',
-            $activeStatuses->contains('shipped') => 'shipped',
-            default => $order->status,
+            $statuses->contains('pending') => 'pending',
+            $statuses->contains('processing') => 'processing',
+            $statuses->contains('shipped') => 'shipped',
+            default => 'delivered',
         };
+
+        $subtotal = $activeItems->sum(fn ($item) => (float) $item->price * $item->quantity);
+        $shippingCost = $activeItems->sum(fn ($item) => (float) $item->shipping_cost);
 
         $order->update([
             'price' => $subtotal,
             'shipping_cost' => $shippingCost,
             'total_price' => $subtotal + $shippingCost,
             'status' => $status,
-            'cancelled_by' => $activeItems->isEmpty()
-                ? ($cancellationData['cancelled_by'] ?? $order->cancelled_by)
-                : $order->cancelled_by,
-            'cancellation_reason' => $activeItems->isEmpty()
-                ? ($cancellationData['cancellation_reason'] ?? $order->cancellation_reason)
-                : $order->cancellation_reason,
         ]);
     }
 
-    private function decorateSellerOrder(Order $order, int $storeId): array
+    private function decorateSellerOrder(Order $order): array
     {
         $items = $order->items ?? collect();
-        $activeItems = $items->where('status', '!=', 'cancelled');
-        $shipment = $order->shipments?->firstWhere('store_id', $storeId);
         $customer = $order->user;
         $store = $items->first()?->product?->store;
+        $activeItems = $items->where('status', '!=', 'cancelled');
 
         $orderArray = $order->toArray();
         $orderArray['customer'] = $customer ? [
@@ -348,18 +306,26 @@ class SellerOrderController extends Controller
             'email' => $customer->email,
             'contact_number' => $customer->contact_number,
         ] : null;
+
+        $decoratedItems = $items->values()->map(function ($item) {
+            $payload = $item->toArray();
+            $payload['line_total'] = (float) $item->price * $item->quantity;
+            $payload['item_total'] = $item->status === 'cancelled' ? 0 : $payload['line_total'] + (float) $item->shipping_cost;
+            return $payload;
+        })->toArray();
+
         $orderArray['store_order'] = [
             'store' => $store ? [
                 'id' => $store->id,
                 'uuid' => $store->uuid,
                 'store_name' => $store->store_name,
             ] : null,
-            'items' => $items->values()->toArray(),
+            'items' => $decoratedItems,
             'active_items_count' => $activeItems->count(),
             'cancelled_items_count' => $items->where('status', 'cancelled')->count(),
             'subtotal' => $activeItems->sum(fn ($item) => (float) $item->price * $item->quantity),
+            'shipping_cost' => $activeItems->sum(fn ($item) => (float) $item->shipping_cost),
             'status' => $this->sellerStatus($items),
-            'shipment' => $shipment?->toArray(),
         ];
 
         return $orderArray;
@@ -390,12 +356,11 @@ class SellerOrderController extends Controller
         return $active->first()?->status ?? 'pending';
     }
 
-    private function notifyCustomerStatusChanged(Order $order, $store, array $validated): void
+    private function notifyCustomerStatusChanged(Order $order, OrderItem $item, $store, array $validated): void
     {
         $status = $validated['status'];
-        $label = $this->statusLabel($status);
+        $message = "{$store->store_name} marked {$item->product?->name} as {$this->statusLabel($status)}.";
 
-        $message = "{$store->store_name} marked Order #{$order->id} as {$label}.";
         if ($status === 'shipped') {
             $message .= " Courier: {$validated['courier_name']}. Tracking: {$validated['tracking_number']}.";
         }
@@ -403,13 +368,13 @@ class SellerOrderController extends Controller
         NotificationHelper::send(
             userId: $order->user_id,
             type: 'order',
-            title: $status === 'cancelled' ? 'Store Order Cancelled' : 'Order Status Updated',
+            title: $status === 'cancelled' ? 'Product Order Cancelled' : 'Product Order Updated',
             message: $message,
             data: [
                 'order_id' => $order->id,
-                'store_id' => $store->id,
+                'order_item_id' => $item->id,
                 'status' => $status,
-                'url' => "/customer/orders/{$order->id}",
+                'url' => "/customer/orders/{$order->id}?item={$item->id}",
             ],
         );
     }

@@ -18,7 +18,10 @@ return new class extends Migration
             $table->foreignId('product_variant_id')->nullable()->constrained('product_variants')->cascadeOnDelete();
             $table->integer('quantity');
             $table->decimal('price', 12, 2); // Product price at time of order
+            $table->decimal('shipping_cost', 12, 2)->default(0);
             $table->enum('status', ['pending', 'processing', 'shipped', 'delivered', 'cancelled'])->default('pending');
+            $table->string('courier_name')->nullable();
+            $table->string('tracking_number')->nullable();
             $table->enum('cancelled_by', ['admin', 'seller', 'customer'])->nullable();
             $table->text('cancellation_reason')->nullable();
             $table->timestamp('cancelled_at')->nullable();

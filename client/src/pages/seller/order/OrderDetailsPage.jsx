@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react"
 import { App, Button, Empty, Form, Input, Modal, Select, Spin, Tag } from "antd"
 import { ArrowLeft, CheckCircle, Clock, Package, Truck, User, X, MapPin, ShoppingBag } from "lucide-react"
-import { useNavigate, useParams } from "react-router-dom"
+import { useNavigate, useParams, useSearchParams } from "react-router-dom"
 import {
     cancelSellerOrderItem,
     getSellerOrder,
@@ -29,6 +29,7 @@ const canCancelItem = (item) => !["cancelled", "shipped", "delivered"].includes(
 
 export default function OrderDetailsPage() {
     const { id } = useParams()
+    const [searchParams] = useSearchParams()
     const navigate = useNavigate()
     const { message } = App.useApp()
     const [form] = Form.useForm()
@@ -41,6 +42,11 @@ export default function OrderDetailsPage() {
     const [cancelLoading, setCancelLoading] = useState(false)
 
     const storeOrder = useMemo(() => order?.store_order || {}, [order])
+    const selectedItemId = Number(searchParams.get("item"))
+    const selectedItem = useMemo(() => {
+        const items = storeOrder.items || []
+        return items.find(item => item.id === selectedItemId) || items[0] || null
+    }, [selectedItemId, storeOrder.items])
     const selectedStatus = Form.useWatch("status", form)
 
     const fetchOrder = useCallback(async () => {
@@ -49,10 +55,11 @@ export default function OrderDetailsPage() {
             const data = await getSellerOrder(id)
             const nextOrder = data?.data
             setOrder(nextOrder)
+            const nextItem = nextOrder?.store_order?.items?.find(item => item.id === Number(searchParams.get("item"))) || nextOrder?.store_order?.items?.[0]
             form.setFieldsValue({
-                status: nextOrder?.store_order?.status || "pending",
-                courier_name: nextOrder?.store_order?.shipment?.courier_name || "",
-                tracking_number: nextOrder?.store_order?.shipment?.tracking_number || "",
+                status: nextItem?.status || "pending",
+                courier_name: nextItem?.courier_name || "",
+                tracking_number: nextItem?.tracking_number || "",
                 cancellation_reason: "",
             })
         } catch (err) {
@@ -60,7 +67,7 @@ export default function OrderDetailsPage() {
         } finally {
             setLoading(false)
         }
-    }, [form, id, message])
+    }, [form, id, message, searchParams])
 
     useEffect(() => {
         fetchOrder()
@@ -70,7 +77,10 @@ export default function OrderDetailsPage() {
         try {
             const values = await form.validateFields()
             setSavingStatus(true)
-            const data = await updateSellerOrderStatus(order.id, values)
+            const data = await updateSellerOrderStatus(order.id, {
+                ...values,
+                order_item_id: selectedItem?.id,
+            })
             setOrder(data?.data)
             message.success("Order status updated")
         } catch (err) {
@@ -127,7 +137,7 @@ export default function OrderDetailsPage() {
         )
     }
 
-    const statusInfo = statusConfig[storeOrder.status] || statusConfig.pending
+    const statusInfo = statusConfig[selectedItem?.status || storeOrder.status] || statusConfig.pending
     const StatusIcon = statusInfo.icon
 
     return (
@@ -191,7 +201,7 @@ export default function OrderDetailsPage() {
                             </div>
 
                             <div className="divide-y divide-gray-100">
-                                {(storeOrder.items || []).map(item => (
+                                {([selectedItem].filter(Boolean)).map(item => (
                                     <div key={item.id} className="p-4 md:p-5 grid grid-cols-1 md:grid-cols-[80px_1fr_auto] gap-4">
                                         <div className="w-20 h-20 rounded-xl bg-gray-100 flex items-center justify-center overflow-hidden">
                                             {item.product?.images?.length ? (
@@ -244,7 +254,7 @@ export default function OrderDetailsPage() {
                                     </div>
                                     <div>
                                         <h3 className="font-bold text-gray-900">Seller Actions</h3>
-                                        <p className="text-xs text-gray-500">Update this store's order status.</p>
+                                        <p className="text-xs text-gray-500">Update this product order only.</p>
                                     </div>
                                 </div>
 
@@ -270,7 +280,7 @@ export default function OrderDetailsPage() {
                                         </Form.Item>
                                     )}
 
-                                    <Button type="primary" block loading={savingStatus} onClick={handleStatusSave}>
+                                    <Button type="primary" block loading={savingStatus} disabled={!selectedItem} onClick={handleStatusSave}>
                                         Save Status
                                     </Button>
                                 </Form>

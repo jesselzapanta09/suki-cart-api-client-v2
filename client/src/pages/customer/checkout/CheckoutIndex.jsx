@@ -351,30 +351,30 @@ export default function CheckoutIndex() {
                                     </div>
                                     <div>
                                         <h2 className="text-lg font-bold text-gray-900">Shipping Fees</h2>
-                                        <p className="text-sm text-gray-400 mt-1">Breakdown by seller</p>
+                                        <p className="text-sm text-gray-400 mt-1">Breakdown per product order</p>
                                     </div>
                                 </div>
                                 <div className="space-y-3">
-                                    {shippingData.breakdown.map((store) => (
-                                        <div key={store.store_id} className="bg-orange-50 rounded-lg p-4 border border-orange-100">
+                                    {shippingData.breakdown.map((item) => (
+                                        <div key={`${item.product_id}-${item.product_variant_id || "none"}-${item.index}`} className="bg-orange-50 rounded-lg p-4 border border-orange-100">
                                             <div className="flex justify-between items-start mb-3">
                                                 <div>
-                                                    <p className="font-semibold text-gray-900">{store.store_name}</p>
-                                                    <p className="text-xs text-gray-500 mt-1">Total Weight: {store.total_weight}kg</p>
+                                                    <p className="font-semibold text-gray-900">{item.product_name}</p>
+                                                    <p className="text-xs text-gray-500 mt-1">{item.store_name} · Qty {item.quantity} · Total Weight: {item.total_weight}kg</p>
                                                 </div>
                                             </div>
                                             <div className="space-y-1 text-sm">
                                                 <div className="flex justify-between text-gray-700">
                                                     <span>Base Fee:</span>
-                                                    <span>₱{store.base_fee.toFixed(2)}</span>
+                                                    <span>₱{item.base_fee.toFixed(2)}</span>
                                                 </div>
                                                 <div className="flex justify-between text-gray-700">
-                                                    <span>Weight Fee ({store.total_weight}kg × ₱50):</span>
-                                                    <span>₱{store.weight_fee.toFixed(2)}</span>
+                                                    <span>Weight Fee ({item.total_weight}kg × ₱50):</span>
+                                                    <span>₱{item.weight_fee.toFixed(2)}</span>
                                                 </div>
                                                 <div className="flex justify-between font-semibold text-orange-600 border-t border-orange-200 pt-2 mt-2">
                                                     <span>Subtotal:</span>
-                                                    <span>₱{store.shipping_fee.toFixed(2)}</span>
+                                                    <span>₱{item.shipping_fee.toFixed(2)}</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -446,4 +446,5 @@ export default function CheckoutIndex() {
         
     );
 }
+
 

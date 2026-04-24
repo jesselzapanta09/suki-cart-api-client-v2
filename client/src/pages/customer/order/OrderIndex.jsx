@@ -48,25 +48,23 @@ export default function OrderIndex() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
-    const filteredOrders = useMemo(() => {
+    const itemRows = useMemo(() => {
+        const rows = orders.flatMap(order =>
+            (order.order_items || order.item_groups?.flatMap(group => group.items || []) || []).map(item => ({
+                ...order,
+                order_item: item,
+            }))
+        )
         const keyword = search.trim().toLowerCase()
 
-        if (!keyword) {
-            return orders
-        }
+        if (!keyword) return rows
 
-        return orders.filter(order => {
-            const stores = (order.item_groups || [])
-                .map(group => getStoreName(group.store))
-                .join(" ")
-                .toLowerCase()
+        return rows.filter(order => {
+            const item = order.order_item
+            const store = getStoreName(item?.store || item?.product?.store).toLowerCase()
+            const product = (item?.product?.name || "").toLowerCase()
 
-            const products = (order.items || [])
-                .map(item => item.product?.name || "")
-                .join(" ")
-                .toLowerCase()
-
-            return `#${order.id}`.includes(keyword) || order.status?.includes(keyword) || stores.includes(keyword) || products.includes(keyword)
+            return `#${order.id}`.includes(keyword) || item?.status?.includes(keyword) || store.includes(keyword) || product.includes(keyword)
         })
     }, [orders, search])
 
@@ -102,12 +100,12 @@ export default function OrderIndex() {
                 <div className="mb-6 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl p-4 md:p-6 border border-blue-100">
                     <div className="flex items-start justify-between gap-4 flex-wrap">
                         <div>
-                            <h1 className="text-2xl md:text-3xl font-bold text-blue-900 mb-1">My Orders</h1>
-                            <p className="text-gray-600 text-sm">Track orders grouped by seller.</p>
+                            <h1 className="text-2xl md:text-3xl font-bold text-blue-900 mb-1">My Product Orders</h1>
+                            <p className="text-gray-600 text-sm">Each product has its own status and actions.</p>
                         </div>
                         <div className="text-right">
-                            <div className="text-3xl font-bold text-blue-900">{total}</div>
-                            <p className="text-gray-600 text-xs">Total Orders</p>
+                            <div className="text-3xl font-bold text-blue-900">{itemRows.length}</div>
+                            <p className="text-gray-600 text-xs">Visible Items</p>
                         </div>
                     </div>
                 </div>
@@ -126,24 +124,27 @@ export default function OrderIndex() {
                     <div className="min-h-64 flex items-center justify-center">
                         <Spin size="large" />
                     </div>
-                ) : filteredOrders.length === 0 ? (
+                ) : itemRows.length === 0 ? (
                     <div className="bg-white rounded-2xl border border-gray-100 p-10">
-                        <Empty description="No orders found" />
+                        <Empty description="No product orders found" />
                     </div>
                 ) : (
                     <div className="space-y-5">
-                        {filteredOrders.map(order => {
-                            const statusInfo = statusConfig[order.status] || statusConfig.pending
+                        {itemRows.map(order => {
+                            const item = order.order_item
+                            const statusInfo = statusConfig[item?.status] || statusConfig.pending
                             const StatusIcon = statusInfo.icon
+                            const store = item?.store || item?.product?.store
+                            const itemTotal = item?.item_total ?? ((Number(item?.price || 0) * Number(item?.quantity || 0)) + Number(item?.shipping_cost || 0))
 
                             return (
-                                <div key={order.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                                <div key={`${order.id}-${item?.id}`} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                                     <div className="p-4 md:p-5 border-b border-gray-100 bg-gray-50/70 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                                        <div className="flex items-start gap-3">
+                                        <div className="flex items-start gap-3 min-w-0">
                                             <div className="w-11 h-11 rounded-xl bg-blue-100 flex items-center justify-center shrink-0">
                                                 <ShoppingBag size={20} className="text-blue-700" />
                                             </div>
-                                            <div>
+                                            <div className="min-w-0">
                                                 <div className="flex flex-wrap items-center gap-2">
                                                     <h2 className="font-bold text-gray-950">Order #{order.id}</h2>
                                                     <Tag color={statusInfo.color} className="flex items-center gap-1 w-fit">
@@ -151,21 +152,19 @@ export default function OrderIndex() {
                                                         {statusInfo.label}
                                                     </Tag>
                                                 </div>
-                                                <p className="text-xs text-gray-500 mt-1">
-                                                    {new Date(order.created_at).toLocaleString()} · {order.active_items_count ?? order.items?.length ?? 0} active item(s)
-                                                </p>
+                                                <p className="text-xs text-gray-500 mt-1">{new Date(order.created_at).toLocaleString()} · Qty {item?.quantity || 0}</p>
                                             </div>
                                         </div>
 
                                         <div className="flex items-center gap-3">
                                             <div className="text-right">
-                                                <p className="text-xs text-gray-500">Total Amount</p>
-                                                <p className="text-xl font-bold text-green-700">{formatMoney(order.total_price)}</p>
+                                                <p className="text-xs text-gray-500">Item total</p>
+                                                <p className="text-xl font-bold text-green-700">{formatMoney(itemTotal)}</p>
                                             </div>
                                             <Button
                                                 type="primary"
                                                 icon={<Eye size={16} />}
-                                                onClick={() => navigate(`/customer/orders/${order.id}`)}
+                                                onClick={() => navigate(`/customer/orders/${order.id}?item=${item?.id}`)}
                                                 className="rounded-lg"
                                             >
                                                 Details
@@ -173,64 +172,33 @@ export default function OrderIndex() {
                                         </div>
                                     </div>
 
-                                    <div className="divide-y divide-gray-100">
-                                        {(order.item_groups || []).map((group, index) => (
-                                            <div key={group.store?.id || index} className="p-4 md:p-5">
-                                                <div className="flex items-center justify-between gap-3 mb-3">
-                                                    <div className="flex items-center gap-2 min-w-0">
-                                                        <div className="w-9 h-9 rounded-lg bg-green-100 flex items-center justify-center shrink-0">
-                                                            <Store size={18} className="text-green-700" />
-                                                        </div>
-                                                        <div className="min-w-0">
-                                                            <p className="font-semibold text-gray-900 truncate">{getStoreName(group.store)}</p>
-                                                            <div className="flex flex-wrap items-center gap-2 mt-1">
-                                                                <p className="text-xs text-gray-500">{group.items?.length || 0} item(s)</p>
-                                                                <Tag color={statusConfig[group.status]?.color || "default"} className="m-0">
-                                                                    {statusConfig[group.status]?.label || group.status}
-                                                                </Tag>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <p className="font-bold text-green-700">{formatMoney(group.subtotal)}</p>
-                                                </div>
-
-                                                {group.shipment?.courier_name && (
-                                                    <div className="mb-3 rounded-xl bg-cyan-50 border border-cyan-100 px-3 py-2 text-xs text-cyan-800">
-                                                        <span className="font-semibold">Courier:</span> {group.shipment.courier_name}
-                                                        {group.shipment.tracking_number && (
-                                                            <span> · <span className="font-semibold">Tracking:</span> {group.shipment.tracking_number}</span>
-                                                        )}
-                                                    </div>
-                                                )}
-
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                                    {(group.items || []).slice(0, 4).map(item => (
-                                                        <div key={item.id} className="flex items-center gap-3 rounded-xl bg-gray-50 border border-gray-100 p-3">
-                                                            <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden shrink-0">
-                                                                {item.product?.images?.length ? (
-                                                                    <img
-                                                                        src={item.product.images[0].full_url || item.product.images[0].image_path}
-                                                                        alt={item.product.name}
-                                                                        className="w-full h-full object-cover"
-                                                                    />
-                                                                ) : (
-                                                                    <Package size={20} className="text-gray-400" />
-                                                                )}
-                                                            </div>
-                                                            <div className="min-w-0 flex-1">
-                                                                <p className="text-sm font-semibold text-gray-900 truncate">{item.product?.name}</p>
-                                                                <p className="text-xs text-gray-500">
-                                                                    Qty {item.quantity} · {formatMoney(item.price)}
-                                                                </p>
-                                                            </div>
-                                                            <Tag color={statusConfig[item.status]?.color || "default"} className="m-0 shrink-0">
-                                                                {statusConfig[item.status]?.label || item.status}
-                                                            </Tag>
-                                                        </div>
-                                                    ))}
-                                                </div>
+                                    <div className="p-4 md:p-5">
+                                        <div className="flex items-center gap-3 mb-3">
+                                            <div className="w-9 h-9 rounded-lg bg-green-100 flex items-center justify-center shrink-0">
+                                                <Store size={18} className="text-green-700" />
                                             </div>
-                                        ))}
+                                            <p className="font-semibold text-gray-900 truncate">{getStoreName(store)}</p>
+                                        </div>
+
+                                        <div className="flex items-center gap-3 rounded-xl bg-gray-50 border border-gray-100 p-3">
+                                            <div className="w-14 h-14 rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden shrink-0">
+                                                {item?.product?.images?.length ? (
+                                                    <img
+                                                        src={item.product.images[0].full_url || item.product.images[0].image_path}
+                                                        alt={item.product.name}
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                ) : (
+                                                    <Package size={20} className="text-gray-400" />
+                                                )}
+                                            </div>
+                                            <div className="min-w-0 flex-1">
+                                                <p className="text-sm font-semibold text-gray-900 truncate">{item?.product?.name}</p>
+                                                <p className="text-xs text-gray-500">
+                                                    Price {formatMoney(item?.price)} · Shipping {formatMoney(item?.shipping_cost)}
+                                                </p>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             )

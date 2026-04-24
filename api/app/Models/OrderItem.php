@@ -13,7 +13,10 @@ class OrderItem extends Model
         'product_variant_id',
         'quantity',
         'price',
+        'shipping_cost',
         'status',
+        'courier_name',
+        'tracking_number',
         'cancelled_by',
         'cancellation_reason',
         'cancelled_at',
@@ -22,6 +25,7 @@ class OrderItem extends Model
     protected $casts = [
         'quantity' => 'integer',
         'price' => 'decimal:2',
+        'shipping_cost' => 'decimal:2',
         'cancelled_at' => 'datetime',
     ];
 

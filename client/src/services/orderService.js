@@ -33,10 +33,8 @@ export function cancelOrder(orderId, reason) {
     })
 }
 
-export function markOrderDelivered(orderId) {
-    return api.put(`/customer/orders/${orderId}`, {
-        status: 'delivered',
-    })
+export function markOrderItemDelivered(orderId, itemId) {
+    return api.put(`/customer/orders/${orderId}/items/${itemId}/delivered`)
 }
 
 export function cancelOrderItem(orderId, itemId, reason) {

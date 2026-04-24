@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react"
 import { Button, Empty, App, Modal, Input, Spin, Steps, Tag } from "antd"
 import { ArrowLeft, Clock, CheckCircle, Truck, X, AlertCircle, Package, Store, ShoppingBag, MapPin } from "lucide-react"
-import { useNavigate, useParams } from "react-router-dom"
+import { useNavigate, useParams, useSearchParams } from "react-router-dom"
 import * as orderService from "../../../services/orderService"
 
 const statusConfig = {
@@ -16,11 +16,11 @@ const statusSteps = ["pending", "processing", "shipped", "delivered"]
 
 const formatMoney = (value) => `₱${Number(value || 0).toFixed(2)}`
 const getStoreName = (store) => store?.store_name || store?.name || "Unknown Seller"
-const canCancelOrder = (order) => ["pending", "processing"].includes(order?.status)
-const canCancelItem = (order, item) => canCancelOrder(order) && item?.status !== "cancelled"
+const canCancelItem = (item) => ["pending", "processing"].includes(item?.status)
 
 export default function OrderDetailsPage() {
     const { id } = useParams()
+    const [searchParams] = useSearchParams()
     const navigate = useNavigate()
     const { message } = App.useApp()
 
@@ -47,7 +47,18 @@ export default function OrderDetailsPage() {
         fetchOrderDetails()
     }, [fetchOrderDetails])
 
-    const itemGroups = useMemo(() => order?.item_groups || [], [order])
+    const selectedItemId = Number(searchParams.get("item"))
+    const rawItemGroups = useMemo(() => order?.item_groups || [], [order])
+    const selectedItem = useMemo(() => {
+        const items = order?.order_items || rawItemGroups.flatMap(group => group.items || [])
+        return items.find(item => item.id === selectedItemId) || items[0] || null
+    }, [rawItemGroups, order?.order_items, selectedItemId])
+    const itemGroups = useMemo(() => {
+        if (!selectedItem) return []
+        return rawItemGroups
+            .map(group => ({ ...group, items: (group.items || []).filter(item => item.id === selectedItem.id) }))
+            .filter(group => group.items.length > 0)
+    }, [rawItemGroups, selectedItem])
 
     const closeCancelModal = () => {
         setCancelTarget(null)
@@ -62,15 +73,9 @@ export default function OrderDetailsPage() {
 
         setCancellationLoading(true)
         try {
-            if (cancelTarget?.type === "item") {
-                const data = await orderService.cancelOrderItem(order.id, cancelTarget.item.id, cancellationReason)
-                setOrder(data?.data)
-                message.success("Item cancelled and totals recalculated")
-            } else {
-                const data = await orderService.cancelOrder(order.id, cancellationReason)
-                setOrder(data?.data)
-                message.success("Order cancelled successfully")
-            }
+            const data = await orderService.cancelOrderItem(order.id, cancelTarget.item.id, cancellationReason)
+            setOrder(data?.data)
+            message.success("Item cancelled and totals recalculated")
 
             closeCancelModal()
         } catch (err) {
@@ -83,11 +88,11 @@ export default function OrderDetailsPage() {
     const handleMarkDelivered = async () => {
         setDeliveryLoading(true)
         try {
-            const data = await orderService.markOrderDelivered(order.id)
+            const data = await orderService.markOrderItemDelivered(order.id, selectedItem.id)
             setOrder(data?.data)
-            message.success("Order marked as delivered")
+            message.success("Product marked as delivered")
         } catch (err) {
-            message.error(err.message || "Failed to mark order delivered")
+            message.error(err.message || "Failed to mark product delivered")
         } finally {
             setDeliveryLoading(false)
         }
@@ -114,9 +119,9 @@ export default function OrderDetailsPage() {
         )
     }
 
-    const statusInfo = statusConfig[order.status] || statusConfig.pending
+    const statusInfo = statusConfig[selectedItem?.status || order.status] || statusConfig.pending
     const StatusIcon = statusInfo.icon || AlertCircle
-    const currentStep = order.status === "cancelled" ? 0 : Math.max(statusSteps.indexOf(order.status), 0)
+    const currentStep = selectedItem?.status === "cancelled" ? 0 : Math.max(statusSteps.indexOf(selectedItem?.status || order.status), 0)
 
     return (
         <div className="min-h-screen bg-gray-50 py-6 md:py-8">
@@ -141,10 +146,10 @@ export default function OrderDetailsPage() {
                 <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mb-6">
                     <div className="flex items-start justify-between gap-4 mb-5">
                         <div>
-                            <h2 className="text-lg font-bold text-gray-900">Order Timeline</h2>
+                            <h2 className="text-lg font-bold text-gray-900">Product Timeline</h2>
                             <p className="text-sm text-gray-500">Current status: {statusInfo.label}</p>
                         </div>
-                        {order.status === "shipped" && (
+                        {selectedItem?.status === "shipped" && (
                             <Button
                                 type="primary"
                                 icon={<CheckCircle size={16} />}
@@ -155,9 +160,9 @@ export default function OrderDetailsPage() {
                             </Button>
                         )}
                     </div>
-                    {order.status === "cancelled" ? (
+                    {selectedItem?.status === "cancelled" ? (
                         <div className="rounded-xl bg-red-50 border border-red-100 p-3 text-sm text-red-700">
-                            This order was cancelled.
+                            This product order was cancelled.
                         </div>
                     ) : (
                         <Steps
@@ -214,11 +219,11 @@ export default function OrderDetailsPage() {
                                         </div>
                                     </div>
 
-                                    {group.shipment?.courier_name && (
+                                    {(group.shipment?.courier_name || group.items?.[0]?.courier_name) && (
                                         <div className="mx-4 md:mx-5 mt-4 rounded-xl bg-cyan-50 border border-cyan-100 p-3 text-sm text-cyan-800">
-                                            <p><span className="font-semibold">Courier:</span> {group.shipment.courier_name}</p>
-                                            {group.shipment.tracking_number && (
-                                                <p><span className="font-semibold">Tracking Number:</span> {group.shipment.tracking_number}</p>
+                                            <p><span className="font-semibold">Courier:</span> {group.shipment?.courier_name || group.items?.[0]?.courier_name}</p>
+                                            {(group.shipment?.tracking_number || group.items?.[0]?.tracking_number) && (
+                                                <p><span className="font-semibold">Tracking Number:</span> {group.shipment?.tracking_number || group.items?.[0]?.tracking_number}</p>
                                             )}
                                         </div>
                                     )}
@@ -258,7 +263,7 @@ export default function OrderDetailsPage() {
                                                     <p className={`font-bold ${item.status === "cancelled" ? "text-gray-400 line-through" : "text-gray-900"}`}>
                                                         {formatMoney(Number(item.price || 0) * item.quantity)}
                                                     </p>
-                                                    {canCancelItem(order, item) && (
+                                                    {canCancelItem(item) && (
                                                         <Button
                                                             danger
                                                             size="small"
@@ -291,7 +296,7 @@ export default function OrderDetailsPage() {
                                     <ShoppingBag size={20} className="text-green-700" />
                                 </div>
                                 <div>
-                                    <h3 className="font-bold text-gray-900">Order Summary</h3>
+                                <h3 className="font-bold text-gray-900">Receipt Summary</h3>
                                     <p className="text-xs text-gray-500">
                                         {order.active_items_count || 0} active · {order.cancelled_items_count || 0} cancelled
                                     </p>
@@ -313,20 +318,7 @@ export default function OrderDetailsPage() {
                                 </div>
                             </div>
 
-                            {order.cancelled_by && (
-                                <div className="rounded-xl bg-red-50 border border-red-100 p-3 mb-4 text-sm">
-                                    <p className="font-semibold text-red-800">Cancellation Details</p>
-                                    <p className="text-red-700 capitalize">By: {order.cancelled_by}</p>
-                                    {order.cancellation_reason && <p className="text-red-700">Reason: {order.cancellation_reason}</p>}
-                                </div>
-                            )}
-
                             <div className="space-y-2">
-                                {canCancelOrder(order) && (
-                                    <Button danger block onClick={() => setCancelTarget({ type: "order" })}>
-                                        Cancel Entire Order
-                                    </Button>
-                                )}
                                 <Button block onClick={() => navigate("/customer/orders")}>
                                     Back to Orders
                                 </Button>
@@ -337,18 +329,16 @@ export default function OrderDetailsPage() {
             </div>
 
             <Modal
-                title={cancelTarget?.type === "item" ? "Cancel Item" : "Cancel Entire Order"}
+                title="Cancel Product Order"
                 open={Boolean(cancelTarget)}
                 onCancel={closeCancelModal}
                 onOk={handleCancel}
-                okText={cancelTarget?.type === "item" ? "Cancel Item" : "Cancel Order"}
+                okText="Cancel Product"
                 okButtonProps={{ danger: true, loading: cancellationLoading }}
             >
                 <div className="space-y-4">
                     <p className="text-sm text-gray-600">
-                        {cancelTarget?.type === "item"
-                            ? `Please provide a reason for cancelling ${cancelTarget.item?.product?.name || "this item"}.`
-                            : "Please provide a reason for cancelling the entire order."}
+                        Please provide a reason for cancelling {cancelTarget?.item?.product?.name || "this item"}.
                     </p>
                     <Input.TextArea
                         placeholder="Enter cancellation reason..."

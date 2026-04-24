@@ -3,6 +3,7 @@ import { Button, Skeleton, Empty, Tabs, Badge, message as antMessage } from "ant
 import {
     Bell, ShoppingBag, Tag, Settings, Store, CheckCheck, Trash2, RefreshCw,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import {
     getNotifications,
     markRead,
@@ -35,12 +36,14 @@ function timeAgo(dateStr) {
     return new Date(dateStr).toLocaleDateString();
 }
 
-function NotificationItem({ n, onMarkRead, onDelete }) {
+function NotificationItem({ n, onMarkRead, onDelete, onOpen }) {
     const meta = getTypeMeta(n.type);
     const Icon = meta.icon;
     return (
         <div
+            onClick={() => onOpen(n)}
             className={`flex gap-4 px-4 py-4 border-b border-gray-100 transition-colors cursor-default
+                        ${n.data?.url ? "cursor-pointer" : ""}
                         ${!n.read_at ? "bg-green-50/70" : "hover:bg-gray-50/60"}`}
         >
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 mt-0.5 ${meta.bg}`}>
@@ -64,14 +67,20 @@ function NotificationItem({ n, onMarkRead, onDelete }) {
                     </span>
                     {!n.read_at && (
                         <button
-                            onClick={() => onMarkRead(n.id)}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onMarkRead(n.id);
+                            }}
                             className="text-[10px] text-green-600 hover:underline bg-transparent border-none cursor-pointer p-0"
                         >
                             Mark read
                         </button>
                     )}
                     <button
-                        onClick={() => onDelete(n.id)}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onDelete(n.id);
+                        }}
                         className="ml-auto text-gray-400 hover:text-red-500 bg-transparent border-none cursor-pointer p-0 flex items-center"
                         title="Delete"
                     >
@@ -88,6 +97,7 @@ function NotificationItem({ n, onMarkRead, onDelete }) {
 }
 
 export default function NotificationsPage() {
+    const navigate = useNavigate();
     const [notifications, setNotifications] = useState([]);
     const [meta, setMeta]                   = useState(null);
     const [loading, setLoading]             = useState(true);
@@ -157,6 +167,16 @@ export default function NotificationsPage() {
             setNotifications(prev => prev.filter(n => n.id !== id));
         } catch {
             antMessage.error("Failed to delete notification.");
+        }
+    };
+
+    const handleOpen = async (notification) => {
+        if (!notification.read_at) {
+            await handleMarkRead(notification.id);
+        }
+
+        if (notification.data?.url) {
+            navigate(notification.data.url);
         }
     };
 
@@ -304,6 +324,7 @@ export default function NotificationsPage() {
                             n={n}
                             onMarkRead={handleMarkRead}
                             onDelete={handleDelete}
+                            onOpen={handleOpen}
                         />
                     ))
                 )}

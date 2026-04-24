@@ -9,6 +9,7 @@ use App\Http\Controllers\Notification\NotificationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Seller\SellerProductController;
 use App\Http\Controllers\Seller\SellerProductVariantController;
+use App\Http\Controllers\Seller\SellerOrderController;
 use App\Http\Controllers\Seller\SellerStoreController;
 use App\Http\Controllers\Customer\CustomerCartController;
 use App\Http\Controllers\Customer\CustomerOrderController;
@@ -97,6 +98,13 @@ Route::middleware('auth:api')->group(function () {
             Route::post('/products/{product_uuid}/variants', [SellerProductVariantController::class, 'store'])->where('product_uuid', '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}');
             Route::put('/products/{product_uuid}/variants/{variant_id}', [SellerProductVariantController::class, 'update'])->where('product_uuid', '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}');
             Route::delete('/products/{product_uuid}/variants/{variant_id}', [SellerProductVariantController::class, 'destroy'])->where('product_uuid', '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}');
+
+            // Orders for this seller's store
+            Route::get('/orders', [SellerOrderController::class, 'index']);
+            Route::get('/orders/{id}', [SellerOrderController::class, 'show']);
+            Route::put('/orders/{id}/status', [SellerOrderController::class, 'updateStatus']);
+            Route::put('/orders/{id}/shipment', [SellerOrderController::class, 'updateShipment']);
+            Route::put('/orders/{order}/items/{item}/cancel', [SellerOrderController::class, 'cancelItem']);
         });
     });
 

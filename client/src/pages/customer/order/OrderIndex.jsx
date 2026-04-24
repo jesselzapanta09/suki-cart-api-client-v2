@@ -5,9 +5,9 @@ import { Package, Search, Eye, X, Clock, CheckCircle, Truck, Store, ShoppingBag 
 import * as orderService from "../../../services/orderService"
 
 const statusConfig = {
-    pending: { color: "orange", icon: Clock, label: "Pending" },
-    processing: { color: "blue", icon: Truck, label: "Processing" },
-    shipped: { color: "cyan", icon: Truck, label: "Shipped" },
+    pending: { color: "orange", icon: Clock, label: "Order placed" },
+    processing: { color: "blue", icon: Package, label: "Preparing to ship" },
+    shipped: { color: "cyan", icon: Truck, label: "Shipped out" },
     delivered: { color: "green", icon: CheckCircle, label: "Delivered" },
     cancelled: { color: "red", icon: X, label: "Cancelled" },
 }
@@ -183,11 +183,25 @@ export default function OrderIndex() {
                                                         </div>
                                                         <div className="min-w-0">
                                                             <p className="font-semibold text-gray-900 truncate">{getStoreName(group.store)}</p>
-                                                            <p className="text-xs text-gray-500">{group.items?.length || 0} item(s)</p>
+                                                            <div className="flex flex-wrap items-center gap-2 mt-1">
+                                                                <p className="text-xs text-gray-500">{group.items?.length || 0} item(s)</p>
+                                                                <Tag color={statusConfig[group.status]?.color || "default"} className="m-0">
+                                                                    {statusConfig[group.status]?.label || group.status}
+                                                                </Tag>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                     <p className="font-bold text-green-700">{formatMoney(group.subtotal)}</p>
                                                 </div>
+
+                                                {group.shipment?.courier_name && (
+                                                    <div className="mb-3 rounded-xl bg-cyan-50 border border-cyan-100 px-3 py-2 text-xs text-cyan-800">
+                                                        <span className="font-semibold">Courier:</span> {group.shipment.courier_name}
+                                                        {group.shipment.tracking_number && (
+                                                            <span> · <span className="font-semibold">Tracking:</span> {group.shipment.tracking_number}</span>
+                                                        )}
+                                                    </div>
+                                                )}
 
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                                     {(group.items || []).slice(0, 4).map(item => (
@@ -209,7 +223,9 @@ export default function OrderIndex() {
                                                                     Qty {item.quantity} · {formatMoney(item.price)}
                                                                 </p>
                                                             </div>
-                                                            {item.status === "cancelled" && <Tag color="red">Cancelled</Tag>}
+                                                            <Tag color={statusConfig[item.status]?.color || "default"} className="m-0 shrink-0">
+                                                                {statusConfig[item.status]?.label || item.status}
+                                                            </Tag>
                                                         </div>
                                                     ))}
                                                 </div>

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Customer;
 
+use App\Helpers\NotificationHelper;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Customer\StoreOrderRequest;
 use App\Http\Requests\Customer\UpdateOrderRequest;
@@ -27,7 +28,7 @@ class CustomerOrderController extends Controller
         
         $query = Order::query()
             ->where('user_id', $user->id)
-            ->with(['location', 'items' => function ($q) {
+            ->with(['location', 'shipments', 'items' => function ($q) {
                 $q->with(['product' => function ($p) {
                     $p->with(['images', 'store']);
                 }, 'variant']);
@@ -63,7 +64,7 @@ class CustomerOrderController extends Controller
         $order = Order::query()
             ->where('user_id', $user->id)
             ->where('id', $id)
-            ->with(['location', 'user', 'items' => function ($q) {
+            ->with(['location', 'user', 'shipments', 'items' => function ($q) {
                 $q->with(['product' => function ($p) {
                     $p->with(['images', 'store']);
                 }, 'variant']);
@@ -179,11 +180,13 @@ class CustomerOrderController extends Controller
                 }
             }
 
-            $order->load(['location', 'items' => function ($q) {
+            $order->load(['location', 'shipments', 'items' => function ($q) {
                 $q->with(['product' => function ($p) {
                     $p->with(['images', 'store']);
                 }, 'variant']);
             }]);
+
+            $this->notifyOrderPlaced($order);
 
             return response()->json([
                 'message' => 'Order created successfully.',
@@ -223,6 +226,20 @@ class CustomerOrderController extends Controller
             ], 422);
         }
 
+        if ($newStatus === 'cancelled' && !in_array($currentStatus, ['pending', 'processing'])) {
+            return response()->json([
+                'message' => 'Cannot cancel order.',
+                'error' => "Order cannot be cancelled once it is {$currentStatus}.",
+            ], 422);
+        }
+
+        if ($newStatus === 'delivered' && $currentStatus !== 'shipped') {
+            return response()->json([
+                'message' => 'Cannot mark order delivered.',
+                'error' => 'Only shipped orders can be marked as delivered.',
+            ], 422);
+        }
+
         DB::transaction(function () use ($order, $data, $newStatus, $currentStatus) {
             $order->load('items');
 
@@ -236,12 +253,16 @@ class CustomerOrderController extends Controller
                         'cancelled_at' => now(),
                     ]);
                 }
+            } elseif ($newStatus === 'delivered' && $currentStatus !== 'delivered') {
+                foreach ($order->items->where('status', '!=', 'cancelled') as $item) {
+                    $item->update(['status' => 'delivered']);
+                }
             }
 
             $order->update([
                 'status' => $newStatus,
-                'cancelled_by' => $data['cancelled_by'] ?? null,
-                'cancellation_reason' => $data['cancellation_reason'] ?? null,
+                'cancelled_by' => $newStatus === 'cancelled' ? ($data['cancelled_by'] ?? 'customer') : $order->cancelled_by,
+                'cancellation_reason' => $newStatus === 'cancelled' ? ($data['cancellation_reason'] ?? null) : $order->cancellation_reason,
             ]);
 
             $this->recalculateOrderTotals($order, [
@@ -250,11 +271,17 @@ class CustomerOrderController extends Controller
             ]);
         });
 
-        $order->load(['location', 'items' => function ($q) {
+        $order->load(['location', 'shipments', 'items' => function ($q) {
             $q->with(['product' => function ($p) {
                 $p->with(['images', 'store']);
             }, 'variant']);
         }]);
+
+        if ($newStatus === 'cancelled' && $currentStatus !== 'cancelled') {
+            $this->notifyOrderCancelled($order, $data['cancellation_reason'] ?? null);
+        } elseif ($newStatus === 'delivered' && $currentStatus !== 'delivered') {
+            $this->notifyOrderDelivered($order);
+        }
 
         return response()->json([
             'message' => 'Order updated successfully.',
@@ -318,11 +345,13 @@ class CustomerOrderController extends Controller
             ]);
         });
 
-        $order->load(['location', 'items' => function ($q) {
+        $order->load(['location', 'shipments', 'items' => function ($q) {
             $q->with(['product' => function ($p) {
                 $p->with(['images', 'store']);
             }, 'variant']);
         }]);
+
+        $this->notifyItemCancelled($order, $item, $validated['cancellation_reason']);
 
         return response()->json([
             'message' => 'Order item cancelled successfully.',
@@ -440,13 +469,15 @@ class CustomerOrderController extends Controller
     {
         $orderArray = $order->toArray();
         $items = $order->items ?? collect();
+        $shipments = $order->shipments ?? collect();
 
         $orderArray['active_items_count'] = $items->where('status', '!=', 'cancelled')->count();
         $orderArray['cancelled_items_count'] = $items->where('status', 'cancelled')->count();
         $orderArray['item_groups'] = $items
             ->groupBy(fn ($item) => $item->product?->store?->id ?? 'unknown')
             ->values()
-            ->map(function ($items) {
+            ->map(function ($items) use ($shipments) {
+                $storeId = $items->first()?->product?->store?->id;
                 $store = $items->first()?->product?->store;
 
                 return [
@@ -457,14 +488,174 @@ class CustomerOrderController extends Controller
                         'description' => $store->description,
                         'banner' => $store->banner,
                     ] : null,
+                    'shipment' => $storeId ? $shipments->firstWhere('store_id', $storeId)?->toArray() : null,
                     'items' => $items->values()->toArray(),
                     'subtotal' => $items
                         ->where('status', '!=', 'cancelled')
                         ->sum(fn ($item) => (float) $item->price * $item->quantity),
+                    'status' => $this->groupStatus($items),
                 ];
             })
             ->toArray();
 
         return $orderArray;
+    }
+
+    private function groupStatus($items): string
+    {
+        $active = $items->where('status', '!=', 'cancelled');
+
+        if ($active->isEmpty()) {
+            return 'cancelled';
+        }
+
+        $statuses = $active->pluck('status');
+
+        if ($statuses->contains('pending')) {
+            return 'pending';
+        }
+
+        if ($statuses->contains('processing')) {
+            return 'processing';
+        }
+
+        if ($statuses->contains('shipped')) {
+            return 'shipped';
+        }
+
+        return $active->first()?->status ?? 'pending';
+    }
+
+    private function notifyOrderPlaced(Order $order): void
+    {
+        NotificationHelper::send(
+            userId: $order->user_id,
+            type: 'order',
+            title: 'Order Placed',
+            message: "Your Order #{$order->id} has been placed.",
+            data: [
+                'order_id' => $order->id,
+                'status' => 'pending',
+                'url' => "/customer/orders/{$order->id}",
+            ],
+        );
+
+        foreach ($this->storesForOrder($order) as $store) {
+            NotificationHelper::send(
+                userId: $store->user_id,
+                type: 'order',
+                title: 'New Order Received',
+                message: "A customer placed Order #{$order->id} for {$store->store_name}.",
+                data: [
+                    'order_id' => $order->id,
+                    'store_id' => $store->id,
+                    'status' => 'pending',
+                    'url' => "/seller/orders/{$order->id}",
+                ],
+            );
+        }
+    }
+
+    private function notifyOrderCancelled(Order $order, ?string $reason): void
+    {
+        NotificationHelper::send(
+            userId: $order->user_id,
+            type: 'order',
+            title: 'Order Cancelled',
+            message: "Your Order #{$order->id} was cancelled.",
+            data: [
+                'order_id' => $order->id,
+                'status' => 'cancelled',
+                'url' => "/customer/orders/{$order->id}",
+            ],
+        );
+
+        foreach ($this->storesForOrder($order) as $store) {
+            NotificationHelper::send(
+                userId: $store->user_id,
+                type: 'order',
+                title: 'Order Cancelled',
+                message: "Order #{$order->id} was cancelled by the customer" . ($reason ? ". Reason: {$reason}" : "."),
+                data: [
+                    'order_id' => $order->id,
+                    'store_id' => $store->id,
+                    'status' => 'cancelled',
+                    'url' => "/seller/orders/{$order->id}",
+                ],
+            );
+        }
+    }
+
+    private function notifyItemCancelled(Order $order, OrderItem $item, string $reason): void
+    {
+        $store = $item->product?->store;
+
+        NotificationHelper::send(
+            userId: $order->user_id,
+            type: 'order',
+            title: 'Order Item Cancelled',
+            message: "{$item->product?->name} was cancelled from Order #{$order->id}.",
+            data: [
+                'order_id' => $order->id,
+                'order_item_id' => $item->id,
+                'status' => 'cancelled',
+                'url' => "/customer/orders/{$order->id}",
+            ],
+        );
+
+        if ($store) {
+            NotificationHelper::send(
+                userId: $store->user_id,
+                type: 'order',
+                title: 'Order Item Cancelled',
+                message: "The customer cancelled {$item->product?->name} from Order #{$order->id}. Reason: {$reason}",
+                data: [
+                    'order_id' => $order->id,
+                    'order_item_id' => $item->id,
+                    'store_id' => $store->id,
+                    'status' => 'cancelled',
+                    'url' => "/seller/orders/{$order->id}",
+                ],
+            );
+        }
+    }
+
+    private function notifyOrderDelivered(Order $order): void
+    {
+        NotificationHelper::send(
+            userId: $order->user_id,
+            type: 'order',
+            title: 'Order Delivered',
+            message: "Order #{$order->id} has been marked as delivered.",
+            data: [
+                'order_id' => $order->id,
+                'status' => 'delivered',
+                'url' => "/customer/orders/{$order->id}",
+            ],
+        );
+
+        foreach ($this->storesForOrder($order) as $store) {
+            NotificationHelper::send(
+                userId: $store->user_id,
+                type: 'order',
+                title: 'Order Delivered',
+                message: "The customer confirmed delivery for Order #{$order->id}.",
+                data: [
+                    'order_id' => $order->id,
+                    'store_id' => $store->id,
+                    'status' => 'delivered',
+                    'url' => "/seller/orders/{$order->id}",
+                ],
+            );
+        }
+    }
+
+    private function storesForOrder(Order $order)
+    {
+        return $order->items
+            ->map(fn ($item) => $item->product?->store)
+            ->filter()
+            ->unique('id')
+            ->values();
     }
 }

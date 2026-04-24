@@ -1,16 +1,18 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react"
-import { Button, Empty, App, Modal, Input, Spin, Tag } from "antd"
+import { Button, Empty, App, Modal, Input, Spin, Steps, Tag } from "antd"
 import { ArrowLeft, Clock, CheckCircle, Truck, X, AlertCircle, Package, Store, ShoppingBag, MapPin } from "lucide-react"
 import { useNavigate, useParams } from "react-router-dom"
 import * as orderService from "../../../services/orderService"
 
 const statusConfig = {
-    pending: { color: "orange", icon: Clock, label: "Pending" },
-    processing: { color: "blue", icon: Truck, label: "Processing" },
-    shipped: { color: "cyan", icon: Truck, label: "Shipped" },
+    pending: { color: "orange", icon: Clock, label: "Order placed" },
+    processing: { color: "blue", icon: Package, label: "Preparing to ship" },
+    shipped: { color: "cyan", icon: Truck, label: "Shipped out" },
     delivered: { color: "green", icon: CheckCircle, label: "Delivered" },
     cancelled: { color: "red", icon: X, label: "Cancelled" },
 }
+
+const statusSteps = ["pending", "processing", "shipped", "delivered"]
 
 const formatMoney = (value) => `₱${Number(value || 0).toFixed(2)}`
 const getStoreName = (store) => store?.store_name || store?.name || "Unknown Seller"
@@ -27,6 +29,7 @@ export default function OrderDetailsPage() {
     const [cancelTarget, setCancelTarget] = useState(null)
     const [cancellationReason, setCancellationReason] = useState("")
     const [cancellationLoading, setCancellationLoading] = useState(false)
+    const [deliveryLoading, setDeliveryLoading] = useState(false)
 
     const fetchOrderDetails = useCallback(async () => {
         setLoading(true)
@@ -77,6 +80,19 @@ export default function OrderDetailsPage() {
         }
     }
 
+    const handleMarkDelivered = async () => {
+        setDeliveryLoading(true)
+        try {
+            const data = await orderService.markOrderDelivered(order.id)
+            setOrder(data?.data)
+            message.success("Order marked as delivered")
+        } catch (err) {
+            message.error(err.message || "Failed to mark order delivered")
+        } finally {
+            setDeliveryLoading(false)
+        }
+    }
+
     if (loading) {
         return (
             <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -100,6 +116,7 @@ export default function OrderDetailsPage() {
 
     const statusInfo = statusConfig[order.status] || statusConfig.pending
     const StatusIcon = statusInfo.icon || AlertCircle
+    const currentStep = order.status === "cancelled" ? 0 : Math.max(statusSteps.indexOf(order.status), 0)
 
     return (
         <div className="min-h-screen bg-gray-50 py-6 md:py-8">
@@ -119,6 +136,39 @@ export default function OrderDetailsPage() {
                         <StatusIcon size={14} />
                         {statusInfo.label}
                     </Tag>
+                </div>
+
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mb-6">
+                    <div className="flex items-start justify-between gap-4 mb-5">
+                        <div>
+                            <h2 className="text-lg font-bold text-gray-900">Order Timeline</h2>
+                            <p className="text-sm text-gray-500">Current status: {statusInfo.label}</p>
+                        </div>
+                        {order.status === "shipped" && (
+                            <Button
+                                type="primary"
+                                icon={<CheckCircle size={16} />}
+                                loading={deliveryLoading}
+                                onClick={handleMarkDelivered}
+                            >
+                                Received Product
+                            </Button>
+                        )}
+                    </div>
+                    {order.status === "cancelled" ? (
+                        <div className="rounded-xl bg-red-50 border border-red-100 p-3 text-sm text-red-700">
+                            This order was cancelled.
+                        </div>
+                    ) : (
+                        <Steps
+                            current={currentStep}
+                            responsive
+                            items={statusSteps.map(status => ({
+                                title: statusConfig[status].label,
+                                icon: React.createElement(statusConfig[status].icon, { size: 18 }),
+                            }))}
+                        />
+                    )}
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
@@ -150,7 +200,12 @@ export default function OrderDetailsPage() {
                                             </div>
                                             <div className="min-w-0">
                                                 <h2 className="font-bold text-green-950 truncate">{getStoreName(group.store)}</h2>
-                                                <p className="text-xs text-gray-500">{group.items?.length || 0} item(s)</p>
+                                                <div className="flex flex-wrap items-center gap-2 mt-1">
+                                                    <p className="text-xs text-gray-500">{group.items?.length || 0} item(s)</p>
+                                                    <Tag color={statusConfig[group.status]?.color || "default"} className="m-0">
+                                                        {statusConfig[group.status]?.label || group.status}
+                                                    </Tag>
+                                                </div>
                                             </div>
                                         </div>
                                         <div className="text-right">
@@ -158,6 +213,15 @@ export default function OrderDetailsPage() {
                                             <p className="font-bold text-green-700">{formatMoney(group.subtotal)}</p>
                                         </div>
                                     </div>
+
+                                    {group.shipment?.courier_name && (
+                                        <div className="mx-4 md:mx-5 mt-4 rounded-xl bg-cyan-50 border border-cyan-100 p-3 text-sm text-cyan-800">
+                                            <p><span className="font-semibold">Courier:</span> {group.shipment.courier_name}</p>
+                                            {group.shipment.tracking_number && (
+                                                <p><span className="font-semibold">Tracking Number:</span> {group.shipment.tracking_number}</p>
+                                            )}
+                                        </div>
+                                    )}
 
                                     <div className="divide-y divide-gray-100">
                                         {(group.items || []).map(item => (
@@ -177,7 +241,9 @@ export default function OrderDetailsPage() {
                                                 <div className="min-w-0">
                                                     <div className="flex flex-wrap items-center gap-2">
                                                         <h3 className="font-semibold text-gray-900 truncate">{item.product?.name}</h3>
-                                                        {item.status === "cancelled" && <Tag color="red">Cancelled</Tag>}
+                                                        <Tag color={statusConfig[item.status]?.color || "default"}>
+                                                            {statusConfig[item.status]?.label || item.status}
+                                                        </Tag>
                                                     </div>
                                                     {item.variant && <p className="text-xs text-gray-500 mt-1">{item.variant.name}</p>}
                                                     <p className="text-sm text-gray-600 mt-2">

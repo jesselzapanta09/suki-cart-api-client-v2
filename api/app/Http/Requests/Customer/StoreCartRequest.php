@@ -22,6 +22,16 @@ class StoreCartRequest extends FormRequest
         ];
     }
 
+    public function messages()
+    {
+        return [
+            'product_variant_id.required' => 'Please select a variant.',
+            'product_variant_id.exists' => 'The selected variant does not exist.',
+            'quantity.required' => 'Quantity is required.',
+            'quantity.min' => 'Quantity must be at least 1.',
+        ];
+    }
+
     protected function withValidator($validator)
     {
         $validator->after(function ($validator) {

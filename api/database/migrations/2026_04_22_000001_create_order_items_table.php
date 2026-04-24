@@ -13,7 +13,11 @@ return new class extends Migration
     {
         Schema::create('order_items', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('order_id')->constrained()->cascadeOnDelete();
+            $table->uuid('checkout_group')->unique();
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('location_id')->constrained()->cascadeOnDelete();
+            $table->string('address_extra')->nullable();
+            $table->text('message')->nullable();
             $table->foreignId('product_id')->constrained()->cascadeOnDelete();
             $table->foreignId('product_variant_id')->nullable()->constrained('product_variants')->cascadeOnDelete();
             $table->integer('quantity');
@@ -26,6 +30,8 @@ return new class extends Migration
             $table->text('cancellation_reason')->nullable();
             $table->timestamp('cancelled_at')->nullable();
             $table->timestamps();
+
+            $table->index(['user_id', 'status']);
         });
     }
 

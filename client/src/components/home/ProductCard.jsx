@@ -68,7 +68,10 @@ export default function ProductCard({ product, onAdd }) {
                         )}
                     </div>
                     <button 
-                        onClick={() => onAdd(product)} 
+                        onClick={(event) => {
+                            event.stopPropagation();
+                            onAdd(product);
+                        }} 
                         disabled={!price}
                         className={`w-9 h-9 rounded-xl flex items-center justify-center text-white transition-colors cursor-pointer border-none shadow-sm ${
                             price 

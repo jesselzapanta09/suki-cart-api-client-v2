@@ -99,12 +99,19 @@ Route::middleware('auth:api')->group(function () {
             Route::put('/products/{product_uuid}/variants/{variant_id}', [SellerProductVariantController::class, 'update'])->where('product_uuid', '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}');
             Route::delete('/products/{product_uuid}/variants/{variant_id}', [SellerProductVariantController::class, 'destroy'])->where('product_uuid', '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}');
 
-            // Orders for this seller's store
+            // Item-level orders for this seller's store
+            Route::get('/order-items', [SellerOrderController::class, 'index']);
+            Route::get('/order-items/{item}', [SellerOrderController::class, 'show']);
+            Route::put('/order-items/{item}/status', [SellerOrderController::class, 'updateStatus']);
+            Route::put('/order-items/{item}/shipment', [SellerOrderController::class, 'updateShipment']);
+            Route::put('/order-items/{item}/cancel', [SellerOrderController::class, 'cancelItem']);
+
+            // Backward-compatible order URLs now backed by order_items.
             Route::get('/orders', [SellerOrderController::class, 'index']);
-            Route::get('/orders/{id}', [SellerOrderController::class, 'show']);
-            Route::put('/orders/{id}/status', [SellerOrderController::class, 'updateStatus']);
-            Route::put('/orders/{id}/shipment', [SellerOrderController::class, 'updateShipment']);
-            Route::put('/orders/{order}/items/{item}/cancel', [SellerOrderController::class, 'cancelItem']);
+            Route::get('/orders/items/{item}', [SellerOrderController::class, 'show']);
+            Route::put('/orders/items/{item}/status', [SellerOrderController::class, 'updateStatus']);
+            Route::put('/orders/items/{item}/shipment', [SellerOrderController::class, 'updateShipment']);
+            Route::put('/orders/items/{item}/cancel', [SellerOrderController::class, 'cancelItem']);
         });
     });
 
@@ -119,14 +126,12 @@ Route::middleware('auth:api')->group(function () {
         Route::delete('/cart/{id}', [CustomerCartController::class, 'destroy']);
         Route::delete('/cart', [CustomerCartController::class, 'destroyAll']);
 
-        // Order routes
-        Route::get('/orders', [CustomerOrderController::class, 'index']);
-        Route::get('/orders/{id}', [CustomerOrderController::class, 'show']);
-        Route::post('/orders', [CustomerOrderController::class, 'store']);
-        Route::post('/orders/calculate-shipping', [CustomerOrderController::class, 'calculateShipping']);
-        Route::put('/orders/{order}/items/{item}/cancel', [CustomerOrderController::class, 'cancelItem']);
-        Route::put('/orders/{order}/items/{item}/delivered', [CustomerOrderController::class, 'deliverItem']);
-        Route::put('/orders/{id}', [CustomerOrderController::class, 'update']);
-        Route::delete('/orders/{id}', [CustomerOrderController::class, 'destroy']);
+        // Item-level order routes
+        Route::get('/order-items', [CustomerOrderController::class, 'index']);
+        Route::get('/order-items/{item}', [CustomerOrderController::class, 'show']);
+        Route::post('/order-items', [CustomerOrderController::class, 'store']);
+        Route::post('/order-items/calculate-shipping', [CustomerOrderController::class, 'calculateShipping']);
+        Route::put('/order-items/{item}/cancel', [CustomerOrderController::class, 'cancelItem']);
+        Route::put('/order-items/{item}/delivered', [CustomerOrderController::class, 'deliverItem']);
     });
 });

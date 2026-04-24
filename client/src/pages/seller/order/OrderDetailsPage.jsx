@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react"
 import { App, Button, Empty, Form, Input, Modal, Select, Spin, Tag } from "antd"
 import { ArrowLeft, CheckCircle, Clock, Package, Truck, User, X, MapPin, ShoppingBag } from "lucide-react"
-import { useNavigate, useParams, useSearchParams } from "react-router-dom"
+import { useNavigate, useParams } from "react-router-dom"
 import {
     cancelSellerOrderItem,
     getSellerOrder,
@@ -28,8 +28,7 @@ const customerName = (customer) => `${customer?.firstname || ""} ${customer?.las
 const canCancelItem = (item) => !["cancelled", "shipped", "delivered"].includes(item?.status)
 
 export default function OrderDetailsPage() {
-    const { id } = useParams()
-    const [searchParams] = useSearchParams()
+    const { itemId } = useParams()
     const navigate = useNavigate()
     const { message } = App.useApp()
     const [form] = Form.useForm()
@@ -42,7 +41,7 @@ export default function OrderDetailsPage() {
     const [cancelLoading, setCancelLoading] = useState(false)
 
     const storeOrder = useMemo(() => order?.store_order || {}, [order])
-    const selectedItemId = Number(searchParams.get("item"))
+    const selectedItemId = Number(itemId)
     const selectedItem = useMemo(() => {
         const items = storeOrder.items || []
         return items.find(item => item.id === selectedItemId) || items[0] || null
@@ -52,10 +51,10 @@ export default function OrderDetailsPage() {
     const fetchOrder = useCallback(async () => {
         setLoading(true)
         try {
-            const data = await getSellerOrder(id)
+            const data = await getSellerOrder(itemId)
             const nextOrder = data?.data
             setOrder(nextOrder)
-            const nextItem = nextOrder?.store_order?.items?.find(item => item.id === Number(searchParams.get("item"))) || nextOrder?.store_order?.items?.[0]
+            const nextItem = nextOrder?.store_order?.items?.find(item => item.id === Number(itemId)) || nextOrder?.store_order?.items?.[0]
             form.setFieldsValue({
                 status: nextItem?.status || "pending",
                 courier_name: nextItem?.courier_name || "",
@@ -67,7 +66,7 @@ export default function OrderDetailsPage() {
         } finally {
             setLoading(false)
         }
-    }, [form, id, message, searchParams])
+    }, [form, itemId, message])
 
     useEffect(() => {
         fetchOrder()
@@ -77,9 +76,8 @@ export default function OrderDetailsPage() {
         try {
             const values = await form.validateFields()
             setSavingStatus(true)
-            const data = await updateSellerOrderStatus(order.id, {
+            const data = await updateSellerOrderStatus(selectedItem?.id, {
                 ...values,
-                order_item_id: selectedItem?.id,
             })
             setOrder(data?.data)
             message.success("Order status updated")
@@ -105,7 +103,7 @@ export default function OrderDetailsPage() {
 
         setCancelLoading(true)
         try {
-            const data = await cancelSellerOrderItem(order.id, cancelTarget.id, cancelReason)
+            const data = await cancelSellerOrderItem(cancelTarget.id, cancelReason)
             setOrder(data?.data)
             message.success("Item cancelled")
             closeCancelModal()
@@ -151,7 +149,7 @@ export default function OrderDetailsPage() {
                         <ArrowLeft size={20} className="text-gray-700" />
                     </button>
                     <div className="flex-1 min-w-0">
-                        <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Order #{order.id}</h1>
+                        <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Checkout #{String(order.id || "").slice(0, 8)}</h1>
                         <p className="text-sm text-gray-500 mt-1">{new Date(order.created_at).toLocaleString()}</p>
                     </div>
                     <Tag color={statusInfo.color} className="flex items-center gap-1 w-fit">

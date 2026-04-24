@@ -72,17 +72,62 @@ export default function ProductDetailPage() {
         fetchSimilar();
     }, [product, state?.searchKeyword]);
 
-    // Auto-select first variant if not already selected
     useEffect(() => {
-        if (product && product.variants && product.variants.length > 0 && !selectedVariant) {
-            setSelectedVariant(product.variants[0]);
-        }
-    }, [product, selectedVariant]);
+        const firstAvailableVariant = product?.variants?.find(variant => Number(variant.stock || 0) > 0) || product?.variants?.[0] || null;
+        setSelectedVariant(firstAvailableVariant);
+    }, [product]);
 
-    const handleAddToCart = () => {
-        // Validate variant is selected
+    const validateSelectedQuantity = () => {
         if (!selectedVariant) {
-            message.error("Please select a variant before adding to cart.");
+            message.warning("This product has no available variants.");
+            return false;
+        }
+
+        const stock = Number(selectedVariant.stock || 0);
+
+        if (stock < 1) {
+            message.warning("This variant is out of stock.");
+            return false;
+        }
+
+        if (quantity > stock) {
+            message.warning(`Only ${stock} item${stock !== 1 ? "s" : ""} available for this variant.`);
+            return false;
+        }
+
+        return true;
+    };
+
+    const handleQuantityChange = (value) => {
+        const nextQuantity = Number(value || 1);
+
+        if (!selectedVariant) {
+            setQuantity(Math.max(nextQuantity, 1));
+            return;
+        }
+
+        const stock = Number(selectedVariant.stock || 0);
+
+        if (stock > 0 && nextQuantity > stock) {
+            message.warning(`Only ${stock} item${stock !== 1 ? "s" : ""} available for this variant.`);
+            setQuantity(stock);
+            return;
+        }
+
+        setQuantity(Math.max(nextQuantity, 1));
+    };
+
+    const handleVariantSelect = (variant) => {
+        setSelectedVariant(variant);
+
+        if (quantity > variant.stock) {
+            message.warning(`Only ${variant.stock} item${variant.stock !== 1 ? "s" : ""} available for this variant.`);
+            setQuantity(Math.max(Number(variant.stock || 0), 1));
+        }
+    };
+
+    const handleAddToCart = async () => {
+        if (!validateSelectedQuantity()) {
             return;
         }
 
@@ -112,10 +157,48 @@ export default function ProductDetailPage() {
             variant_id: selectedVariant.id,
             variant: selectedVariant,
         };
-        addItem(cartProduct, quantity);
-        message.success(`${product.name} added to cart!`);
-        // Reset quantity after adding
-        setQuantity(1);
+        try {
+            await addItem(cartProduct, quantity);
+            message.success(`${product.name} added to cart!`);
+            // Reset quantity after adding
+            setQuantity(1);
+        } catch (error) {
+            message.error(error?.data?.error || error?.message || "Failed to add item to cart.");
+        }
+    };
+
+    const buildCheckoutItem = () => ({
+        ...product,
+        rating: product.rating || 4.5,
+        sold: product.sold || 0,
+        category: product.category?.name || "Unknown",
+        price: selectedVariant.price,
+        stock: selectedVariant.stock,
+        qty: quantity,
+        variant_id: selectedVariant.id,
+        variant: selectedVariant,
+    });
+
+    const handleBuyNow = () => {
+        if (!validateSelectedQuantity()) {
+            return;
+        }
+
+        if (!isCustomer) {
+            message.warning("Please sign in to checkout.");
+            navigate("/login");
+            return;
+        }
+
+        const checkoutItem = buildCheckoutItem();
+        const price = Number(selectedVariant.price || 0);
+
+        navigate("/customer/checkout", {
+            state: {
+                items: [checkoutItem],
+                total: price * quantity,
+            },
+        });
     };
 
     if (loading) {
@@ -290,7 +373,7 @@ export default function ProductDetailPage() {
                                         {product.variants.map((variant) => (
                                             <button
                                                 key={variant.id}
-                                                onClick={() => setSelectedVariant(variant)}
+                                                onClick={() => handleVariantSelect(variant)}
                                                 disabled={variant.stock === 0}
                                                 className={`w-full text-left p-3 rounded-lg border-2 transition-all ${selectedVariant?.id === variant.id
                                                         ? "border-green-600 bg-green-50"
@@ -325,9 +408,8 @@ export default function ProductDetailPage() {
                                     <InputNumber
                                         mode="spinner"
                                         min={1}
-                                        max={selectedVariant?.stock || 999}
                                         value={quantity}
-                                        onChange={(val) => setQuantity(val || 1)}
+                                        onChange={handleQuantityChange}
                                         size="large"
                                         className="w-full"
                                     />
@@ -344,10 +426,7 @@ export default function ProductDetailPage() {
                                     Add to Cart
                                 </Button>
                                 <Button
-                                    onClick={() => {
-                                        // Buy Now button - just a placeholder for now
-                                        message.info(`Buy Now with quantity: ${quantity} (Functionality coming soon)`);
-                                    }}
+                                    onClick={handleBuyNow}
                                     type="primary"
                                     size="large"
                                     className="flex-1"
@@ -596,14 +675,36 @@ export default function ProductDetailPage() {
                     similarLoading={similarLoading}
                     currentProductId={product.uuid}
                     searchKeyword={state?.searchKeyword}
-                    onAddToCart={(p) => {
+                    onAddToCart={async (p) => {
                         if (!isCustomer) {
                             message.warning("Only customers can add items to cart. Please log in as a customer.");
                             navigate("/login");
                             return;
                         }
-                        addItem({ ...p, rating: p.rating || 4.5, sold: p.sold || 0, category: p.category?.name || "Unknown" }, 1);
-                        message.success(`${p.name} added to cart!`);
+
+                        const variant = p.variants?.find(item => Number(item.stock || 0) > 0);
+
+                        if (!variant) {
+                            message.warning("This product has no available variants.");
+                            navigate(`/products/${p.uuid}`, { state: { searchKeyword: state?.searchKeyword } });
+                            return;
+                        }
+
+                        try {
+                            await addItem({
+                                ...p,
+                                rating: p.rating || 4.5,
+                                sold: p.sold || 0,
+                                category: p.category?.name || "Unknown",
+                                price: variant.price,
+                                stock: variant.stock,
+                                variant_id: variant.id,
+                                variant,
+                            }, 1);
+                            message.success(`${p.name} added to cart!`);
+                        } catch (error) {
+                            message.error(error?.data?.error || error?.message || "Failed to add item to cart.");
+                        }
                     }}
                 />
             </div>

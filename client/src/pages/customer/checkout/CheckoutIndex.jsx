@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { Button, Select, Input, Empty, App, Form } from "antd";
-import { MapPin, MessageSquare, ShoppingBag, ShoppingCart, Package } from "lucide-react";
+import { MapPin, ShoppingBag, ShoppingCart, Package } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useCart } from "../../../context/CartContext";
 import { useAuth } from "../../../context/AuthContext";
@@ -16,7 +16,7 @@ export default function CheckoutIndex() {
 
     const [selectedLocation, setSelectedLocation] = useState(null);
     const [addressExtra, setAddressExtra] = useState("");
-    const [orderMessage, setOrderMessage] = useState("");
+    const [itemMessages, setItemMessages] = useState({});
     const [checkoutLoading, setCheckoutLoading] = useState(false);
     const [locations, setLocations] = useState([]);
     const [shippingData, setShippingData] = useState(null);
@@ -42,6 +42,16 @@ export default function CheckoutIndex() {
         // Calculate shipping fees
         calculateShippingFees();
     }, [user, items, navigate]);
+
+    useEffect(() => {
+        if (locations.length !== 1 || selectedLocation) {
+            return;
+        }
+
+        const defaultLocationId = locations[0].id;
+        setSelectedLocation(defaultLocationId);
+        form.setFieldValue("delivery_location", defaultLocationId);
+    }, [locations, selectedLocation, form]);
 
     const calculateShippingFees = async () => {
         if (items.length === 0) return;
@@ -75,6 +85,8 @@ export default function CheckoutIndex() {
         return typeof price === 'number' ? price : Number(price || 0);
     };
 
+    const getStock = (item) => Number(item.stock || item.variant?.stock || 0);
+
     const getVariantAttributes = (variant) => {
         if (!variant?.attributes || typeof variant.attributes !== "object") {
             return [];
@@ -82,6 +94,8 @@ export default function CheckoutIndex() {
 
         return Object.entries(variant.attributes).filter(([, value]) => value !== null && value !== "");
     };
+
+    const getItemKey = (item, index) => item.uuid || item.cartId || `${item.id}-${item.variant_id || "none"}-${index}`;
 
     const handlePlaceOrder = async () => {
         if (!selectedLocation) {
@@ -94,28 +108,42 @@ export default function CheckoutIndex() {
             return;
         }
 
+        const missingVariant = items.find(item => !item.variant_id);
+        if (missingVariant) {
+            message.warning(`Please select a variant for ${missingVariant.name}.`);
+            return;
+        }
+
+        const overStockItem = items.find(item => item.qty > getStock(item));
+        if (overStockItem) {
+            const stock = getStock(overStockItem);
+            message.warning(`Only ${stock} item${stock !== 1 ? "s" : ""} available for ${overStockItem.name}.`);
+            return;
+        }
+
         setCheckoutLoading(true);
         try {
             const orderData = {
                 location_id: selectedLocation,
                 address_extra: addressExtra || null,
-                message: orderMessage || null,
-                items: items.map(item => ({
+                items: items.map((item, index) => ({
+                    cart_id: item.cartId || null,
                     product_id: item.id,
                     product_variant_id: item.variant_id || null,
                     quantity: item.qty,
+                    message: itemMessages[getItemKey(item, index)] || null,
                 })),
             };
 
             const response = await orderService.createOrder(orderData);
 
-            if (response?.data?.id) {
+            if (response?.data?.first_item_id) {
                 message.success("Order placed successfully!");
                 removeOrderedItems(items);
                 
-                // Redirect to order details
+                // Redirect to the orders page after checkout
                 setTimeout(() => {
-                    navigate(`/customer/orders/${response.data.id}`);
+                    navigate("/customer/orders");
                 }, 500);
             }
         } catch (err) {
@@ -214,21 +242,6 @@ export default function CheckoutIndex() {
                                     />
                                 </Form.Item>
 
-                                <Form.Item
-                                    name="message"
-                                    label="Message for Seller (Optional)"
-                                    initialValue={orderMessage}
-                                >
-                                    <Input.TextArea
-                                        placeholder="Add a message or special instructions"
-                                        onChange={(e) => {
-                                            setOrderMessage(e.target.value);
-                                            form.setFieldValue('message', e.target.value);
-                                        }}
-                                        maxLength={1000}
-                                        rows={3}
-                                    />
-                                </Form.Item>
                             </Form>
                         </div>
 
@@ -246,9 +259,10 @@ export default function CheckoutIndex() {
                             <div className="space-y-4">
                                 {items.map((item, index) => {
                                     const attributes = getVariantAttributes(item.variant);
+                                    const itemKey = getItemKey(item, index);
 
                                     return (
-                                        <div key={item.uuid || `${item.id}-${index}`} className="bg-gray-50 rounded-xl border border-gray-100 p-4 md:p-5">
+                                        <div key={itemKey} className="bg-gray-50 rounded-xl border border-gray-100 p-4 md:p-5">
                                             <div className="flex flex-col md:flex-row gap-6">
                                                 <div className="w-full md:w-40 h-40 rounded-xl bg-gray-100 overflow-hidden shrink-0">
                                                     {item.images && item.images.length > 0 ? (
@@ -310,12 +324,76 @@ export default function CheckoutIndex() {
                                                             </div>
                                                         </div>
                                                     )}
+
+                                                    <div className="md:col-span-2">
+                                                        <Form.Item
+                                                            name={["item_messages", itemKey]}
+                                                            label="Message for Seller (Optional)"
+                                                            labelCol={{ span: 24 }}
+                                                            wrapperCol={{ span: 24 }}
+                                                            className="mb-0"
+                                                            initialValue={itemMessages[itemKey] || ""}
+                                                        >
+                                                            <Input.TextArea
+                                                                placeholder="Add a message or special instructions for this product"
+                                                                onChange={(e) => {
+                                                                    setItemMessages(prev => ({
+                                                                        ...prev,
+                                                                        [itemKey]: e.target.value,
+                                                                    }));
+                                                                }}
+                                                                maxLength={1000}
+                                                                rows={3}
+                                                            />
+                                                        </Form.Item>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
                                     );
                                 })}
                             </div>
+
+                            {/* Shipping Breakdown */}
+                            {shippingData && (
+                                <div className="rounded-xl border border-orange-100 bg-orange-50 p-4 md:p-5 space-y-4">
+                                    <div className="flex items-start gap-3">
+                                        <div className="w-10 h-10 rounded-xl bg-white ring-1 ring-orange-100 flex items-center justify-center shrink-0">
+                                            <Package size={20} className="text-orange-700" />
+                                        </div>
+                                        <div>
+                                            <h2 className="text-lg font-bold text-gray-900">Shipping Fees</h2>
+                                            <p className="text-sm text-gray-400 mt-1">Breakdown per product order</p>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-3">
+                                        {shippingData.breakdown.map((item) => (
+                                            <div key={`${item.product_id}-${item.product_variant_id || "none"}-${item.index}`} className="bg-white rounded-lg p-4 border border-orange-100">
+                                                <div className="flex justify-between items-start mb-3">
+                                                    <div>
+                                                        <p className="font-semibold text-gray-900">{item.product_name}</p>
+                                                        <p className="text-xs text-gray-500 mt-1">{item.store_name} · Qty {item.quantity} · Total Weight: {item.total_weight}kg</p>
+                                                    </div>
+                                                </div>
+                                                <div className="space-y-1 text-sm">
+                                                    <div className="flex justify-between text-gray-700">
+                                                        <span>Base Fee:</span>
+                                                        <span>₱{item.base_fee.toFixed(2)}</span>
+                                                    </div>
+                                                    <div className="flex justify-between text-gray-700">
+                                                        <span>Weight Fee ({item.total_weight}kg × ₱50):</span>
+                                                        <span>₱{item.weight_fee.toFixed(2)}</span>
+                                                    </div>
+                                                    <div className="flex justify-between font-semibold text-orange-600 border-t border-orange-200 pt-2 mt-2">
+                                                        <span>Subtotal:</span>
+                                                        <span>₱{item.shipping_fee.toFixed(2)}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         {/* Payment Method */}
@@ -342,46 +420,6 @@ export default function CheckoutIndex() {
                             </div>
                         </div>
 
-                        {/* Shipping Breakdown */}
-                        {shippingData && (
-                            <div className="rounded-2xl border border-gray-200 shadow-sm p-6 bg-white space-y-5">
-                                <div className="flex items-start gap-3">
-                                    <div className="w-10 h-10 rounded-xl bg-orange-50 ring-1 ring-orange-100 flex items-center justify-center shrink-0">
-                                        <Package size={20} className="text-orange-700" />
-                                    </div>
-                                    <div>
-                                        <h2 className="text-lg font-bold text-gray-900">Shipping Fees</h2>
-                                        <p className="text-sm text-gray-400 mt-1">Breakdown per product order</p>
-                                    </div>
-                                </div>
-                                <div className="space-y-3">
-                                    {shippingData.breakdown.map((item) => (
-                                        <div key={`${item.product_id}-${item.product_variant_id || "none"}-${item.index}`} className="bg-orange-50 rounded-lg p-4 border border-orange-100">
-                                            <div className="flex justify-between items-start mb-3">
-                                                <div>
-                                                    <p className="font-semibold text-gray-900">{item.product_name}</p>
-                                                    <p className="text-xs text-gray-500 mt-1">{item.store_name} · Qty {item.quantity} · Total Weight: {item.total_weight}kg</p>
-                                                </div>
-                                            </div>
-                                            <div className="space-y-1 text-sm">
-                                                <div className="flex justify-between text-gray-700">
-                                                    <span>Base Fee:</span>
-                                                    <span>₱{item.base_fee.toFixed(2)}</span>
-                                                </div>
-                                                <div className="flex justify-between text-gray-700">
-                                                    <span>Weight Fee ({item.total_weight}kg × ₱50):</span>
-                                                    <span>₱{item.weight_fee.toFixed(2)}</span>
-                                                </div>
-                                                <div className="flex justify-between font-semibold text-orange-600 border-t border-orange-200 pt-2 mt-2">
-                                                    <span>Subtotal:</span>
-                                                    <span>₱{item.shipping_fee.toFixed(2)}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
                     </div>
 
                     {/* Total and Action */}

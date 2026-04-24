@@ -8,7 +8,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class OrderItem extends Model
 {
     protected $fillable = [
-        'order_id',
+        'checkout_group',
+        'user_id',
+        'location_id',
+        'address_extra',
+        'message',
         'product_id',
         'product_variant_id',
         'quantity',
@@ -30,11 +34,19 @@ class OrderItem extends Model
     ];
 
     /**
-     * Get the order that owns this order item.
+     * Get the user that owns this order item.
      */
-    public function order(): BelongsTo
+    public function user(): BelongsTo
     {
-        return $this->belongsTo(Order::class);
+        return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get the delivery location for this order item.
+     */
+    public function location(): BelongsTo
+    {
+        return $this->belongsTo(Location::class);
     }
 
     /**

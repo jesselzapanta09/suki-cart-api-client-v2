@@ -18,6 +18,7 @@ export default function CartIndex() {
     const getItemKey = (item) => item.itemKey || item.cartId || `${item.uuid}-${item.variant_id || "none"}`;
     const getStoreKey = (item) => item.store?.id || item.store?.uuid || "unknown";
     const getStoreName = (store) => store?.store_name || store?.name || "Unknown Seller";
+    const getStock = (item) => Number(item.stock ?? item.variant?.stock ?? 0);
 
     const cartGroups = useMemo(() => {
         const groups = new Map();
@@ -64,6 +65,19 @@ export default function CartIndex() {
 
         if (checkedItemsList.length === 0) {
             message.warning("Please select items to order");
+            return;
+        }
+
+        const missingVariant = checkedItemsList.find(item => !item.variant_id);
+        if (missingVariant) {
+            message.warning(`Please select a variant for ${missingVariant.name}.`);
+            return;
+        }
+
+        const overStockItem = checkedItemsList.find(item => item.qty > getStock(item));
+        if (overStockItem) {
+            const stock = getStock(overStockItem);
+            message.warning(`Only ${stock} item${stock !== 1 ? "s" : ""} available for ${overStockItem.name}.`);
             return;
         }
 
@@ -213,11 +227,13 @@ export default function CartIndex() {
                                 <div className="divide-y divide-gray-100">
                                     {group.items.map(item => {
                                         const itemKey = getItemKey(item);
+                                        const stock = getStock(item);
+                                        const isOverStock = item.variant_id && Number(item.qty || 0) > stock;
 
                                         return (
                                             <div
                                                 key={itemKey}
-                                                className="p-4 gap-4 items-center grid grid-cols-1 md:grid-cols-[20px_1fr_150px_150px_150px_60px]"
+                                                className={`p-4 gap-4 items-center grid grid-cols-1 md:grid-cols-[20px_1fr_150px_150px_150px_60px] ${isOverStock ? "bg-orange-50" : ""}`}
                                             >
                                                 <div className="flex justify-start md:justify-center items-center">
                                                     <Checkbox
@@ -256,14 +272,22 @@ export default function CartIndex() {
                                                         <InputNumber
                                                             mode="spinner"
                                                             min={1}
-                                                            max={item.stock || item.variant?.stock || 999}
                                                             value={item.qty}
                                                             onChange={v => {
                                                                 if (v === null || v === undefined || v < 1) return;
+                                                                if (stock > 0 && v > stock) {
+                                                                    message.warning(`Only ${stock} item${stock !== 1 ? "s" : ""} available for ${item.name}.`);
+                                                                    return;
+                                                                }
                                                                 updateQty(itemKey, v);
                                                             }}
                                                             className="w-full"
                                                         />
+                                                        {isOverStock && (
+                                                            <p className="text-xs text-orange-600 mt-1">
+                                                                Only {stock} item{stock !== 1 ? "s" : ""} available
+                                                            </p>
+                                                        )}
                                                     </div>
                                                 </div>
 

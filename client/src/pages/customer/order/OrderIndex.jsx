@@ -64,7 +64,7 @@ export default function OrderIndex() {
             const store = getStoreName(item?.store || item?.product?.store).toLowerCase()
             const product = (item?.product?.name || "").toLowerCase()
 
-            return `#${order.id}`.includes(keyword) || item?.status?.includes(keyword) || store.includes(keyword) || product.includes(keyword)
+            return String(order.id || "").toLowerCase().includes(keyword) || item?.status?.includes(keyword) || store.includes(keyword) || product.includes(keyword)
         })
     }, [orders, search])
 
@@ -97,7 +97,7 @@ export default function OrderIndex() {
     return (
         <div className="min-h-screen bg-gray-50 p-4 sm:p-6">
             <div className="max-w-6xl mx-auto">
-                <div className="mb-6 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl p-4 md:p-6 border border-blue-100">
+                <div className="mb-6 bg-linear-to-br from-blue-50 to-cyan-50 rounded-2xl p-4 md:p-6 border border-blue-100">
                     <div className="flex items-start justify-between gap-4 flex-wrap">
                         <div>
                             <h1 className="text-2xl md:text-3xl font-bold text-blue-900 mb-1">My Product Orders</h1>
@@ -146,7 +146,7 @@ export default function OrderIndex() {
                                             </div>
                                             <div className="min-w-0">
                                                 <div className="flex flex-wrap items-center gap-2">
-                                                    <h2 className="font-bold text-gray-950">Order #{order.id}</h2>
+                                                    <h2 className="font-bold text-gray-950">Checkout #{String(order.id || "").slice(0, 8)}</h2>
                                                     <Tag color={statusInfo.color} className="flex items-center gap-1 w-fit">
                                                         <StatusIcon size={14} />
                                                         {statusInfo.label}
@@ -164,7 +164,7 @@ export default function OrderIndex() {
                                             <Button
                                                 type="primary"
                                                 icon={<Eye size={16} />}
-                                                onClick={() => navigate(`/customer/orders/${order.id}?item=${item?.id}`)}
+                                                onClick={() => navigate(`/customer/orders/items/${item?.id}`)}
                                                 className="rounded-lg"
                                             >
                                                 Details

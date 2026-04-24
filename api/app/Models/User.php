@@ -46,9 +46,9 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany(PushSubscription::class);
     }
 
-    public function orders()
+    public function orderItems()
     {
-        return $this->hasMany(Order::class);
+        return $this->hasMany(OrderItem::class);
     }
 
     /**

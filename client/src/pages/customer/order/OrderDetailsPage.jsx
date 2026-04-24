@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react"
 import { Button, Empty, App, Modal, Input, Spin, Steps, Tag } from "antd"
 import { ArrowLeft, Clock, CheckCircle, Truck, X, AlertCircle, Package, Store, ShoppingBag, MapPin } from "lucide-react"
-import { useNavigate, useParams, useSearchParams } from "react-router-dom"
+import { useNavigate, useParams } from "react-router-dom"
 import * as orderService from "../../../services/orderService"
 
 const statusConfig = {
@@ -19,12 +19,12 @@ const getStoreName = (store) => store?.store_name || store?.name || "Unknown Sel
 const canCancelItem = (item) => ["pending", "processing"].includes(item?.status)
 
 export default function OrderDetailsPage() {
-    const { id } = useParams()
-    const [searchParams] = useSearchParams()
+    const { itemId } = useParams()
     const navigate = useNavigate()
     const { message } = App.useApp()
 
     const [order, setOrder] = useState(null)
+    const [selectedItem, setSelectedItem] = useState(null)
     const [loading, setLoading] = useState(true)
     const [cancelTarget, setCancelTarget] = useState(null)
     const [cancellationReason, setCancellationReason] = useState("")
@@ -34,25 +34,21 @@ export default function OrderDetailsPage() {
     const fetchOrderDetails = useCallback(async () => {
         setLoading(true)
         try {
-            const data = await orderService.getOrder(id)
-            setOrder(data?.data)
+            const data = await orderService.getOrder(itemId)
+            setOrder(data?.data?.group || null)
+            setSelectedItem(data?.data?.item || null)
         } catch (err) {
             message.error(err.message || "Failed to fetch order details")
         } finally {
             setLoading(false)
         }
-    }, [id, message])
+    }, [itemId, message])
 
     useEffect(() => {
         fetchOrderDetails()
     }, [fetchOrderDetails])
 
-    const selectedItemId = Number(searchParams.get("item"))
     const rawItemGroups = useMemo(() => order?.item_groups || [], [order])
-    const selectedItem = useMemo(() => {
-        const items = order?.order_items || rawItemGroups.flatMap(group => group.items || [])
-        return items.find(item => item.id === selectedItemId) || items[0] || null
-    }, [rawItemGroups, order?.order_items, selectedItemId])
     const itemGroups = useMemo(() => {
         if (!selectedItem) return []
         return rawItemGroups
@@ -73,8 +69,9 @@ export default function OrderDetailsPage() {
 
         setCancellationLoading(true)
         try {
-            const data = await orderService.cancelOrderItem(order.id, cancelTarget.item.id, cancellationReason)
-            setOrder(data?.data)
+            const data = await orderService.cancelOrderItem(cancelTarget.item.id, cancellationReason)
+            setOrder(data?.data?.group || null)
+            setSelectedItem(data?.data?.item || null)
             message.success("Item cancelled and totals recalculated")
 
             closeCancelModal()
@@ -88,8 +85,9 @@ export default function OrderDetailsPage() {
     const handleMarkDelivered = async () => {
         setDeliveryLoading(true)
         try {
-            const data = await orderService.markOrderItemDelivered(order.id, selectedItem.id)
-            setOrder(data?.data)
+            const data = await orderService.markOrderItemDelivered(selectedItem.id)
+            setOrder(data?.data?.group || null)
+            setSelectedItem(data?.data?.item || null)
             message.success("Product marked as delivered")
         } catch (err) {
             message.error(err.message || "Failed to mark product delivered")
@@ -134,7 +132,7 @@ export default function OrderDetailsPage() {
                         <ArrowLeft size={20} className="text-gray-700" />
                     </button>
                     <div className="flex-1 min-w-0">
-                        <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Order #{order.id}</h1>
+                        <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Checkout #{String(order.id || "").slice(0, 8)}</h1>
                         <p className="text-sm text-gray-500 mt-1">{new Date(order.created_at).toLocaleString()}</p>
                     </div>
                     <Tag color={statusInfo.color} className="flex items-center gap-1 w-fit">

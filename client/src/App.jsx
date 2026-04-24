@@ -137,7 +137,7 @@ export default function App() {
                                     <Route path="/customer/cart" element={<CartIndex />} />
                                     <Route path="/customer/checkout" element={<CheckoutIndex />} />
                                     <Route path="/customer/orders" element={<OrderIndex />} />
-                                    <Route path="/customer/orders/:id" element={<OrderDetailsPage />} />
+                                    <Route path="/customer/orders/items/:itemId" element={<OrderDetailsPage />} />
                                 </Route>
 
                                 {/* Seller routes */}
@@ -148,7 +148,7 @@ export default function App() {
                                     <Route path="/seller/products/:uuid/edit" element={<ProductFormPage mode="edit" />} />
                                     <Route path="/seller/products/:uuid/variants" element={<ProductVariantManagementIndex />} />
                                     <Route path="/seller/orders" element={<SellerOrderIndex />} />
-                                    <Route path="/seller/orders/:id" element={<SellerOrderDetailsPage />} />
+                                    <Route path="/seller/orders/items/:itemId" element={<SellerOrderDetailsPage />} />
                                     <Route path="/seller/edit-profile" element={<EditProfile />} />
                                     <Route path="/seller/notifications" element={<NotificationsPage />} />
                                 </Route>

@@ -13,6 +13,7 @@ use App\Http\Controllers\Seller\SellerOrderController;
 use App\Http\Controllers\Seller\SellerStoreController;
 use App\Http\Controllers\Customer\CustomerCartController;
 use App\Http\Controllers\Customer\CustomerOrderController;
+use App\Http\Controllers\Customer\CustomerProductReviewController;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -126,5 +127,6 @@ Route::middleware('auth:api')->group(function () {
         Route::post('/order-items/calculate-shipping', [CustomerOrderController::class, 'calculateShipping']);
         Route::put('/order-items/{item}/cancel', [CustomerOrderController::class, 'cancelItem']);
         Route::put('/order-items/{item}/delivered', [CustomerOrderController::class, 'deliverItem']);
+        Route::post('/order-items/{item}/review', [CustomerProductReviewController::class, 'store']);
     });
 });

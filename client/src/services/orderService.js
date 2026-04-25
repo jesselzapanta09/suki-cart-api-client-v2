@@ -26,3 +26,7 @@ export function cancelOrderItem(itemId, reason) {
         cancellation_reason: reason,
     })
 }
+
+export function createProductReview(itemId, payload) {
+    return api.post(`/customer/order-items/${itemId}/review`, payload)
+}

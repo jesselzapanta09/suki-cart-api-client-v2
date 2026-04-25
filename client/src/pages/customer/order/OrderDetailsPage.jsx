@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react"
-import { Button, Empty, App, Modal, Input, Spin, Tag } from "antd"
-import { ArrowLeft, Clock, CheckCircle, Truck, X, Package, Store, ShoppingBag, MapPin } from "lucide-react"
+import { Button, Empty, App, Modal, Input, Spin, Tag, Rate } from "antd"
+import { ArrowLeft, Clock, CheckCircle, Truck, X, Package, Store, ShoppingBag, MapPin, Star } from "lucide-react"
 import { useNavigate, useParams } from "react-router-dom"
 import * as orderService from "../../../services/orderService"
+import ReviewProductModal from "./ReviewProductModal"
 
 const statusConfig = {
     pending: { color: "orange", icon: Clock, label: "Order placed" },
@@ -35,6 +36,8 @@ export default function OrderDetailsPage() {
     const [cancellationReason, setCancellationReason] = useState("")
     const [cancellationLoading, setCancellationLoading] = useState(false)
     const [deliveryLoading, setDeliveryLoading] = useState(false)
+    const [reviewModalOpen, setReviewModalOpen] = useState(false)
+    const [reviewSubmitting, setReviewSubmitting] = useState(false)
 
     const fetchOrderDetails = useCallback(async () => {
         setLoading(true)
@@ -98,6 +101,22 @@ export default function OrderDetailsPage() {
             message.error(err.message || "Failed to mark product delivered")
         } finally {
             setDeliveryLoading(false)
+        }
+    }
+
+    const handleReviewSubmit = async (values) => {
+        if (!selectedItem?.id) return
+
+        setReviewSubmitting(true)
+        try {
+            await orderService.createProductReview(selectedItem.id, values)
+            await fetchOrderDetails()
+            setReviewModalOpen(false)
+            message.success("Product review submitted")
+        } catch (err) {
+            message.error(err.message || "Failed to submit product review")
+        } finally {
+            setReviewSubmitting(false)
         }
     }
 
@@ -170,6 +189,14 @@ export default function OrderDetailsPage() {
                                 onClick={handleMarkDelivered}
                             >
                                 Received Product
+                            </Button>
+                        )}
+                        {selectedItem?.can_review && (
+                            <Button
+                                icon={<Star size={16} />}
+                                onClick={() => setReviewModalOpen(true)}
+                            >
+                                Rate Product
                             </Button>
                         )}
                     </div>
@@ -348,6 +375,29 @@ export default function OrderDetailsPage() {
                                 <p className="text-sm text-gray-800">{order.message}</p>
                             </div>
                         )}
+
+                        {selectedItem?.review && (
+                            <div className="bg-white rounded-2xl border border-amber-100 shadow-sm p-5">
+                                <div className="flex items-start gap-3">
+                                    <div className="w-10 h-10 rounded-xl bg-amber-50 ring-1 ring-amber-100 flex items-center justify-center shrink-0">
+                                        <Star size={18} className="text-amber-600" />
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                        <div className="flex flex-wrap items-center gap-3">
+                                            <h3 className="font-semibold text-gray-900">Your Review</h3>
+                                            <Rate disabled value={selectedItem.review.rating} />
+                                        </div>
+                                        <p className="mt-2 text-xs text-gray-500">
+                                            Variant: {selectedItem.review.variant_name || selectedItem.variant?.name || "Default"}
+                                        </p>
+                                        <p className="mt-3 text-sm text-gray-700">{selectedItem.review.review}</p>
+                                        <p className="mt-3 text-xs text-gray-400">
+                                            Submitted {new Date(selectedItem.review.created_at).toLocaleString()}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     <div>
@@ -410,6 +460,14 @@ export default function OrderDetailsPage() {
                     />
                 </div>
             </Modal>
+
+            <ReviewProductModal
+                open={reviewModalOpen}
+                item={selectedItem}
+                submitting={reviewSubmitting}
+                onCancel={() => setReviewModalOpen(false)}
+                onSubmit={handleReviewSubmit}
+            />
         </div>
     )
 }

@@ -64,4 +64,15 @@ class Product extends Model
     {
         return $this->hasMany(ProductVariant::class)->orderBy('id');
     }
+
+    public function reviews()
+    {
+        return $this->hasMany(ProductReview::class);
+    }
+
+    public function orderItems()
+    {
+        return $this->hasMany(OrderItem::class);
+    }
+
 }

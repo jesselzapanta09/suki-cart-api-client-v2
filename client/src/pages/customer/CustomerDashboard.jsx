@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Card, Tag, Button, Input, App } from "antd";
 import { useAuth } from "../../context/AuthContext";
 import { useCart } from "../../context/CartContext";
-import { ShoppingBag, Package, Clock, Star, Search, ShoppingCart, TrendingUp } from "lucide-react";
+import { ShoppingBag, Package, Clock, Search, ShoppingCart } from "lucide-react";
 import { MOCK_PRODUCTS, MOCK_ORDERS } from "../../services/mockData";
 import { Link } from "react-router-dom";
 
@@ -62,15 +62,19 @@ export default function CustomerDashboard() {
                     { label: "Delivered", value: MOCK_ORDERS.filter(o => o.status === "delivered").length, icon: Package, bg: "bg-emerald-100", color: "text-emerald-700" },
                     { label: "Pending", value: MOCK_ORDERS.filter(o => o.status !== "delivered").length, icon: Clock, bg: "bg-orange-100", color: "text-orange-700" },
                     { label: "In Cart", value: totalItems, icon: ShoppingCart, bg: "bg-blue-100", color: "text-blue-700" },
-                ].map(({ label, value, bg, color }) => (
-                    <Card key={label} className="rounded-xl border-gray-200 shadow-sm" hoverable>
-                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center mb-3 ${bg} ${color}`}>
-                            <Icon size={18} />
-                        </div>
-                        <div className="text-2xl font-bold text-gray-900">{value}</div>
-                        <div className="text-gray-400 text-xs mt-1">{label}</div>
-                    </Card>
-                ))}
+                ].map((item) => {
+                    const StatIcon = item.icon;
+
+                    return (
+                        <Card key={item.label} className="rounded-xl border-gray-200 shadow-sm" hoverable>
+                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center mb-3 ${item.bg} ${item.color}`}>
+                                <StatIcon size={18} />
+                            </div>
+                            <div className="text-2xl font-bold text-gray-900">{item.value}</div>
+                            <div className="text-gray-400 text-xs mt-1">{item.label}</div>
+                        </Card>
+                    );
+                })}
             </div>
 
             <div className="grid lg:grid-cols-3 gap-6">

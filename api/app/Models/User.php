@@ -51,6 +51,11 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany(OrderItem::class);
     }
 
+    public function productReviews()
+    {
+        return $this->hasMany(ProductReview::class);
+    }
+
     /**
      * The attributes that are mass assignable.
      *

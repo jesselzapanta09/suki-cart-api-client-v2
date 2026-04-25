@@ -9,6 +9,7 @@ use App\Models\Cart;
 use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\ProductVariant;
+use App\Models\ProductReview;
 use App\Services\ShippingCalculationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -34,7 +35,7 @@ class CustomerOrderController extends Controller
 
         $query = (clone $baseQuery)
             ->when($status, fn ($q) => $q->where('status', $status))
-            ->with(['location', 'product.images', 'product.store', 'variant'])
+            ->with(['location', 'product.images', 'product.store', 'variant', 'review'])
             ->orderByDesc('created_at');
 
         $items = $query->paginate($perPage);
@@ -65,7 +66,7 @@ class CustomerOrderController extends Controller
 
     public function show(Request $request, string $checkoutNo)
     {
-        $item = $this->customerCheckoutItem($request, $checkoutNo, ['location', 'product.images', 'product.store', 'variant']);
+        $item = $this->customerCheckoutItem($request, $checkoutNo, ['location', 'product.images', 'product.store', 'variant', 'review']);
         $group = $this->groupSnapshot($request->user()->id, $item->checkout_no);
 
         return response()->json([
@@ -139,7 +140,7 @@ class CustomerOrderController extends Controller
 
             $createdItems = OrderItem::query()
                 ->whereIn('id', $createdIds)
-                ->with(['location', 'product.images', 'product.store', 'variant'])
+                ->with(['location', 'product.images', 'product.store', 'variant', 'review'])
                 ->orderBy('id')
                 ->get();
 
@@ -191,7 +192,7 @@ class CustomerOrderController extends Controller
             ]);
         });
 
-        $item->load(['location', 'product.images', 'product.store', 'variant']);
+        $item->load(['location', 'product.images', 'product.store', 'variant', 'review']);
         $this->notifyItemCancelled($item, $validated['cancellation_reason']);
 
         return response()->json([
@@ -215,7 +216,7 @@ class CustomerOrderController extends Controller
         }
 
         $item->update(['status' => 'delivered']);
-        $item->load(['location', 'product.images', 'product.store', 'variant']);
+        $item->load(['location', 'product.images', 'product.store', 'variant', 'review']);
 
         $this->notifyItemDelivered($item);
 
@@ -278,7 +279,7 @@ class CustomerOrderController extends Controller
         $items = OrderItem::query()
             ->where('user_id', $userId)
             ->where('checkout_no', $checkoutNo)
-            ->with(['location', 'product.images', 'product.store', 'variant'])
+            ->with(['location', 'product.images', 'product.store', 'variant', 'review'])
             ->orderBy('id')
             ->get();
 
@@ -360,8 +361,25 @@ class CustomerOrderController extends Controller
         $payload['line_total'] = (float) $item->price * $item->quantity;
         $payload['item_total'] = $item->status === 'cancelled' ? 0 : $payload['line_total'] + (float) $item->shipping_cost;
         $payload['store'] = $this->storePayload($item->product?->store);
+        $payload['review'] = $this->reviewPayload($item->review);
+        $payload['can_review'] = $item->status === 'delivered' && !$item->review;
 
         return $payload;
+    }
+
+    private function reviewPayload(?ProductReview $review): ?array
+    {
+        if (!$review) {
+            return null;
+        }
+
+        return [
+            'id' => $review->id,
+            'rating' => $review->rating,
+            'review' => $review->review,
+            'variant_name' => $review->variant_name,
+            'created_at' => $review->created_at,
+        ];
     }
 
     private function storePayload($store): ?array

@@ -282,7 +282,7 @@ export default function SearchResultsPage() {
                                             <ProductCard
                                                 product={{
                                                     ...product,
-                                                    rating: product.rating || 4.5,
+                                                    rating: Number(product.rating ?? 0),
                                                     sold: product.sold || 0,
                                                     category: product.category?.name || "Unknown",
                                                 }}

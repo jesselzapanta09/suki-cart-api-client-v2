@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react"
-import { Button, Empty, App, Modal, Input, Spin, Steps, Tag } from "antd"
-import { ArrowLeft, Clock, CheckCircle, Truck, X, AlertCircle, Package, Store, ShoppingBag, MapPin } from "lucide-react"
+import { Button, Empty, App, Modal, Input, Spin, Tag } from "antd"
+import { ArrowLeft, Clock, CheckCircle, Truck, X, Package, Store, ShoppingBag, MapPin } from "lucide-react"
 import { useNavigate, useParams } from "react-router-dom"
 import * as orderService from "../../../services/orderService"
 
@@ -118,8 +118,24 @@ export default function OrderDetailsPage() {
     }
 
     const statusInfo = statusConfig[selectedItem?.status || order.status] || statusConfig.pending
-    const StatusIcon = statusInfo.icon || AlertCircle
-    const currentStep = selectedItem?.status === "cancelled" ? 0 : Math.max(statusSteps.indexOf(selectedItem?.status || order.status), 0)
+    const currentStatus = selectedItem?.status || order.status
+    const currentStep = currentStatus === "cancelled" ? 0 : Math.max(statusSteps.indexOf(currentStatus), 0)
+    const timelineItems = statusSteps.map((status, index) => {
+        const isCompleted = index < currentStep
+        const isCurrent = status === currentStatus
+        const isUpcoming = index > currentStep
+        const Icon = statusConfig[status].icon
+
+        return {
+            status,
+            index,
+            isCompleted,
+            isCurrent,
+            isUpcoming,
+            Icon,
+            label: statusConfig[status].label,
+        }
+    })
 
     return (
         <div className="min-h-screen bg-gray-50 py-6 md:py-8">
@@ -135,17 +151,18 @@ export default function OrderDetailsPage() {
                         <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Checkout #{String(order.id || "").slice(0, 8)}</h1>
                         <p className="text-sm text-gray-500 mt-1">{new Date(order.created_at).toLocaleString()}</p>
                     </div>
-                    <Tag color={statusInfo.color} className="flex items-center gap-1 w-fit">
-                        <StatusIcon size={14} />
-                        {statusInfo.label}
-                    </Tag>
                 </div>
 
                 <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mb-6">
                     <div className="flex items-start justify-between gap-4 mb-5">
                         <div>
                             <h2 className="text-lg font-bold text-gray-900">Product Timeline</h2>
-                            <p className="text-sm text-gray-500">Current status: {statusInfo.label}</p>
+                            <div className="mt-2 flex flex-wrap items-center gap-2">
+                                <p className="text-sm text-gray-500">Current status:</p>
+                                <Tag color={statusInfo.color} className="m-0 px-2 py-0.5 text-sm font-medium">
+                                    {statusInfo.label}
+                                </Tag>
+                            </div>
                         </div>
                         {selectedItem?.status === "shipped" && (
                             <Button
@@ -163,14 +180,67 @@ export default function OrderDetailsPage() {
                             This product order was cancelled.
                         </div>
                     ) : (
-                        <Steps
-                            current={currentStep}
-                            responsive
-                            items={statusSteps.map(status => ({
-                                title: statusConfig[status].label,
-                                icon: React.createElement(statusConfig[status].icon, { size: 18 }),
-                            }))}
-                        />
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 md:gap-4">
+                            {timelineItems.map((item) => (
+                                <div key={item.status} className="relative">
+                                    {item.index < timelineItems.length - 1 && (
+                                        <div
+                                            className={`hidden md:block absolute top-6 left-[calc(50%+2rem)] right-[-1rem] h-1 rounded-full ${
+                                                item.index < currentStep ? "bg-green-400" : "bg-gray-200"
+                                            }`}
+                                        />
+                                    )}
+
+                                    <div
+                                        className={`relative h-full rounded-2xl border p-4 transition-all ${
+                                            item.isCurrent
+                                                ? "border-blue-500 bg-blue-50 shadow-sm ring-2 ring-blue-100"
+                                                : item.isCompleted
+                                                    ? "border-green-200 bg-green-50"
+                                                    : "border-gray-200 bg-gray-50"
+                                        }`}
+                                    >
+                                        <div className="flex items-start gap-3">
+                                            <div
+                                                className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${
+                                                    item.isCurrent
+                                                        ? "bg-blue-600 text-white"
+                                                        : item.isCompleted
+                                                            ? "bg-green-600 text-white"
+                                                            : "bg-white text-gray-400 border border-gray-200"
+                                                }`}
+                                            >
+                                                <item.Icon size={20} />
+                                            </div>
+
+                                            <div className="min-w-0">
+                                                <div className="flex flex-wrap items-center gap-2">
+                                                    <p className="text-sm font-semibold text-gray-900">{item.label}</p>
+                                                    {item.isCurrent && (
+                                                        <span className="rounded-full bg-blue-600 px-2 py-0.5 text-xs font-semibold text-white">
+                                                            Current
+                                                        </span>
+                                                    )}
+                                                    {item.isCompleted && (
+                                                        <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-700">
+                                                            Done
+                                                        </span>
+                                                    )}
+                                                    {item.isUpcoming && (
+                                                        <span className="rounded-full bg-gray-200 px-2 py-0.5 text-xs font-semibold text-gray-600">
+                                                            Next
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <p className="mt-2 text-xs text-gray-500">
+                                                    Step {item.index + 1} of {timelineItems.length}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     )}
                 </div>
 
@@ -244,9 +314,6 @@ export default function OrderDetailsPage() {
                                                 <div className="min-w-0">
                                                     <div className="flex flex-wrap items-center gap-2">
                                                         <h3 className="font-semibold text-gray-900 truncate">{item.product?.name}</h3>
-                                                        <Tag color={statusConfig[item.status]?.color || "default"}>
-                                                            {statusConfig[item.status]?.label || item.status}
-                                                        </Tag>
                                                     </div>
                                                     {item.variant && <p className="text-xs text-gray-500 mt-1">{item.variant.name}</p>}
                                                     <p className="text-sm text-gray-600 mt-2">
@@ -317,7 +384,7 @@ export default function OrderDetailsPage() {
                             </div>
 
                             <div className="space-y-2">
-                                <Button block onClick={() => navigate("/customer/orders")}>
+                                <Button block size="large" onClick={() => navigate("/customer/orders")}>
                                     Back to Orders
                                 </Button>
                             </div>
@@ -331,7 +398,7 @@ export default function OrderDetailsPage() {
                 open={Boolean(cancelTarget)}
                 onCancel={closeCancelModal}
                 onOk={handleCancel}
-                okText="Cancel Product"
+                okText="Cancel Order"
                 okButtonProps={{ danger: true, loading: cancellationLoading }}
             >
                 <div className="space-y-4">

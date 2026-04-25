@@ -37,7 +37,8 @@ export default function CustomerDashboard() {
     };
 
     return (
-        <div className="p-4 sm:p-6 max-w-6xl mx-auto">
+         <div className="min-h-screen bg-gray-50">
+            <div className="max-w-7xl mx-auto px-4 py-6 md:py-8 pb-24 md:pb-28">
             {/* Header */}
             <div className="mb-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-6 border border-green-100">
                 <div className="flex items-start justify-between flex-wrap gap-4">
@@ -124,6 +125,7 @@ export default function CustomerDashboard() {
                         </div>
                     </Card>
                 </div>
+            </div>
             </div>
         </div>
     );

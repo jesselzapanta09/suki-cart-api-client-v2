@@ -4,8 +4,9 @@ namespace App\Helpers;
 
 use App\Models\Notification;
 use App\Models\PushSubscription;
-use Minishlink\WebPush\WebPush;
 use Minishlink\WebPush\Subscription;
+use Minishlink\WebPush\WebPush;
+use Throwable;
 
 class NotificationHelper
 {
@@ -16,13 +17,21 @@ class NotificationHelper
     {
         $notification = Notification::create([
             'user_id' => $userId,
-            'type'    => $type,
-            'title'   => $title,
+            'type' => $type,
+            'title' => $title,
             'message' => $message,
-            'data'    => $data,
+            'data' => $data,
         ]);
 
-        static::dispatchWebPush($userId, $title, $message, $type, $data);
+        static::dispatchWebPush(
+            $userId,
+            $title,
+            $message,
+            $type,
+            array_merge($data ?? [], [
+                'notification_id' => $notification->id,
+            ])
+        );
 
         return $notification;
     }
@@ -32,12 +41,12 @@ class NotificationHelper
      */
     public static function dispatchWebPush(int $userId, string $title, string $message, string $type = 'system', ?array $data = null): void
     {
-        $vapidPublic  = config('app.vapid_public_key');
+        $vapidPublic = config('app.vapid_public_key');
         $vapidPrivate = config('app.vapid_private_key');
         $vapidSubject = config('app.vapid_subject', 'mailto:admin@sukicart.ph');
 
         if (!$vapidPublic || !$vapidPrivate) {
-            return; // VAPID not configured yet (e.g. during development setup)
+            return;
         }
 
         $subscriptions = PushSubscription::where('user_id', $userId)->get();
@@ -47,8 +56,8 @@ class NotificationHelper
 
         $auth = [
             'VAPID' => [
-                'subject'    => $vapidSubject,
-                'publicKey'  => $vapidPublic,
+                'subject' => $vapidSubject,
+                'publicKey' => $vapidPublic,
                 'privateKey' => $vapidPrivate,
             ],
         ];
@@ -56,34 +65,57 @@ class NotificationHelper
         $webPush = new WebPush($auth);
 
         $payload = json_encode([
-            'title'   => $title,
+            'title' => $title,
             'message' => $message,
-            'type'    => $type,
-            'data'    => $data,
-        ]);
+            'type' => $type,
+            'data' => $data,
+        ], JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE);
+
+        if ($payload === false) {
+            \Illuminate\Support\Facades\Log::warning('[WebPush] Failed to encode push payload', [
+                'user_id' => $userId,
+                'title' => $title,
+                'type' => $type,
+                'json_error' => json_last_error_msg(),
+            ]);
+
+            return;
+        }
 
         $expiredEndpoints = [];
 
         foreach ($subscriptions as $sub) {
-            $subscription = Subscription::create([
-                'endpoint' => $sub->endpoint,
-                'keys'     => [
-                    'p256dh' => $sub->public_key,
-                    'auth'   => $sub->auth_token,
-                ],
-            ]);
-
-            $report = $webPush->sendOneNotification($subscription, $payload);
-
-            if (!$report->isSuccess()) {
-                // Log the reason so we can debug
-                \Illuminate\Support\Facades\Log::warning('[WebPush] Failed to send push notification', [
+            try {
+                $subscription = Subscription::create([
                     'endpoint' => $sub->endpoint,
-                    'reason'   => $report->getReason(),
-                    'response' => $report->getResponseContent(),
+                    'keys' => [
+                        'p256dh' => $sub->public_key,
+                        'auth' => $sub->auth_token,
+                    ],
                 ]);
-                // Subscription is expired or invalid — clean it up
-                $expiredEndpoints[] = $sub->endpoint;
+
+                $report = $webPush->sendOneNotification($subscription, $payload);
+
+                if (!$report->isSuccess()) {
+                    $response = $report->getResponse();
+                    $statusCode = $response?->getStatusCode();
+
+                    \Illuminate\Support\Facades\Log::warning('[WebPush] Failed to send push notification', [
+                        'endpoint' => $sub->endpoint,
+                        'status_code' => $statusCode,
+                        'reason' => $report->getReason(),
+                        'response' => $report->getResponseContent(),
+                    ]);
+
+                    if (in_array($statusCode, [404, 410], true)) {
+                        $expiredEndpoints[] = $sub->endpoint;
+                    }
+                }
+            } catch (Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning('[WebPush] Exception while sending push notification', [
+                    'endpoint' => $sub->endpoint,
+                    'error' => $e->getMessage(),
+                ]);
             }
         }
 

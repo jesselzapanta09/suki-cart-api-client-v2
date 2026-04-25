@@ -17,14 +17,47 @@ class CustomerCartController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
-        $cartItems = Cart::query()
+        $perPage = min((int) $request->query('per_page', 10), 50);
+        $query = Cart::query()
             ->where('user_id', $user->id)
             ->with(['product' => function ($q) {
                 $q->with(['images', 'category', 'store', 'variants']);
-            }, 'variant'])
-            ->get();
+            }, 'variant']);
 
-        $storeGroups = $cartItems
+        if (!$request->has('page') && !$request->has('per_page')) {
+            $cartItems = $query->get();
+
+            $storeGroups = $cartItems
+                ->groupBy(fn ($item) => $item->product?->store?->id ?? 'unknown')
+                ->values()
+                ->map(function ($items) {
+                    $store = $items->first()?->product?->store;
+
+                    return [
+                        'store' => $store ? [
+                            'id' => $store->id,
+                            'uuid' => $store->uuid,
+                            'store_name' => $store->store_name,
+                            'description' => $store->description,
+                            'banner' => $store->banner,
+                        ] : null,
+                        'items' => $items->values(),
+                        'total_items' => $items->count(),
+                        'total_quantity' => $items->sum('quantity'),
+                    ];
+                });
+
+            return response()->json([
+                'message' => 'Cart items retrieved successfully.',
+                'data' => $storeGroups,
+            ]);
+        }
+
+        $cartItems = $query
+            ->orderByDesc('created_at')
+            ->paginate($perPage);
+
+        $storeGroups = collect($cartItems->items())
             ->groupBy(fn ($item) => $item->product?->store?->id ?? 'unknown')
             ->values()
             ->map(function ($items) {
@@ -47,6 +80,12 @@ class CustomerCartController extends Controller
         return response()->json([
             'message' => 'Cart items retrieved successfully.',
             'data' => $storeGroups,
+            'pagination' => [
+                'total' => $cartItems->total(),
+                'per_page' => $cartItems->perPage(),
+                'current_page' => $cartItems->currentPage(),
+                'last_page' => $cartItems->lastPage(),
+            ],
         ]);
     }
 

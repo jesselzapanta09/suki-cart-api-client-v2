@@ -23,8 +23,15 @@ class CustomerOrderController extends Controller
         $status = $request->query('status');
         $perPage = min((int) $request->query('per_page', 15), 50);
 
-        $query = OrderItem::query()
-            ->where('user_id', $user->id)
+        $baseQuery = OrderItem::query()
+            ->where('user_id', $user->id);
+
+        $statusCounts = (clone $baseQuery)
+            ->select('status', DB::raw('COUNT(*) as total'))
+            ->groupBy('status')
+            ->pluck('total', 'status');
+
+        $query = (clone $baseQuery)
             ->when($status, fn ($q) => $q->where('status', $status))
             ->with(['location', 'product.images', 'product.store', 'variant'])
             ->orderByDesc('created_at');
@@ -43,6 +50,14 @@ class CustomerOrderController extends Controller
                 'per_page' => $items->perPage(),
                 'current_page' => $items->currentPage(),
                 'last_page' => $items->lastPage(),
+            ],
+            'counts' => [
+                'all' => (clone $baseQuery)->count(),
+                'pending' => (int) ($statusCounts['pending'] ?? 0),
+                'processing' => (int) ($statusCounts['processing'] ?? 0),
+                'shipped' => (int) ($statusCounts['shipped'] ?? 0),
+                'delivered' => (int) ($statusCounts['delivered'] ?? 0),
+                'cancelled' => (int) ($statusCounts['cancelled'] ?? 0),
             ],
         ]);
     }
@@ -317,19 +332,6 @@ class CustomerOrderController extends Controller
     private function notifyOrderPlaced(Collection $items): void
     {
         foreach ($items as $item) {
-            NotificationHelper::send(
-                userId: $item->user_id,
-                type: 'order',
-                title: 'Order Placed',
-                message: "{$item->product?->name} has been ordered.",
-                data: [
-                    'checkout_group' => $item->checkout_group,
-                    'order_item_id' => $item->id,
-                    'status' => 'pending',
-                    'url' => "/customer/orders/items/{$item->id}",
-                ],
-            );
-
             $store = $item->product?->store;
             if ($store) {
                 NotificationHelper::send(
@@ -341,7 +343,7 @@ class CustomerOrderController extends Controller
                         'checkout_group' => $item->checkout_group,
                         'order_item_id' => $item->id,
                         'status' => 'pending',
-                        'url' => "/seller/orders/items/{$item->id}",
+                        'url' => $this->sellerOrderUrl($item),
                     ],
                 );
             }
@@ -359,7 +361,7 @@ class CustomerOrderController extends Controller
                 'checkout_group' => $item->checkout_group,
                 'order_item_id' => $item->id,
                 'status' => 'cancelled',
-                'url' => "/customer/orders/items/{$item->id}",
+                'url' => $this->customerOrderUrl($item),
             ],
         );
 
@@ -374,7 +376,7 @@ class CustomerOrderController extends Controller
                     'checkout_group' => $item->checkout_group,
                     'order_item_id' => $item->id,
                     'status' => 'cancelled',
-                    'url' => "/seller/orders/items/{$item->id}",
+                    'url' => $this->sellerOrderUrl($item),
                 ],
             );
         }
@@ -394,9 +396,19 @@ class CustomerOrderController extends Controller
                     'checkout_group' => $item->checkout_group,
                     'order_item_id' => $item->id,
                     'status' => 'delivered',
-                    'url' => "/seller/orders/items/{$item->id}",
+                    'url' => $this->sellerOrderUrl($item),
                 ],
             );
         }
+    }
+
+    private function customerOrderUrl(OrderItem $item): string
+    {
+        return "/customer/orders/items/{$item->id}";
+    }
+
+    private function sellerOrderUrl(OrderItem $item): string
+    {
+        return "/seller/orders/items/{$item->id}";
     }
 }

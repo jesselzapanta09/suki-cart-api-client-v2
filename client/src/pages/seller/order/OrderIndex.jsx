@@ -79,6 +79,15 @@ export default function OrderIndex() {
         fetchOrders(page, pageSize, statusFilter)
     }
 
+    const handleOpenDetails = (itemId) => {
+        if (!itemId) {
+            message.warning("Unable to open order details for this item")
+            return
+        }
+
+        navigate(`/seller/orders/items/${itemId}`)
+    }
+
     if (!loading && orders.length === 0) {
         return (
             <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
@@ -171,7 +180,7 @@ export default function OrderIndex() {
                                             <Button
                                                 type="primary"
                                                 icon={<Eye size={16} />}
-                                                onClick={() => navigate(`/seller/orders/items/${item?.id}`)}
+                                                onClick={() => handleOpenDetails(item?.id)}
                                                 className="rounded-lg"
                                             >
                                                 Details

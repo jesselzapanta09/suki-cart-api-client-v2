@@ -105,13 +105,6 @@ Route::middleware('auth:api')->group(function () {
             Route::put('/order-items/{item}/status', [SellerOrderController::class, 'updateStatus']);
             Route::put('/order-items/{item}/shipment', [SellerOrderController::class, 'updateShipment']);
             Route::put('/order-items/{item}/cancel', [SellerOrderController::class, 'cancelItem']);
-
-            // Backward-compatible order URLs now backed by order_items.
-            Route::get('/orders', [SellerOrderController::class, 'index']);
-            Route::get('/orders/items/{item}', [SellerOrderController::class, 'show']);
-            Route::put('/orders/items/{item}/status', [SellerOrderController::class, 'updateStatus']);
-            Route::put('/orders/items/{item}/shipment', [SellerOrderController::class, 'updateShipment']);
-            Route::put('/orders/items/{item}/cancel', [SellerOrderController::class, 'cancelItem']);
         });
     });
 

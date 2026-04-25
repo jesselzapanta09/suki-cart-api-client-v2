@@ -133,18 +133,7 @@ class SellerOrderController extends Controller
             'tracking_number' => $validated['tracking_number'],
         ]);
 
-        NotificationHelper::send(
-            userId: $item->user_id,
-            type: 'order',
-            title: 'Courier Details Updated',
-            message: "{$store->store_name} updated courier details for {$item->product?->name}.",
-            data: [
-                'checkout_group' => $item->checkout_group,
-                'order_item_id' => $item->id,
-                'status' => $item->status,
-                'url' => "/customer/orders/items/{$item->id}",
-            ],
-        );
+        $this->notifyCustomerShipmentUpdated($item->fresh(['product.store']), $store);
 
         return $this->freshSellerGroupResponse($item->checkout_group, $store->id, $item->id, 'Courier details saved successfully.');
     }
@@ -175,18 +164,10 @@ class SellerOrderController extends Controller
             ]);
         });
 
-        NotificationHelper::send(
-            userId: $item->user_id,
-            type: 'order',
-            title: 'Product Order Cancelled',
-            message: "{$store->store_name} cancelled {$item->product?->name}.",
-            data: [
-                'checkout_group' => $item->checkout_group,
-                'order_item_id' => $item->id,
-                'status' => 'cancelled',
-                'url' => "/customer/orders/items/{$item->id}",
-            ],
-        );
+        $this->notifyCustomerStatusChanged($item->fresh(['product.store']), $store, [
+            'status' => 'cancelled',
+            'cancellation_reason' => $validated['cancellation_reason'],
+        ]);
 
         return $this->freshSellerGroupResponse($item->checkout_group, $store->id, $item->id, 'Order item cancelled successfully.');
     }
@@ -308,24 +289,63 @@ class SellerOrderController extends Controller
     private function notifyCustomerStatusChanged(OrderItem $item, $store, array $validated): void
     {
         $status = $validated['status'];
-        $message = "{$store->store_name} marked {$item->product?->name} as {$this->statusLabel($status)}.";
+        $statusLabel = $this->statusLabel($status);
+        $message = "{$store->store_name} marked {$item->product?->name} as {$statusLabel}.";
 
         if ($status === 'shipped') {
             $message .= " Courier: {$validated['courier_name']}. Tracking: {$validated['tracking_number']}.";
         }
 
+        if ($status === 'cancelled' && !empty($validated['cancellation_reason'])) {
+            $message .= " Reason: {$validated['cancellation_reason']}.";
+        }
+
         NotificationHelper::send(
             userId: $item->user_id,
             type: 'order',
-            title: $status === 'cancelled' ? 'Product Order Cancelled' : 'Product Order Updated',
+            title: $this->statusTitle($status),
             message: $message,
             data: [
                 'checkout_group' => $item->checkout_group,
                 'order_item_id' => $item->id,
                 'status' => $status,
-                'url' => "/customer/orders/items/{$item->id}",
+                'status_label' => $statusLabel,
+                'url' => $this->customerOrderUrl($item),
             ],
         );
+    }
+
+    private function notifyCustomerShipmentUpdated(OrderItem $item, $store): void
+    {
+        NotificationHelper::send(
+            userId: $item->user_id,
+            type: 'order',
+            title: 'Courier Details Updated',
+            message: "{$store->store_name} updated courier details for {$item->product?->name}. Courier: {$item->courier_name}. Tracking: {$item->tracking_number}.",
+            data: [
+                'checkout_group' => $item->checkout_group,
+                'order_item_id' => $item->id,
+                'status' => $item->status,
+                'status_label' => $this->statusLabel($item->status),
+                'url' => $this->customerOrderUrl($item),
+            ],
+        );
+    }
+
+    private function customerOrderUrl(OrderItem $item): string
+    {
+        return "/customer/orders/items/{$item->id}";
+    }
+
+    private function statusTitle(string $status): string
+    {
+        return [
+            'processing' => 'Product Order Processing',
+            'shipped' => 'Product Order Shipped',
+            'delivered' => 'Product Order Delivered',
+            'cancelled' => 'Product Order Cancelled',
+            'pending' => 'Product Order Updated',
+        ][$status] ?? 'Product Order Updated';
     }
 
     private function statusLabel(string $status): string

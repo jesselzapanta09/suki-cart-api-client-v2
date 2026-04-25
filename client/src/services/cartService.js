@@ -2,8 +2,8 @@ import api from './api';
 import { getPublicProduct } from './productService';
 
 // Cart operations (authenticated customer only)
-export function getCart() {
-    return api.get('/customer/cart');
+export function getCart(params = {}) {
+    return api.get('/customer/cart', { params });
 }
 
 export function addToCart(productId, quantity = 1, variantId = null) {

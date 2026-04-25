@@ -149,6 +149,8 @@ export default function App() {
                                     <Route path="/seller/products/:uuid/variants" element={<ProductVariantManagementIndex />} />
                                     <Route path="/seller/orders" element={<SellerOrderIndex />} />
                                     <Route path="/seller/orders/items/:itemId" element={<SellerOrderDetailsPage />} />
+                                    <Route path="/seller/order-items" element={<SellerOrderIndex />} />
+                                    <Route path="/seller/order-items/:itemId" element={<SellerOrderDetailsPage />} />
                                     <Route path="/seller/edit-profile" element={<EditProfile />} />
                                     <Route path="/seller/notifications" element={<NotificationsPage />} />
                                 </Route>

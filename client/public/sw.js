@@ -4,6 +4,24 @@
 
 const CACHE_NAME = 'sukicart-v1';
 
+function buildNotificationTag(payload) {
+    const data = payload?.data || {};
+
+    if (data.notification_tag) {
+        return data.notification_tag;
+    }
+
+    if (payload?.type === 'order') {
+        return `order-${data.order_item_id || 'general'}-${data.status || 'update'}-${Date.now()}`;
+    }
+
+    if (payload?.type === 'store') {
+        return `store-${data.store_uuid || 'general'}-${data.status || 'update'}-${Date.now()}`;
+    }
+
+    return `${payload?.type || 'sukicart'}-${Date.now()}`;
+}
+
 // ── Install ───────────────────────────────────────────────────────────────────
 self.addEventListener('install', () => {
     // Activate immediately without waiting for old SW to finish
@@ -36,11 +54,13 @@ self.addEventListener('push', (event) => {
         body: payload.message,
         icon: '/suki-cart-logo.png',
         badge: '/suki-cart-logo.png',
-        tag: payload.type || 'sukicart',
+        tag: buildNotificationTag(payload),
         data: {
             url: '/notifications',
             ...payload.data,
         },
+        renotify: true,
+        timestamp: Date.now(),
         // Android vibration pattern (works in Cordova)
         vibrate: [100, 50, 100],
         requireInteraction: false,

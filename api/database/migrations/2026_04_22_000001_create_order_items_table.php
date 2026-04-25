@@ -26,7 +26,7 @@ return new class extends Migration
             $table->enum('status', ['pending', 'processing', 'shipped', 'delivered', 'cancelled'])->default('pending');
             $table->string('courier_name')->nullable();
             $table->string('tracking_number')->nullable();
-            $table->enum('cancelled_by', ['admin', 'seller', 'customer'])->nullable();
+            $table->enum('cancelled_by', ['seller', 'customer'])->nullable();
             $table->text('cancellation_reason')->nullable();
             $table->timestamp('cancelled_at')->nullable();
             $table->timestamps();

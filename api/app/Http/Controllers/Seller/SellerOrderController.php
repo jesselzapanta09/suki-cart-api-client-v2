@@ -210,12 +210,15 @@ class SellerOrderController extends Controller
 
     private function sellerCheckoutItem(string $checkoutNo, int $storeId, array $with = []): OrderItem
     {
-        return OrderItem::query()
+        /** @var OrderItem $item */
+        $item = OrderItem::query()
             ->where('checkout_no', $checkoutNo)
             ->whereHas('product', fn ($q) => $q->where('store_id', $storeId))
             ->with($with)
             ->orderBy('id')
             ->firstOrFail();
+
+        return $item;
     }
 
     private function freshSellerGroupResponse(string $checkoutNo, int $storeId, int $selectedItemId, string $message)

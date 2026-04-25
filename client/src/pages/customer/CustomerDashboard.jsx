@@ -40,7 +40,7 @@ export default function CustomerDashboard() {
          <div className="min-h-screen bg-gray-50">
             <div className="max-w-7xl mx-auto px-4 py-6 md:py-8 pb-24 md:pb-28">
             {/* Header */}
-            <div className="mb-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-6 border border-green-100">
+            <div className="mb-6 bg-linear-to-br from-green-50 to-emerald-50 rounded-2xl p-6 border border-green-100">
                 <div className="flex items-start justify-between flex-wrap gap-4">
                     <div>
                         <p className="text-sm font-medium text-green-600 mb-1">{greeting()}</p>
@@ -62,7 +62,7 @@ export default function CustomerDashboard() {
                     { label: "Delivered", value: MOCK_ORDERS.filter(o => o.status === "delivered").length, icon: Package, bg: "bg-emerald-100", color: "text-emerald-700" },
                     { label: "Pending", value: MOCK_ORDERS.filter(o => o.status !== "delivered").length, icon: Clock, bg: "bg-orange-100", color: "text-orange-700" },
                     { label: "In Cart", value: totalItems, icon: ShoppingCart, bg: "bg-blue-100", color: "text-blue-700" },
-                ].map(({ label, value, icon: Icon, bg, color }) => (
+                ].map(({ label, value, bg, color }) => (
                     <Card key={label} className="rounded-xl border-gray-200 shadow-sm" hoverable>
                         <div className={`w-10 h-10 rounded-lg flex items-center justify-center mb-3 ${bg} ${color}`}>
                             <Icon size={18} />
@@ -108,7 +108,7 @@ export default function CustomerDashboard() {
                             ) : filtered.map(p => (
                                 <div key={p.id} className="flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 transition-colors">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-100 to-green-200 flex items-center justify-center text-green-700">
+                                        <div className="w-10 h-10 rounded-xl bg-linear-to-br from-green-100 to-green-200 flex items-center justify-center text-green-700">
                                             <Package size={16} />
                                         </div>
                                         <div>

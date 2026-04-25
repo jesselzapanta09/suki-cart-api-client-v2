@@ -262,12 +262,15 @@ class CustomerOrderController extends Controller
 
     private function customerCheckoutItem(Request $request, string $checkoutNo, array $with = []): OrderItem
     {
-        return OrderItem::query()
+        /** @var OrderItem $item */
+        $item = OrderItem::query()
             ->where('user_id', $request->user()->id)
             ->where('checkout_no', $checkoutNo)
             ->with($with)
             ->orderBy('id')
             ->firstOrFail();
+
+        return $item;
     }
 
     private function groupSnapshot(int $userId, string $checkoutNo): array

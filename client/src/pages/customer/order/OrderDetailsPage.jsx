@@ -186,7 +186,7 @@ export default function OrderDetailsPage() {
                                 <div key={item.status} className="relative">
                                     {item.index < timelineItems.length - 1 && (
                                         <div
-                                            className={`hidden md:block absolute top-6 left-[calc(50%+2rem)] right-[-1rem] h-1 rounded-full ${
+                                            className={`hidden md:block absolute top-6 left-[calc(50%+2rem)] -right-4 h-1 rounded-full ${
                                                 item.index < currentStep ? "bg-green-400" : "bg-gray-200"
                                             }`}
                                         />

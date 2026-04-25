@@ -52,3 +52,7 @@ export function searchPublicProducts(params = {}) {
 export function getPublicProduct(uuid) {
     return api.get(`/products/${uuid}`);
 }
+
+export function getSimilarPublicProducts(uuid, params = {}) {
+    return api.get(`/products/${uuid}/similar`, { params });
+}

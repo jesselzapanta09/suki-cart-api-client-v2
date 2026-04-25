@@ -1,6 +1,6 @@
 import { ShoppingCart, Package } from "lucide-react";
 
-export default function ProductCard({ product, onAdd }) {
+export default function ProductCard({ product, onAdd, onClick }) {
     const variants = Array.isArray(product.variants) ? product.variants : [];
     const images = Array.isArray(product.images) ? product.images : [];
     const specs = product.specs && typeof product.specs === "object" ? product.specs : {};
@@ -31,7 +31,12 @@ export default function ProductCard({ product, onAdd }) {
     const hasPrice = typeof priceValue === "number" && !Number.isNaN(priceValue);
 
     return (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:-translate-y-1 hover:shadow-lg transition-all group overflow-hidden">
+        <div
+            onClick={onClick}
+            className={`bg-white rounded-2xl border border-gray-100 shadow-sm hover:-translate-y-1 hover:shadow-lg transition-all group overflow-hidden ${
+                onClick ? "cursor-pointer" : ""
+            }`}
+        >
             <div className="h-40 bg-linear-to-br from-green-50 to-emerald-100 flex items-center justify-center relative overflow-hidden">
                 {imageUrl ? (
                     <img

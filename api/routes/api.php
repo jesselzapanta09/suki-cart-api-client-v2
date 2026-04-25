@@ -29,6 +29,7 @@ Route::post('/reset-password',      [AuthController::class, 'resetPassword']);
 
 // Public product routes
 Route::get('/products/search', [HomeProductSearchController::class, 'index']);
+Route::get('/products/{uuid}/similar', [HomeProductSearchController::class, 'similar'])->where('uuid', '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}');
 Route::get('/products/{uuid}', [HomeProductSearchController::class, 'show'])->where('uuid', '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}');
 
 Route::get('/categories', function () {

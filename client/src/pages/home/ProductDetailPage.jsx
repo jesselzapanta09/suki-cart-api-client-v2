@@ -2,10 +2,10 @@ import React, { useEffect, useState } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { App, Spin, InputNumber, Button } from "antd";
 import { ShoppingCart, ShoppingBag, Package, ArrowLeft, ChevronLeft, ChevronRight, Store, Star } from "lucide-react";
-import { getPublicProduct, searchPublicProducts } from "../../services/productService";
+import { getPublicProduct, getSimilarPublicProducts } from "../../services/productService";
 import { useCart } from "../../context/CartContext";
 import { useAuth } from "../../context/AuthContext";
-import SimilarProducts from "../../components/home/SimilarProducts";
+import SimilarProducts from "./SimilarProducts";
 import ProductReviewsSection from "../../components/home/ProductReviewsSection";
 
 export default function ProductDetailPage() {
@@ -47,14 +47,10 @@ export default function ProductDetailPage() {
 
             try {
                 setSimilarLoading(true);
-                const searchKeyword = state?.searchKeyword || product.category?.name || "";
-                const response = await searchPublicProducts({
-                    search: searchKeyword,
-                    per_page: 6,
+                const response = await getSimilarPublicProducts(product.uuid, {
+                    limit: 3,
                 });
-
-                const similar = (response.data || []).filter((p) => p.id !== product.id);
-                setSimilarProducts(similar.slice(0, 6));
+                setSimilarProducts(Array.isArray(response) ? response : []);
             } catch (error) {
                 console.error("Error fetching similar products:", error);
                 setSimilarProducts([]);
@@ -64,7 +60,7 @@ export default function ProductDetailPage() {
         };
 
         fetchSimilar();
-    }, [product, state?.searchKeyword]);
+    }, [product]);
 
     useEffect(() => {
         const firstAvailableVariant = product?.variants?.find((variant) => Number(variant.stock || 0) > 0) || product?.variants?.[0] || null;
@@ -515,7 +511,6 @@ export default function ProductDetailPage() {
                 <SimilarProducts
                     similarProducts={similarProducts}
                     similarLoading={similarLoading}
-                    currentProductId={product.uuid}
                     searchKeyword={state?.searchKeyword}
                     onAddToCart={async (p) => {
                         if (!isCustomer) {

@@ -7,9 +7,16 @@ use App\Models\Product;
 use App\Models\ProductReview;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 
 class HomeProductSearchController extends Controller
 {
+    private const COMMON_PRODUCT_TERMS = [
+        'and', 'the', 'with', 'for', 'from', 'your', 'this', 'that', 'these', 'those',
+        'fresh', 'brand', 'new', 'pack', 'pcs', 'piece', 'pieces', 'size', 'small',
+        'medium', 'large', 'premium', 'best', 'quality',
+    ];
+
     /**
      * GET /api/products/search
      * Public product search endpoint - no authentication required
@@ -18,15 +25,7 @@ class HomeProductSearchController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Product::query()
-            ->where('status', 'active')
-            ->whereHas('variants', function ($q) {
-                $q->where('stock', '>', 0);
-            })
-            // Verify seller - only show products from approved stores
-            ->whereHas('store.verification', function ($q) {
-                $q->where('store_status', 'approved');
-            });
+        $query = $this->publicProductQuery();
 
         // Search by name or description
         if ($search = $request->input('search')) {
@@ -79,6 +78,75 @@ class HomeProductSearchController extends Controller
     }
 
     /**
+     * GET /api/products/{uuid}/similar
+     * Return similar public products for the given product.
+     */
+    public function similar(Request $request, string $uuid)
+    {
+        $product = $this->publicProductQuery()
+            ->where('uuid', $uuid)
+            ->with(['category', 'variants'])
+            ->firstOrFail();
+
+        $limit = max(1, min((int) $request->input('limit', 3), 12));
+        $keywords = $this->extractKeywords([$product->name]);
+
+        $candidatesQuery = $this->publicProductQuery()
+            ->where('id', '!=', $product->id)
+            ->with(['images', 'category', 'store', 'variants'])
+            ->withCount('reviews')
+            ->withAvg('reviews', 'rating')
+            ->withSum([
+                'orderItems as sold' => fn ($orderQuery) => $orderQuery->where('status', 'delivered'),
+            ], 'quantity');
+
+        if ($product->category_id || !empty($keywords)) {
+            $candidatesQuery->where(function ($query) use ($product, $keywords) {
+                if ($product->category_id) {
+                    $query->where('category_id', $product->category_id);
+                }
+
+                foreach ($keywords as $keyword) {
+                    $query->orWhere('name', 'like', "%{$keyword}%")
+                        ->orWhere('description', 'like', "%{$keyword}%");
+                }
+            });
+        }
+
+        $candidates = $candidatesQuery
+            ->latest('created_at')
+            ->limit(36)
+            ->get()
+            ->map(function (Product $candidate) use ($product, $keywords) {
+                $candidate->similarity_score = $this->calculateSimilarityScore(
+                    $product,
+                    $candidate,
+                    $keywords
+                );
+
+                return $candidate;
+            })
+            ->sort(function (Product $a, Product $b) {
+                return [
+                    $b->similarity_score,
+                    (float) ($b->reviews_avg_rating ?? 0),
+                    (int) ($b->sold ?? 0),
+                    strtotime((string) $b->created_at),
+                ] <=> [
+                    $a->similarity_score,
+                    (float) ($a->reviews_avg_rating ?? 0),
+                    (int) ($a->sold ?? 0),
+                    strtotime((string) $a->created_at),
+                ];
+            })
+            ->take($limit)
+            ->values()
+            ->map(fn (Product $candidate) => $this->decorateProductSummary($candidate));
+
+        return response()->json($candidates);
+    }
+
+    /**
      * GET /api/products/{uuid}
      * Get a single product detail with images, category, and store info
      * No authentication required (public)
@@ -86,16 +154,8 @@ class HomeProductSearchController extends Controller
      */
     public function show($uuid)
     {
-        $product = Product::query()
-            ->where('status', 'active')
+        $product = $this->publicProductQuery()
             ->where('uuid', $uuid)
-            ->whereHas('variants', function ($q) {
-                $q->where('stock', '>', 0);
-            })
-            // Verify seller - only show products from approved stores
-            ->whereHas('store.verification', function ($q) {
-                $q->where('store_status', 'approved');
-            })
             ->with([
                 'images',
                 'category',
@@ -184,4 +244,55 @@ class HomeProductSearchController extends Controller
             'review_count' => (int) ($summary?->review_count ?? 0),
         ];
     }
+
+    private function publicProductQuery()
+    {
+        return Product::query()
+            ->where('status', 'active')
+            ->whereHas('variants', function ($q) {
+                $q->where('stock', '>', 0);
+            })
+            ->whereHas('store.verification', function ($q) {
+                $q->where('store_status', 'approved');
+            });
+    }
+
+    private function calculateSimilarityScore(
+        Product $reference,
+        Product $candidate,
+        array $referenceKeywords
+    ): float {
+        $score = 0;
+
+        if ($reference->category_id && $candidate->category_id === $reference->category_id) {
+            $score += 60;
+        }
+
+        $candidateKeywords = $this->extractKeywords([$candidate->name]);
+
+        $keywordOverlap = count(array_intersect($referenceKeywords, $candidateKeywords));
+        $score += min($keywordOverlap * 10, 40);
+
+        $score += min((float) ($candidate->reviews_avg_rating ?? 0), 5);
+        $score += min(log10(((int) ($candidate->sold ?? 0)) + 1) * 3, 6);
+
+        return round($score, 2);
+    }
+
+    private function extractKeywords(array $parts): array
+    {
+        return collect($parts)
+            ->filter()
+            ->flatMap(function ($part) {
+                return preg_split('/[^a-z0-9]+/i', Str::lower((string) $part)) ?: [];
+            })
+            ->map(fn ($token) => trim($token))
+            ->filter(function ($token) {
+                return strlen($token) >= 3 && !in_array($token, self::COMMON_PRODUCT_TERMS, true);
+            })
+            ->unique()
+            ->values()
+            ->all();
+    }
+
 }

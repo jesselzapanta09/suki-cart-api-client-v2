@@ -26,6 +26,7 @@ export default function SearchResultsPage() {
         pageSize: 12,
         total: 0,
     });
+    const { current: currentPage, pageSize } = pagination;
 
     // Fetch search results
     useEffect(() => {
@@ -39,8 +40,8 @@ export default function SearchResultsPage() {
                 setLoading(true);
                 const response = await searchPublicProducts({
                     search: query,
-                    page: pagination.current,
-                    per_page: pagination.pageSize,
+                    page: currentPage,
+                    per_page: pageSize,
                     ...(minPrice && { min_price: minPrice }),
                     ...(maxPrice && { max_price: maxPrice }),
                     sort_field: sortBy === "price_asc" || sortBy === "price_desc" ? "price" : "created_at",
@@ -64,7 +65,7 @@ export default function SearchResultsPage() {
         };
 
         fetchResults();
-    }, [query, pagination.current, pagination.pageSize, minPrice, maxPrice, sortBy, navigate, message]);
+    }, [query, currentPage, pageSize, minPrice, maxPrice, sortBy, navigate, message]);
 
     const handleProductClick = (product) => {
         navigate(`/products/${product.uuid}`, {

@@ -5,8 +5,8 @@ export function getOrders(params = {}) {
     return api.get('/customer/order-items', { params })
 }
 
-export function getOrder(itemId) {
-    return api.get(`/customer/order-items/${itemId}`)
+export function getOrder(checkoutNo) {
+    return api.get(`/customer/order-items/${checkoutNo}`)
 }
 
 export function createOrder(orderData) {

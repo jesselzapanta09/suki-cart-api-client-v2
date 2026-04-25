@@ -16,8 +16,8 @@ export function getSellerOrders(params = {}) {
     return api.get('/seller/order-items', { params });
 }
 
-export function getSellerOrder(itemId) {
-    return api.get(`/seller/order-items/${itemId}`);
+export function getSellerOrder(checkoutNo) {
+    return api.get(`/seller/order-items/${checkoutNo}`);
 }
 
 export function updateSellerOrderStatus(itemId, data) {

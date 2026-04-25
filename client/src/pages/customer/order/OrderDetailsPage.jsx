@@ -17,9 +17,14 @@ const statusSteps = ["pending", "processing", "shipped", "delivered"]
 const formatMoney = (value) => `₱${Number(value || 0).toFixed(2)}`
 const getStoreName = (store) => store?.store_name || store?.name || "Unknown Seller"
 const canCancelItem = (item) => ["pending", "processing"].includes(item?.status)
+const getCancelledByLabel = (cancelledBy) => ({
+    customer: "Customer",
+    seller: "Seller",
+    admin: "Admin",
+}[cancelledBy] || "Unknown")
 
 export default function OrderDetailsPage() {
-    const { itemId } = useParams()
+    const { checkoutNo } = useParams()
     const navigate = useNavigate()
     const { message } = App.useApp()
 
@@ -34,7 +39,7 @@ export default function OrderDetailsPage() {
     const fetchOrderDetails = useCallback(async () => {
         setLoading(true)
         try {
-            const data = await orderService.getOrder(itemId)
+            const data = await orderService.getOrder(checkoutNo)
             setOrder(data?.data?.group || null)
             setSelectedItem(data?.data?.item || null)
         } catch (err) {
@@ -42,7 +47,7 @@ export default function OrderDetailsPage() {
         } finally {
             setLoading(false)
         }
-    }, [itemId, message])
+    }, [checkoutNo, message])
 
     useEffect(() => {
         fetchOrderDetails()
@@ -117,7 +122,6 @@ export default function OrderDetailsPage() {
         )
     }
 
-    const statusInfo = statusConfig[selectedItem?.status || order.status] || statusConfig.pending
     const currentStatus = selectedItem?.status || order.status
     const currentStep = currentStatus === "cancelled" ? 0 : Math.max(statusSteps.indexOf(currentStatus), 0)
     const timelineItems = statusSteps.map((status, index) => {
@@ -148,7 +152,7 @@ export default function OrderDetailsPage() {
                         <ArrowLeft size={20} className="text-gray-700" />
                     </button>
                     <div className="flex-1 min-w-0">
-                        <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Checkout #{String(order.id || "").slice(0, 8)}</h1>
+                        <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Order #{String(order.id || "").slice(0, 8)}</h1>
                         <p className="text-sm text-gray-500 mt-1">{new Date(order.created_at).toLocaleString()}</p>
                     </div>
                 </div>
@@ -157,12 +161,6 @@ export default function OrderDetailsPage() {
                     <div className="flex items-start justify-between gap-4 mb-5">
                         <div>
                             <h2 className="text-lg font-bold text-gray-900">Product Timeline</h2>
-                            <div className="mt-2 flex flex-wrap items-center gap-2">
-                                <p className="text-sm text-gray-500">Current status:</p>
-                                <Tag color={statusInfo.color} className="m-0 px-2 py-0.5 text-sm font-medium">
-                                    {statusInfo.label}
-                                </Tag>
-                            </div>
                         </div>
                         {selectedItem?.status === "shipped" && (
                             <Button
@@ -177,7 +175,10 @@ export default function OrderDetailsPage() {
                     </div>
                     {selectedItem?.status === "cancelled" ? (
                         <div className="rounded-xl bg-red-50 border border-red-100 p-3 text-sm text-red-700">
-                            This product order was cancelled.
+                            <p>This product order was cancelled by {getCancelledByLabel(selectedItem?.cancelled_by)}.</p>
+                            {selectedItem?.cancellation_reason && (
+                                <p className="mt-2 text-xs text-red-600">Reason: {selectedItem.cancellation_reason}</p>
+                            )}
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-3 md:gap-4">
@@ -213,26 +214,24 @@ export default function OrderDetailsPage() {
                                                 <item.Icon size={20} />
                                             </div>
 
-                                            <div className="min-w-0">
-                                                <div className="flex flex-wrap items-center gap-2">
-                                                    <p className="text-sm font-semibold text-gray-900">{item.label}</p>
-                                                    {item.isCurrent && (
-                                                        <span className="rounded-full bg-blue-600 px-2 py-0.5 text-xs font-semibold text-white">
-                                                            Current
-                                                        </span>
-                                                    )}
-                                                    {item.isCompleted && (
-                                                        <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-700">
-                                                            Done
-                                                        </span>
-                                                    )}
-                                                    {item.isUpcoming && (
-                                                        <span className="rounded-full bg-gray-200 px-2 py-0.5 text-xs font-semibold text-gray-600">
-                                                            Next
-                                                        </span>
-                                                    )}
-                                                </div>
-                                                <p className="mt-2 text-xs text-gray-500">
+                                            <div className="min-w-0 flex flex-col items-start gap-2">
+                                                <p className="text-sm font-semibold text-gray-900">{item.label}</p>
+                                                {item.isCurrent && (
+                                                    <span className="rounded-full bg-blue-600 px-2 py-0.5 text-xs font-semibold text-white">
+                                                        Current
+                                                    </span>
+                                                )}
+                                                {item.isCompleted && (
+                                                    <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-700">
+                                                        Done
+                                                    </span>
+                                                )}
+                                                {item.isUpcoming && (
+                                                    <span className="rounded-full bg-gray-200 px-2 py-0.5 text-xs font-semibold text-gray-600">
+                                                        Next
+                                                    </span>
+                                                )}
+                                                <p className="text-xs text-gray-500">
                                                     Step {item.index + 1} of {timelineItems.length}
                                                 </p>
                                             </div>
@@ -319,9 +318,6 @@ export default function OrderDetailsPage() {
                                                     <p className="text-sm text-gray-600 mt-2">
                                                         {formatMoney(item.price)} x {item.quantity}
                                                     </p>
-                                                    {item.cancellation_reason && (
-                                                        <p className="text-xs text-red-600 mt-2">Reason: {item.cancellation_reason}</p>
-                                                    )}
                                                 </div>
 
                                                 <div className="flex md:flex-col items-center md:items-end justify-between gap-3">

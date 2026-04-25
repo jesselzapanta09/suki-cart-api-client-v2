@@ -14,7 +14,7 @@ const statusConfig = {
 
 const statusTabs = ["all", "pending", "processing", "shipped", "delivered", "cancelled"]
 
-const formatMoney = (value) => `₱${Number(value || 0).toFixed(2)}`
+const formatMoney = (value) => `\u20b1${Number(value || 0).toFixed(2)}`
 const getStoreName = (store) => store?.store_name || store?.name || "Unknown Seller"
 
 export default function OrderIndex() {
@@ -49,7 +49,7 @@ export default function OrderIndex() {
         } finally {
             setLoading(false)
         }
-    }, [message])
+    }, [activeStatus, message])
 
     useEffect(() => {
         fetchOrders(1, pagination.pageSize, activeStatus)
@@ -57,8 +57,8 @@ export default function OrderIndex() {
     }, [activeStatus, fetchOrders, pagination.pageSize])
 
     const itemRows = useMemo(() => {
-        const rows = orders.flatMap(order =>
-            (order.order_items || order.item_groups?.flatMap(group => group.items || []) || []).map(item => ({
+        const rows = orders.flatMap((order) =>
+            (order.order_items || order.item_groups?.flatMap((group) => group.items || []) || []).map((item) => ({
                 ...order,
                 order_item: item,
             }))
@@ -67,7 +67,7 @@ export default function OrderIndex() {
 
         if (!keyword) return rows
 
-        return rows.filter(order => {
+        return rows.filter((order) => {
             const item = order.order_item
             const store = getStoreName(item?.store || item?.product?.store).toLowerCase()
             const product = (item?.product?.name || "").toLowerCase()
@@ -103,7 +103,6 @@ export default function OrderIndex() {
     return (
         <div className="min-h-screen bg-gray-50">
             <div className="max-w-7xl mx-auto px-4 py-6 md:py-8 pb-24 md:pb-28">
-                {/* Header */}
                 <div className="mb-6 bg-linear-to-br from-green-50 to-emerald-50 rounded-2xl p-3 md:p-4 border border-green-100">
                     <div className="flex items-start gap-3 md:gap-4">
                         <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-green-100 flex items-center justify-center shrink-0">
@@ -178,7 +177,7 @@ export default function OrderIndex() {
                     </div>
                 ) : (
                     <div className="space-y-5">
-                        {itemRows.map(order => {
+                        {itemRows.map((order) => {
                             const item = order.order_item
                             const statusInfo = statusConfig[item?.status] || statusConfig.pending
                             const StatusIcon = statusInfo.icon
@@ -193,14 +192,16 @@ export default function OrderIndex() {
                                                 <ShoppingBag size={20} className="text-green-700" />
                                             </div>
                                             <div className="min-w-0">
-                                                <div className="flex flex-wrap items-center gap-2">
+                                                <div className="flex flex-col items-start gap-2">
                                                     <h2 className="font-bold text-gray-950">Checkout #{String(order.id || "").slice(0, 8)}</h2>
-                                                    <Tag color={statusInfo.color} className="flex items-center gap-1 w-fit">
-                                                        <StatusIcon size={14} />
-                                                        {statusInfo.label}
+                                                    <Tag color={statusInfo.color} className="w-fit">
+                                                        <span className="inline-flex items-center gap-1 whitespace-nowrap">
+                                                            <StatusIcon size={14} />
+                                                            <span>{statusInfo.label}</span>
+                                                        </span>
                                                     </Tag>
                                                 </div>
-                                                <p className="text-xs text-gray-500 mt-1">{new Date(order.created_at).toLocaleString()} · Qty {item?.quantity || 0}</p>
+                                                <p className="text-xs text-gray-500 mt-1">{new Date(order.created_at).toLocaleString()} | Qty {item?.quantity || 0}</p>
                                             </div>
                                         </div>
 
@@ -212,7 +213,7 @@ export default function OrderIndex() {
                                             <Button
                                                 type="primary"
                                                 icon={<Eye size={16} />}
-                                                onClick={() => navigate(`/customer/orders/items/${item?.id}`)}
+                                                onClick={() => navigate(`/customer/orders/items/${order?.checkout_no || order?.id}`)}
                                                 className="rounded-lg"
                                             >
                                                 Details
@@ -222,8 +223,16 @@ export default function OrderIndex() {
 
                                     <div className="p-4 md:p-5">
                                         <div className="flex items-center gap-3 mb-3">
-                                            <div className="w-9 h-9 rounded-lg bg-green-100 flex items-center justify-center shrink-0">
-                                                <Store size={18} className="text-green-700" />
+                                            <div className="w-12 h-12 rounded-lg bg-green-100 flex items-center justify-center overflow-hidden shrink-0 border border-green-100">
+                                                {store?.banner ? (
+                                                    <img
+                                                        src={`/${store.banner}`}
+                                                        alt={getStoreName(store)}
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                ) : (
+                                                    <Store size={18} className="text-green-700" />
+                                                )}
                                             </div>
                                             <p className="font-semibold text-gray-900 truncate">{getStoreName(store)}</p>
                                         </div>
@@ -243,7 +252,7 @@ export default function OrderIndex() {
                                             <div className="min-w-0 flex-1">
                                                 <p className="text-sm font-semibold text-gray-900 truncate">{item?.product?.name}</p>
                                                 <p className="text-xs text-gray-500">
-                                                    Price {formatMoney(item?.price)} · Shipping {formatMoney(item?.shipping_cost)}
+                                                    Price {formatMoney(item?.price)} | Shipping {formatMoney(item?.shipping_cost)}
                                                 </p>
                                                 {item?.variant?.name && (
                                                     <p className="text-xs text-gray-500 mt-1">Variant: {item.variant.name}</p>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Seller;
 use App\Helpers\NotificationHelper;
 use App\Http\Controllers\Controller;
 use App\Models\OrderItem;
+use App\Models\Product;
 use App\Models\ProductVariant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -18,8 +19,15 @@ class SellerOrderController extends Controller
         $status = $request->query('status');
         $perPage = min((int) $request->query('per_page', 10), 50);
 
-        $query = OrderItem::query()
-            ->whereHas('product', fn ($q) => $q->where('store_id', $store->id))
+        $baseQuery = OrderItem::query()
+            ->whereHas('product', fn ($q) => $q->where('store_id', $store->id));
+
+        $statusCounts = (clone $baseQuery)
+            ->select('status', DB::raw('COUNT(*) as total'))
+            ->groupBy('status')
+            ->pluck('total', 'status');
+
+        $query = (clone $baseQuery)
             ->when($status, fn ($q) => $q->where('status', $status))
             ->with(['user', 'location', 'product.images', 'product.store', 'variant'])
             ->orderByDesc('created_at');
@@ -27,7 +35,7 @@ class SellerOrderController extends Controller
         $items = $query->paginate($perPage);
 
         $groups = collect($items->items())
-            ->groupBy('checkout_group')
+            ->groupBy('checkout_no')
             ->map(fn ($groupItems) => $this->decorateSellerGroup(collect($groupItems)))
             ->values();
 
@@ -40,16 +48,24 @@ class SellerOrderController extends Controller
                 'current_page' => $items->currentPage(),
                 'last_page' => $items->lastPage(),
             ],
+            'counts' => [
+                'all' => (clone $baseQuery)->count(),
+                'pending' => (int) ($statusCounts['pending'] ?? 0),
+                'processing' => (int) ($statusCounts['processing'] ?? 0),
+                'shipped' => (int) ($statusCounts['shipped'] ?? 0),
+                'delivered' => (int) ($statusCounts['delivered'] ?? 0),
+                'cancelled' => (int) ($statusCounts['cancelled'] ?? 0),
+            ],
         ]);
     }
 
-    public function show(Request $request, $itemId)
+    public function show(Request $request, string $checkoutNo)
     {
         $store = $this->sellerStore($request);
-        $item = $this->sellerItem($itemId, $store->id, ['user', 'location', 'product.images', 'product.store', 'variant']);
+        $item = $this->sellerCheckoutItem($checkoutNo, $store->id, ['user', 'location', 'product.images', 'product.store', 'variant']);
 
         $groupItems = OrderItem::query()
-            ->where('checkout_group', $item->checkout_group)
+            ->where('checkout_no', $item->checkout_no)
             ->whereHas('product', fn ($q) => $q->where('store_id', $store->id))
             ->with(['user', 'location', 'product.images', 'product.store', 'variant'])
             ->orderBy('id')
@@ -115,7 +131,7 @@ class SellerOrderController extends Controller
             $this->notifyCustomerStatusChanged($item->fresh(['product.store']), $store, $validated);
         }
 
-        return $this->freshSellerGroupResponse($item->checkout_group, $store->id, $item->id, 'Order item updated successfully.');
+        return $this->freshSellerGroupResponse($item->checkout_no, $store->id, $item->id, 'Order item updated successfully.');
     }
 
     public function updateShipment(Request $request, $itemId)
@@ -135,7 +151,7 @@ class SellerOrderController extends Controller
 
         $this->notifyCustomerShipmentUpdated($item->fresh(['product.store']), $store);
 
-        return $this->freshSellerGroupResponse($item->checkout_group, $store->id, $item->id, 'Courier details saved successfully.');
+        return $this->freshSellerGroupResponse($item->checkout_no, $store->id, $item->id, 'Courier details saved successfully.');
     }
 
     public function cancelItem(Request $request, $itemId)
@@ -169,7 +185,7 @@ class SellerOrderController extends Controller
             'cancellation_reason' => $validated['cancellation_reason'],
         ]);
 
-        return $this->freshSellerGroupResponse($item->checkout_group, $store->id, $item->id, 'Order item cancelled successfully.');
+        return $this->freshSellerGroupResponse($item->checkout_no, $store->id, $item->id, 'Order item cancelled successfully.');
     }
 
     private function sellerStore(Request $request)
@@ -192,10 +208,20 @@ class SellerOrderController extends Controller
             ->firstOrFail();
     }
 
-    private function freshSellerGroupResponse(string $checkoutGroup, int $storeId, int $selectedItemId, string $message)
+    private function sellerCheckoutItem(string $checkoutNo, int $storeId, array $with = []): OrderItem
+    {
+        return OrderItem::query()
+            ->where('checkout_no', $checkoutNo)
+            ->whereHas('product', fn ($q) => $q->where('store_id', $storeId))
+            ->with($with)
+            ->orderBy('id')
+            ->firstOrFail();
+    }
+
+    private function freshSellerGroupResponse(string $checkoutNo, int $storeId, int $selectedItemId, string $message)
     {
         $items = OrderItem::query()
-            ->where('checkout_group', $checkoutGroup)
+            ->where('checkout_no', $checkoutNo)
             ->whereHas('product', fn ($q) => $q->where('store_id', $storeId))
             ->with(['user', 'location', 'product.images', 'product.store', 'variant'])
             ->orderBy('id')
@@ -212,7 +238,38 @@ class SellerOrderController extends Controller
 
     private function restoreItemStock(OrderItem $item): void
     {
-        ProductVariant::find($item->product_variant_id)?->increment('stock', $item->quantity);
+        $variant = ProductVariant::find($item->product_variant_id);
+
+        if (!$variant) {
+            return;
+        }
+
+        $variant->increment('stock', $item->quantity);
+        $this->syncProductStockStatus($variant->product_id);
+    }
+
+    private function syncProductStockStatus(int $productId): void
+    {
+        $product = Product::find($productId);
+
+        if (!$product) {
+            return;
+        }
+
+        $hasAvailableStock = ProductVariant::query()
+            ->where('product_id', $productId)
+            ->where('stock', '>', 0)
+            ->exists();
+
+        if (!$hasAvailableStock && $product->status !== 'out_of_stock') {
+            $product->update(['status' => 'out_of_stock']);
+
+            return;
+        }
+
+        if ($hasAvailableStock && $product->status === 'out_of_stock') {
+            $product->update(['status' => 'active']);
+        }
     }
 
     private function decorateSellerGroup(Collection $items): array
@@ -231,8 +288,8 @@ class SellerOrderController extends Controller
         })->toArray();
 
         return [
-            'id' => $first?->checkout_group,
-            'checkout_group' => $first?->checkout_group,
+            'id' => $first?->checkout_no,
+            'checkout_no' => $first?->checkout_no,
             'created_at' => $first?->created_at,
             'location' => $first?->location,
             'address_extra' => $first?->address_extra,
@@ -244,6 +301,7 @@ class SellerOrderController extends Controller
                 'lastname' => $customer->lastname,
                 'email' => $customer->email,
                 'contact_number' => $customer->contact_number,
+                'profile_picture' => $customer->profile_picture,
             ] : null,
             'store_order' => [
                 'store' => $store ? [
@@ -306,7 +364,7 @@ class SellerOrderController extends Controller
             title: $this->statusTitle($status),
             message: $message,
             data: [
-                'checkout_group' => $item->checkout_group,
+                'checkout_no' => $item->checkout_no,
                 'order_item_id' => $item->id,
                 'status' => $status,
                 'status_label' => $statusLabel,
@@ -323,7 +381,7 @@ class SellerOrderController extends Controller
             title: 'Courier Details Updated',
             message: "{$store->store_name} updated courier details for {$item->product?->name}. Courier: {$item->courier_name}. Tracking: {$item->tracking_number}.",
             data: [
-                'checkout_group' => $item->checkout_group,
+                'checkout_no' => $item->checkout_no,
                 'order_item_id' => $item->id,
                 'status' => $item->status,
                 'status_label' => $this->statusLabel($item->status),
@@ -334,7 +392,7 @@ class SellerOrderController extends Controller
 
     private function customerOrderUrl(OrderItem $item): string
     {
-        return "/customer/orders/items/{$item->id}";
+        return "/customer/orders/items/{$item->checkout_no}";
     }
 
     private function statusTitle(string $status): string

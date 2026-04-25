@@ -426,26 +426,26 @@ export default function CartIndex() {
                                 );
                             })}
 
-                            <div className="my-2 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                                 <button
-                                onClick={async () => {
-                                    await clearCart();
-                                    setCheckedItems({});
-                                    await fetchCartPage(1);
-                                    message.success("Cart cleared");
-                                }}
-                                className="text-sm text-red-500 hover:text-red-700 font-medium flex items-center gap-1.5 mt-2"
-                            >
-                                <Trash2 size={14} /> Clear cart
-                            </button>
-                            <div className="overflow-x-auto pb-1 sm:pb-0">
-                                <Pagination
-                                    current={pagination.current}
-                                    pageSize={pagination.pageSize}
-                                    total={total}
-                                    onChange={handlePageChange}
-                                />
-                            </div>
+                                    onClick={async () => {
+                                        await clearCart();
+                                        setCheckedItems({});
+                                        await fetchCartPage(1);
+                                        message.success("Cart cleared");
+                                    }}
+                                    className="text-sm text-red-500 hover:text-red-700 font-medium flex items-center gap-1.5 mt-2"
+                                >
+                                    <Trash2 size={14} /> Clear cart
+                                </button>
+                                <div className="flex justify-center sm:justify-end">
+                                    <Pagination
+                                        current={pagination.current}
+                                        pageSize={pagination.pageSize}
+                                        total={total}
+                                        onChange={handlePageChange}
+                                    />
+                                </div>
                             </div>
                         </>
                     )}

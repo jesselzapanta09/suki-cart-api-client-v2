@@ -114,7 +114,7 @@ export default function ManageSellerIndex() {
                         <Store size={22} className="text-white" />
                     </div>
                     <div>
-                        <h1 className="font-sora font-bold text-xl text-gray-900">Manage Sellers</h1>
+                        <h1 className="font-sora font-bold text-xl text-gray-900">Verified Sellers</h1>
                         <p className="text-xs text-gray-400 mt-1">All verified and approved seller stores</p>
                     </div>
                 </div>

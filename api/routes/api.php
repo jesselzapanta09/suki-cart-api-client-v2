@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\AdminCategoryController;
+use App\Http\Controllers\Admin\AdminProductController;
 use App\Http\Controllers\Admin\AdminStoreVerificationController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Home\HomeCategoryController;
@@ -73,6 +74,9 @@ Route::middleware('auth:api')->group(function () {
         Route::post('/categories',        [AdminCategoryController::class, 'store']);
         Route::put('/categories/{id}',    [AdminCategoryController::class, 'update']);
         Route::delete('/categories/{id}', [AdminCategoryController::class, 'destroy']);
+
+        Route::get('/products', [AdminProductController::class, 'index']);
+        Route::get('/products/{uuid}', [AdminProductController::class, 'show'])->where('uuid', '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}');
 
         Route::get('/store-verifications',                      [AdminStoreVerificationController::class, 'index']);
         Route::get('/store-verifications/{store}',         [AdminStoreVerificationController::class, 'show']);

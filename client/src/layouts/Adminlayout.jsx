@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
 import { App, Modal, Button } from "antd";
-import { ShoppingBag, LayoutDashboard, Users, LogOut, Menu, X, Package, LayoutGrid, ShieldCheck, Store } from "lucide-react";
+import { LayoutDashboard, Users, LogOut, Menu, X, LayoutGrid, ShieldCheck, Store, Package } from "lucide-react";
 import NotificationBell from "../components/NotificationBell";
 import { useAuth } from "../context/auth-context";
 import Avatar from "../components/Avatar";
@@ -14,7 +14,8 @@ const NAV = [
     { label: "Users", to: "/admin/users", icon: Users },
     { label: "Categories", to: "/admin/categories", icon: LayoutGrid },
     { label: "Seller Verify", to: "/admin/seller-verify", icon: ShieldCheck },
-    { label: "Manage Sellers", to: "/admin/sellers", icon: Store },
+    { label: "Verified Sellers", to: "/admin/sellers", icon: Store },
+    { label: "Active products", to: "/admin/products", icon: Package },
 ];
 
 function useIsDesktop() {
@@ -48,7 +49,7 @@ function SidebarContent({ user, location, handleLogout }) {
             {/* Nav items */}
             <nav className="flex-1 px-3 py-4 flex flex-col gap-1">
                 {NAV.map((n) => {
-                    const active = location.pathname === n.to;
+                    const active = location.pathname === n.to || location.pathname.startsWith(`${n.to}/`);
                     const IconComponent = n.icon;
                     return (
                         <Link key={n.to} to={n.to}
@@ -180,7 +181,7 @@ export default function AdminLayout() {
                             </div>
                         </Link>
                         {NAV.map((n) => {
-                            const active = location.pathname === n.to;
+                            const active = location.pathname === n.to || location.pathname.startsWith(`${n.to}/`);
                             const IconComponent = n.icon;
                             return (
                                 <Link key={n.to} to={n.to}

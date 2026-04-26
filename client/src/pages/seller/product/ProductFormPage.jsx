@@ -13,6 +13,22 @@ function getStatusTag(status) {
   return <Tag>Draft</Tag>
 }
 
+function getTotalVariantStock(variants = []) {
+  return variants.reduce((total, variant) => total + Number(variant?.stock || 0), 0)
+}
+
+function getStatusStockError(status, totalVariantStock) {
+  if (status === "active" && totalVariantStock <= 0) {
+    return "Active products must have at least one variant with stock greater than 0"
+  }
+
+  if (status === "out_of_stock" && totalVariantStock > 0) {
+    return "Out of Stock products cannot have variant stock greater than 0"
+  }
+
+  return null
+}
+
 function mapProductToForm(product) {
   // Convert specs object to array of {key, value} pairs for the form
   const specsArray = product.specs ? Object.entries(product.specs).map(([key, value]) => ({ key, value })) : [];
@@ -115,6 +131,14 @@ export default function ProductFormPage({ mode }) {
     form.setFieldsValue(DEFAULT_FORM_VALUES)
   }, [form, isEdit, pageLoading, product])
 
+  const getCurrentVariantsForValidation = () => {
+    if (isEdit) {
+      return product?.variants || []
+    }
+
+    return form.getFieldValue("variants") || []
+  }
+
   const applyBackendErrors = (errors = {}) => {
     const fields = Object.entries(errors).map(([name, errorList]) => ({
       name,
@@ -143,7 +167,28 @@ export default function ProductFormPage({ mode }) {
 
   const handleSubmit = async (values) => {
     const formData = new FormData()
-    const variants = values.variants || []
+    const variants = isEdit ? (product?.variants || []) : (values.variants || [])
+    const totalVariantStock = getTotalVariantStock(variants)
+    const requestedStatus = values.status
+    const initialCreateStatus = !isEdit && requestedStatus === "active" ? "draft" : requestedStatus
+    const statusStockError = getStatusStockError(requestedStatus, totalVariantStock)
+
+    if (statusStockError) {
+      form.setFields([
+        {
+          name: ["status"],
+          errors: [statusStockError],
+        },
+        {
+          name: ["variants"],
+          errors: requestedStatus === "active"
+            ? ["Add stock to at least one variant before setting the product to Active"]
+            : ["Set all variant stock to 0 before marking the product as Out of Stock"],
+        },
+      ])
+      message.error(statusStockError)
+      return
+    }
 
     Object.entries(values).forEach(([key, value]) => {
       if (key === "images") return
@@ -162,6 +207,10 @@ export default function ProductFormPage({ mode }) {
             formData.append(`specs[${specKey}]`, specValue)
           })
         }
+        return
+      }
+      if (key === "status") {
+        formData.append("status", initialCreateStatus)
         return
       }
       if (value !== undefined && value !== null && value !== "") {
@@ -206,6 +255,12 @@ export default function ProductFormPage({ mode }) {
               stock: variant.stock,
             })
           }
+        }
+
+        if (requestedStatus !== initialCreateStatus) {
+          const statusFormData = new FormData()
+          statusFormData.append("status", requestedStatus)
+          await productService.updateProduct(productId, statusFormData)
         }
       }
 
@@ -319,7 +374,22 @@ export default function ProductFormPage({ mode }) {
                 <Form.Item
                   name="status"
                   label="Status"
-                  rules={[{ required: true, message: "Status is required" }]}
+                  dependencies={!isEdit ? ["variants"] : []}
+                  rules={[
+                    { required: true, message: "Status is required" },
+                    () => ({
+                      validator(_, value) {
+                        const variants = getCurrentVariantsForValidation()
+                        const error = getStatusStockError(value, getTotalVariantStock(variants))
+
+                        if (!error) {
+                          return Promise.resolve()
+                        }
+
+                        return Promise.reject(new Error(error))
+                      },
+                    }),
+                  ]}
                 >
                   <Select
                     options={[
@@ -423,6 +493,7 @@ export default function ProductFormPage({ mode }) {
                                 min={0}
                                 style={{ width: '100%' }}
                                 placeholder="0"
+                                onChange={() => form.validateFields(["status"]).catch(() => {})}
                               />
                             </Form.Item>
                           </div>

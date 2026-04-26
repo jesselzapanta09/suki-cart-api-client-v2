@@ -117,6 +117,7 @@ export default function ProductVariantManagementIndex() {
         filterVariants(updatedVariants, search)
         message.success("Variant updated successfully!")
       }
+      await fetchProductAndVariants()
       setModalOpen(false)
     } catch (err) {
       message.error(err.message || "Failed to save variant")

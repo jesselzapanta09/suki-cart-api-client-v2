@@ -6,12 +6,27 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Seller\StoreProductVariantRequest;
 use App\Http\Requests\Seller\UpdateProductVariantRequest;
 use App\Models\Product;
-use App\Models\ProductVariant;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
 class SellerProductVariantController extends Controller
 {
+    private function syncProductStockStatus(Product $product): void
+    {
+        $hasAvailableStock = $product->variants()
+            ->where('stock', '>', 0)
+            ->exists();
+
+        if (!$hasAvailableStock && $product->status === 'active') {
+            $product->update(['status' => 'out_of_stock']);
+            return;
+        }
+
+        if ($hasAvailableStock && $product->status === 'out_of_stock') {
+            $product->update(['status' => 'active']);
+        }
+    }
+
     /**
      * GET /api/seller/products/{product_uuid}/variants
      * Get all variants for a product
@@ -63,13 +78,15 @@ class SellerProductVariantController extends Controller
             ->firstOrFail();
 
         $data = $request->validated();
-        
+
         // Create variant
         $variant = $product->variants()->create([
             'name' => $data['name'],
             'price' => $data['price'],
             'stock' => $data['stock'],
         ]);
+
+        $this->syncProductStockStatus($product->fresh());
 
         return response()->json([
             'message' => 'Variant created successfully.',
@@ -98,6 +115,8 @@ class SellerProductVariantController extends Controller
             'price' => $data['price'],
             'stock' => $data['stock'],
         ]);
+
+        $this->syncProductStockStatus($product->fresh());
 
         return response()->json([
             'message' => 'Variant updated successfully.',
@@ -128,6 +147,8 @@ class SellerProductVariantController extends Controller
         }
 
         $variant->delete();
+
+        $this->syncProductStockStatus($product->fresh());
 
         return response()->json(['message' => 'Variant deleted successfully.']);
     }

@@ -14,6 +14,21 @@ use Illuminate\Validation\ValidationException;
 
 class SellerProductController extends Controller
 {
+    private function ensureProductStatusMatchesStock(string $status, int $totalStock): void
+    {
+        if ($status === 'active' && $totalStock <= 0) {
+            throw ValidationException::withMessages([
+                'status' => ['Active products must have at least one variant with stock greater than 0.'],
+            ]);
+        }
+
+        if ($status === 'out_of_stock' && $totalStock > 0) {
+            throw ValidationException::withMessages([
+                'status' => ['Out of Stock products cannot have variant stock greater than 0.'],
+            ]);
+        }
+    }
+
     /**
      * GET /api/seller/products
      * Server-side paginated, sortable, searchable product list for authenticated seller.
@@ -116,6 +131,11 @@ class SellerProductController extends Controller
                 ->where('uuid', $uuid)
                 ->firstOrFail();
             $data = $request->validated();
+            $nextStatus = $data['status'] ?? $product->status;
+            $totalVariantStock = (int) $product->variants()->sum('stock');
+
+            $this->ensureProductStatusMatchesStock($nextStatus, $totalVariantStock);
+
             $deletedImageIds = collect($data['deleted_image_ids'] ?? [])
                 ->map(fn ($imageId) => (int) $imageId)
                 ->unique()

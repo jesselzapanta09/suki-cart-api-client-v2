@@ -41,6 +41,7 @@ export default function ProductFiltersCard({
                             gap: mobile ? "8px" : "12px",
                         }}
                     >
+                        <Radio value="popular">Most Popular</Radio>
                         <Radio value="created_at">Newest</Radio>
                         <Radio value="price_asc">Price: Low to High</Radio>
                         <Radio value="price_desc">Price: High to Low</Radio>

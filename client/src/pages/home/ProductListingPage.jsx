@@ -21,7 +21,10 @@ export default function ProductListingPage() {
     const numericCategoryId = useMemo(() => Number(categoryId), [categoryId]);
     const numericStoreId = useMemo(() => Number(storeId), [storeId]);
     const query = searchParams.get("q") || "";
+    const sortParam = searchParams.get("sort") || "";
     const initialPage = parseInt(searchParams.get("page") || "1", 10);
+    const isPopularMode = !isCategoryMode && !isStoreMode && sortParam === "popular";
+    const isLatestMode = !isCategoryMode && !isStoreMode && sortParam === "latest";
 
     const [categories, setCategories] = useState(isCategoryMode ? null : []);
     const [store, setStore] = useState(isStoreMode ? null : null);
@@ -29,7 +32,7 @@ export default function ProductListingPage() {
     const [loading, setLoading] = useState(false);
     const [minPrice, setMinPrice] = useState("");
     const [maxPrice, setMaxPrice] = useState("");
-    const [sortBy, setSortBy] = useState("created_at");
+    const [sortBy, setSortBy] = useState(isPopularMode ? "popular" : "created_at");
     const [pagination, setPagination] = useState({
         current: initialPage,
         pageSize: 12,
@@ -38,11 +41,12 @@ export default function ProductListingPage() {
     const { current: currentPage, pageSize } = pagination;
 
     useEffect(() => {
+        setSortBy(isPopularMode ? "popular" : "created_at");
         setPagination((prev) => ({
             ...prev,
             current: initialPage,
         }));
-    }, [initialPage, query, categoryId, storeId]);
+    }, [initialPage, query, categoryId, storeId, isPopularMode, isLatestMode]);
 
     useEffect(() => {
         if (!isCategoryMode) {
@@ -116,7 +120,7 @@ export default function ProductListingPage() {
                 navigate("/", { replace: true });
                 return;
             }
-        } else if (!query.trim()) {
+        } else if (!query.trim() && !isPopularMode && !isLatestMode) {
             navigate("/", { replace: true });
             return;
         }
@@ -129,12 +133,18 @@ export default function ProductListingPage() {
                         ? { category_id: numericCategoryId }
                         : isStoreMode
                             ? { store_id: numericStoreId }
-                            : { search: query }),
+                            : isPopularMode || isLatestMode
+                                ? {}
+                                : { search: query }),
                     page: currentPage,
                     per_page: pageSize,
                     ...(minPrice && { min_price: minPrice }),
                     ...(maxPrice && { max_price: maxPrice }),
-                    sort_field: sortBy === "price_asc" || sortBy === "price_desc" ? "price" : "created_at",
+                    sort_field: sortBy === "price_asc" || sortBy === "price_desc"
+                        ? "price"
+                        : sortBy === "popular"
+                            ? "sold"
+                            : "created_at",
                     sort_order: sortBy === "price_asc" ? "ascend" : "desc",
                 });
 
@@ -165,6 +175,8 @@ export default function ProductListingPage() {
         numericCategoryId,
         numericStoreId,
         query,
+        isPopularMode,
+        isLatestMode,
         currentPage,
         pageSize,
         minPrice,
@@ -182,12 +194,20 @@ export default function ProductListingPage() {
         ? category?.name || "Category"
         : isStoreMode
             ? store?.store_name || "Store"
-            : "Search Results";
+            : isPopularMode
+                ? "All Products"
+                : isLatestMode
+                    ? "Latest Products"
+                : "Search Results";
     const pageSubtitle = isCategoryMode
         ? `Found ${pagination.total} product${pagination.total !== 1 ? "s" : ""} in this category`
         : isStoreMode
             ? `Found ${pagination.total} product${pagination.total !== 1 ? "s" : ""} in this store`
-        : `Found ${pagination.total} product${pagination.total !== 1 ? "s" : ""} for "${query}"`;
+            : isPopularMode
+                ? `Found ${pagination.total} product${pagination.total !== 1 ? "s" : ""} sorted by popularity`
+                : isLatestMode
+                    ? `Found ${pagination.total} product${pagination.total !== 1 ? "s" : ""} sorted by latest arrivals`
+            : `Found ${pagination.total} product${pagination.total !== 1 ? "s" : ""} for "${query}"`;
     const emptyMessage = isCategoryMode
         ? (
             <>
@@ -200,9 +220,21 @@ export default function ProductListingPage() {
                     There are no available products in <span className="font-semibold">{pageTitle}</span> yet.
                 </>
             )
-        : (
-            <>
-                We couldn't find any products matching <span className="font-semibold">"{query}"</span>. Try
+            : isPopularMode
+                ? (
+                    <>
+                        There are no available products to show right now.
+                    </>
+                )
+                : isLatestMode
+                    ? (
+                        <>
+                            There are no latest products to show right now.
+                        </>
+                    )
+            : (
+                <>
+                    We couldn't find any products matching <span className="font-semibold">"{query}"</span>. Try
                 searching with different keywords.
             </>
         );
@@ -242,7 +274,7 @@ export default function ProductListingPage() {
     const handleClearFilters = () => {
         setMinPrice("");
         setMaxPrice("");
-        setSortBy("created_at");
+        setSortBy(isPopularMode ? "popular" : "created_at");
         setPagination((prev) => ({ ...prev, current: 1 }));
     };
 

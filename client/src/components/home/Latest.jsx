@@ -1,8 +1,11 @@
-import { Spin } from "antd";
+import { Button, Spin } from "antd";
+import { ArrowRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import ProductCard from "./ProductCard";
 import SectionHeading from "./SectionHeading";
 
 export default function Latest({ products, onAdd }) {
+    const navigate = useNavigate();
     const isLoading = products === null;
 
     return (
@@ -18,11 +21,23 @@ export default function Latest({ products, onAdd }) {
                         <Spin size="large" />
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                        {products.map((p) => (
-                            <ProductCard key={p.id} product={p} onAdd={onAdd} />
-                        ))}
-                    </div>
+                    <>
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                            {products.map((p) => (
+                                <ProductCard key={p.id} product={p} onAdd={onAdd} />
+                            ))}
+                        </div>
+                        <div className="mt-6 flex justify-end">
+                            <Button
+                                type="text"
+                                icon={<ArrowRight size={16} />}
+                                iconPosition="end"
+                                onClick={() => navigate("/search?sort=latest")}
+                            >
+                                View more
+                            </Button>
+                        </div>
+                    </>
                 )}
             </div>
         </section>

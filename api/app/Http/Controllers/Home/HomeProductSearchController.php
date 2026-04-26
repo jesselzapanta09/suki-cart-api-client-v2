@@ -60,7 +60,12 @@ class HomeProductSearchController extends Controller
         // Sort
         $sortField = $request->input('sort_field', 'created_at');
         $sortOrder = $request->input('sort_order', 'desc');
-        $allowedSorts = ['id', 'name', 'created_at', 'price'];
+        if ($sortField === 'latest') {
+            $sortField = 'created_at';
+        }
+
+        $allowedSorts = ['id', 'name', 'created_at', 'price', 'sold'];
+        $includesSold = false;
         if ($sortField === 'price') {
             $direction = $sortOrder === 'ascend' ? 'asc' : 'desc';
 
@@ -69,19 +74,28 @@ class HomeProductSearchController extends Controller
                     $variantQuery->where('stock', '>', 0);
                 },
             ], 'price')->orderBy('sort_price', $direction);
+        } elseif ($sortField === 'sold') {
+            $query->withSum([
+                'orderItems as sold' => fn ($orderQuery) => $orderQuery->where('status', 'delivered'),
+            ], 'quantity')->orderBy('sold', $sortOrder === 'ascend' ? 'asc' : 'desc');
+            $includesSold = true;
         } elseif (in_array($sortField, $allowedSorts, true)) {
             $query->orderBy($sortField, $sortOrder === 'ascend' ? 'asc' : 'desc');
         }
 
         $perPage = (int) $request->input('per_page', 10);
-        $products = $query
+        $productsQuery = $query
             ->with(['images', 'category', 'store', 'variants'])
             ->withCount('reviews')
-            ->withAvg('reviews', 'rating')
-            ->withSum([
+            ->withAvg('reviews', 'rating');
+
+        if (!$includesSold) {
+            $productsQuery->withSum([
                 'orderItems as sold' => fn ($orderQuery) => $orderQuery->where('status', 'delivered'),
-            ], 'quantity')
-            ->paginate($perPage);
+            ], 'quantity');
+        }
+
+        $products = $productsQuery->paginate($perPage);
 
         $products->getCollection()->transform(function (Product $product) {
             return $this->decorateProductSummary($product);

@@ -22,7 +22,7 @@ class AdminUserController extends Controller
      */
     public function index(Request $request)
     {
-        $query = User::query();
+        $query = User::query()->where('id', '!=', 1);
 
         // Search
         if ($search = $request->input('search')) {
@@ -231,6 +231,10 @@ class AdminUserController extends Controller
     public function destroy($id)
     {
         $user = User::findOrFail($id);
+
+        if ($user->id === 1) {
+            return response()->json(['message' => 'The primary admin account cannot be deleted.'], 403);
+        }
 
         // Prevent self-delete
         if ($user->id === Auth::id()) {

@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { App, Pagination, Spin } from "antd";
+import { App, Button, Pagination, Spin } from "antd";
 import { Package, Search, ShoppingBasket, Store } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import ProductCard from "../../components/home/ProductCard";
@@ -246,15 +246,25 @@ export default function ProductListingPage() {
         setPagination((prev) => ({ ...prev, current: 1 }));
     };
 
-    const HeaderIcon = isCategoryMode ? ShoppingBasket : isStoreMode ? Store : Search;
-
     return (
         <div className="min-h-screen bg-gray-50">
             <div className="mx-auto max-w-7xl p-5 lg:p-6">
                 <div className="flex items-center rounded-lg bg-white px-5 py-4 shadow-sm ring-1 ring-gray-200">
                     <div className="flex items-center gap-3">
-                        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-linear-to-br from-green-600 to-emerald-500 shadow-sm">
-                            <HeaderIcon size={18} className="text-white" />
+                        <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-lg bg-linear-to-br from-green-600 to-emerald-500 shadow-sm">
+                            {isStoreMode && store?.banner ? (
+                                <img
+                                    src={`/${store.banner}`}
+                                    alt={store.store_name || "Store"}
+                                    className="h-full w-full object-cover"
+                                />
+                            ) : isCategoryMode ? (
+                                <ShoppingBasket size={18} className="text-white" />
+                            ) : isStoreMode ? (
+                                <Store size={18} className="text-white" />
+                            ) : (
+                                <Search size={18} className="text-white" />
+                            )}
                         </div>
                         <div>
                             <h1 className="font-sora text-base font-bold text-green-700">{pageTitle}</h1>
@@ -327,12 +337,13 @@ export default function ProductListingPage() {
                                 <Package size={64} className="mb-4 text-gray-300" />
                                 <h2 className="mb-2 text-2xl font-bold text-gray-800">No Products Found</h2>
                                 <p className="mb-6 max-w-md text-center text-gray-600">{emptyMessage}</p>
-                                <button
+                                <Button
                                     onClick={() => navigate("/")}
-                                    className="rounded-lg bg-green-600 px-6 py-2 text-white transition-colors hover:bg-green-700"
+                                    type="primary"
+                                    size="large"
                                 >
                                     Back to Home
-                                </button>
+                                </Button>
                             </div>
                         )}
                     </div>

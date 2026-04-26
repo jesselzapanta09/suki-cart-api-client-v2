@@ -14,7 +14,7 @@ export default function Home() {
     const { message } = App.useApp();
     const [popular, setPopular] = useState(null);
     const [latest, setLatest] = useState(null);
-    const featured = MOCK_PRODUCTS.slice(0, 9);
+    // const featured = MOCK_PRODUCTS.slice(0, 9);
 
     useEffect(() => {
         let active = true;
@@ -68,7 +68,7 @@ export default function Home() {
             <Popular products={popular} onAdd={handleAdd} />
             <Latest products={latest} onAdd={handleAdd} />
             {/* not yet implemented */}
-            <Featured products={featured} onAdd={handleAdd} />
+            {/* <Featured products={featured} onAdd={handleAdd} /> */}
         </div>
     );
 }

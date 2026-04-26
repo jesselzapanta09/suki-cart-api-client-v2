@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { App, Button, Pagination, Spin } from "antd";
 import { Package, Search, ShoppingBasket, Store } from "lucide-react";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../context/auth-context";
 import ProductCard from "../../components/home/ProductCard";
 import ProductFiltersCard from "../../components/home/ProductFiltersCard";
 import { getHomeCategories } from "../../services/categoryService";

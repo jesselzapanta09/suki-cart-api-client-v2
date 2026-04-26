@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Card, Tag, Button, Input, App } from "antd";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../context/auth-context";
 import { useCart } from "../../context/CartContext";
 import { ShoppingBag, Package, Clock, Search, ShoppingCart } from "lucide-react";
 import { MOCK_PRODUCTS, MOCK_ORDERS } from "../../services/mockData";

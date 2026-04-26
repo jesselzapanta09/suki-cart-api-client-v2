@@ -1,7 +1,8 @@
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ConfigProvider, App as AntApp } from "antd";
-import { AuthProvider, useAuth } from "./context/AuthContext.jsx";
+import { AuthProvider } from "./context/AuthContext.jsx";
+import { useAuth } from "./context/auth-context";
 import { CartProvider } from "./context/CartContext.jsx";
 import { NotificationProvider } from "./context/NotificationContext.jsx";
 import ProtectedRoute from "./routes/ProtectedRoute.jsx";

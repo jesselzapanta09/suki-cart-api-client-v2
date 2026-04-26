@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react"
 import { Form, Input, Button, App, Tabs, Upload, Spin, Select } from "antd"
 import { useNavigate } from "react-router-dom"
-import { useAuth } from "../../context/AuthContext"
+import { useAuth } from "../../context/auth-context"
 import Avatar from "../../components/Avatar"
 import AddressSelect from "../../components/AddressSelect"
 import { Upload as UploadIcon } from "lucide-react"

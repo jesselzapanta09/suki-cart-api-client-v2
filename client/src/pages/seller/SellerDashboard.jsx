@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button, Spin } from "antd";
 import { Link, useOutletContext } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../context/auth-context";
 import { resubmitStore } from "../../services/sellerService";
 import { ClockCircleOutlined, CloseCircleOutlined, CheckCircleOutlined } from "@ant-design/icons";
 import { App } from "antd";

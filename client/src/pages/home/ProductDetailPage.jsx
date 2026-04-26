@@ -4,7 +4,7 @@ import { App, Spin, InputNumber, Button } from "antd";
 import { ShoppingCart, ShoppingBag, Package, ArrowLeft, ChevronLeft, ChevronRight, Store, Star } from "lucide-react";
 import { getPublicProduct, getSimilarPublicProducts } from "../../services/productService";
 import { useCart } from "../../context/CartContext";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../context/auth-context";
 import SimilarProducts from "../../components/home/SimilarProducts";
 import ProductReviewsSection from "../../components/home/ProductReviewsSection";
 

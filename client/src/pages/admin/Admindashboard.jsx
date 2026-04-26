@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react"
 import { Skeleton, Card } from "antd"
 import { Link } from "react-router-dom"
-import { useAuth } from "../../context/AuthContext"
+import { useAuth } from "../../context/auth-context"
 import { ShoppingBag, DollarSign, Package, ChevronRight, User, Tag } from "lucide-react"
 import { MOCK_PRODUCTS } from "../../services/mockData"
 

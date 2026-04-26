@@ -3,7 +3,7 @@ import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
 import { App, Modal, Button } from "antd";
 import { ShoppingBag, LayoutDashboard, Users, LogOut, Menu, X, Package, LayoutGrid, ShieldCheck, Store } from "lucide-react";
 import NotificationBell from "../components/NotificationBell";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/auth-context";
 import Avatar from "../components/Avatar";
 
 const SIDEBAR_W = 240;

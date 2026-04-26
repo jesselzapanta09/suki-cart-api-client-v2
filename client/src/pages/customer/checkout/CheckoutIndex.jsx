@@ -3,7 +3,7 @@ import { Button, Select, Input, Empty, App, Form } from "antd";
 import { MapPin, ShoppingBag, ShoppingCart, Package } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useCart } from "../../../context/CartContext";
-import { useAuth } from "../../../context/AuthContext";
+import { useAuth } from "../../../context/auth-context";
 import * as orderService from "../../../services/orderService";
 
 export default function CheckoutIndex() {

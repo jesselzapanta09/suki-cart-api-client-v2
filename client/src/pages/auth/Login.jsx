@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Form, Input, App } from "antd";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../context/auth-context";
 import { useCart } from "../../context/CartContext";
 import { Loader2, ShoppingBag, Store, Mail, Package, Truck, Tags } from "lucide-react";
 import { login as loginApi, resendVerification } from "../../services/authService";

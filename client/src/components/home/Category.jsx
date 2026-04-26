@@ -103,7 +103,7 @@ export default function Category() {
                                         key={category.id}
                                         type="button"
                                         onClick={() => navigate(`/categories/${category.id}`)}
-                                        className="group flex min-w-[160px] shrink-0 flex-col items-center gap-3 rounded-2xl bg-gray-50 px-4 py-5 transition-all hover:bg-green-50"
+                                        className="group flex min-w-40 shrink-0 flex-col items-center gap-3 rounded-2xl bg-gray-50 px-4 py-5 transition-all hover:bg-green-50"
                                     >
                                         <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-green-100 text-green-700 transition-colors group-hover:bg-green-200">
                                             <ShoppingBasket size={22} />

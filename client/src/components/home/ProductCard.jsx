@@ -1,7 +1,7 @@
 import { App } from "antd";
 import { ShoppingCart, Package } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../context/auth-context";
 
 export default function ProductCard({ product, onAdd }) {
     const navigate = useNavigate();
@@ -95,7 +95,7 @@ export default function ProductCard({ product, onAdd }) {
                 </div>
             </div>
 
-            <div className="flex h-[178px] flex-col p-4">
+            <div className="flex h-44.5 flex-col p-4">
                 <p className="mb-1 truncate text-xs font-semibold uppercase tracking-wide text-green-600">
                     {categoryLabel}
                 </p>

@@ -2,7 +2,7 @@
 import { Badge, Dropdown } from "antd";
 import { Bell, ShoppingBag, Tag, Settings, Store, CheckCheck } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/auth-context";
 import {
     getNotifications,
     getUnreadCount,

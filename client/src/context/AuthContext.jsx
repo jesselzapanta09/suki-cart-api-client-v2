@@ -1,30 +1,50 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { getProfile } from "../services/profileService";
-
-const AuthContext = createContext(null);
+import { AuthContext } from "./auth-context";
+import {
+    AUTH_EXPIRED_EVENT,
+    clearStoredAuth,
+    getStoredToken,
+    getStoredUser,
+    isTokenExpired,
+    storeAuth,
+    storeUser,
+} from "../utils/auth";
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [token, setToken] = useState(null);
     const [loading, setLoading] = useState(true);
 
+    const clearAuthState = React.useCallback(() => {
+        setUser(null);
+        setToken(null);
+        clearStoredAuth();
+    }, []);
+
     useEffect(() => {
         let cancelled = false;
 
         const restoreAuth = async () => {
-            const storedToken = localStorage.getItem("token");
-            const storedUser = localStorage.getItem("user");
+            const storedToken = getStoredToken();
+            const storedUser = getStoredUser();
             let parsedUser = null;
 
             if (storedUser) {
                 try {
                     parsedUser = JSON.parse(storedUser);
                 } catch {
-                    localStorage.removeItem("user");
+                    clearStoredAuth();
                 }
             }
 
             if (!storedToken) {
+                setLoading(false);
+                return;
+            }
+
+            if (isTokenExpired(storedToken)) {
+                clearAuthState();
                 setLoading(false);
                 return;
             }
@@ -40,15 +60,12 @@ export const AuthProvider = ({ children }) => {
                 if (cancelled) return;
 
                 setUser(data.user);
-                localStorage.setItem("user", JSON.stringify(data.user));
+                storeUser(data.user);
             } catch (err) {
                 if (cancelled) return;
 
                 if (err?.status === 401) {
-                    setUser(null);
-                    setToken(null);
-                    localStorage.removeItem("token");
-                    localStorage.removeItem("user");
+                    clearAuthState();
                 } else if (parsedUser) {
                     setUser(parsedUser);
                 } else {
@@ -66,26 +83,32 @@ export const AuthProvider = ({ children }) => {
         return () => {
             cancelled = true;
         };
-    }, []);
+    }, [clearAuthState]);
+
+    useEffect(() => {
+        const handleAuthExpired = () => {
+            clearAuthState();
+            setLoading(false);
+        };
+
+        window.addEventListener(AUTH_EXPIRED_EVENT, handleAuthExpired);
+        return () => window.removeEventListener(AUTH_EXPIRED_EVENT, handleAuthExpired);
+    }, [clearAuthState]);
 
     const loginUser = (userData, userToken) => {
         setUser(userData);
         setToken(userToken);
-        localStorage.setItem("token", userToken);
-        localStorage.setItem("user", JSON.stringify(userData));
+        storeAuth(userData, userToken);
     };
 
     const updateUser = (updatedData) => {
         const merged = { ...user, ...updatedData };
         setUser(merged);
-        localStorage.setItem("user", JSON.stringify(merged));
+        storeUser(merged);
     };
 
     const logoutUser = async () => {
-        setUser(null);
-        setToken(null);
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
+        clearAuthState();
     };
 
     return (
@@ -102,5 +125,3 @@ export const AuthProvider = ({ children }) => {
         </AuthContext.Provider>
     );
 };
-
-export const useAuth = () => useContext(AuthContext);

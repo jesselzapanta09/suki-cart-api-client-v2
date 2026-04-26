@@ -2,7 +2,7 @@ import React from "react";
 import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
 import { App, Badge, Modal, Button } from "antd";
 import { ShoppingBag, LayoutDashboard, ShoppingCart, User, LogOut } from "lucide-react";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/auth-context";
 import { useCart } from "../context/CartContext";
 import Avatar from "../components/Avatar";
 import NotificationBell from "../components/NotificationBell";

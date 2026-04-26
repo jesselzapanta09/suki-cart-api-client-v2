@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom"
 import { Loader2, CheckCircle, XCircle } from "lucide-react"
 import { Button } from "antd"
 import { verifyEmail } from "../../services/authService"
-import { useAuth } from "../../context/AuthContext"
+import { useAuth } from "../../context/auth-context"
 
 export default function VerifyEmail() {
     const [status, setStatus] = useState("loading")

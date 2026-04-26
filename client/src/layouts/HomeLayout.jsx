@@ -1,6 +1,6 @@
 import React, { useState, useRef } from "react";
 import { Link, Outlet, useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/auth-context";
 import { useCart } from "../context/CartContext";
 import { Badge, App, Spin } from "antd";
 import { ShoppingBag, Menu, X, ShoppingCart, Package } from "lucide-react";

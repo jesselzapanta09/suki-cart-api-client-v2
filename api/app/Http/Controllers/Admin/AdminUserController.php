@@ -122,7 +122,7 @@ class AdminUserController extends Controller
                 'status'            => 1,
                 'type'              => $data['role'] === 'seller' ? 'store' : 'customer',
                 'region'            => $data['region'],
-                'province'          => $data['province'],
+                'province'          => $data['province'] ?? '',
                 'city_municipality' => $data['city'],
                 'barangay'          => $data['barangay'],
             ]);
@@ -212,7 +212,7 @@ class AdminUserController extends Controller
                     'status'            => 1,
                     'type'              => $data['role'] === 'seller' ? 'store' : 'customer',
                     'region'            => $data['region'],
-                    'province'          => $data['province'],
+                    'province'          => $data['province'] ?? '',
                     'city_municipality' => $data['city'],
                     'barangay'          => $data['barangay'],
                 ]

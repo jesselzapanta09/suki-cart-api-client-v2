@@ -57,7 +57,7 @@ class AuthController extends Controller
             'status'            => 1,
             'type'              => 'customer',
             'region'            => $data['region'],
-            'province'          => $data['province'],
+            'province'          => $data['province'] ?? '',
             'city_municipality' => $data['city'],
             'barangay'          => $data['barangay'],
         ]);
@@ -110,7 +110,7 @@ class AuthController extends Controller
             'status'            => 1,
             'type'              => 'store',
             'region'            => $data['region'],
-            'province'          => $data['province'],
+            'province'          => $data['province'] ?? '',
             'city_municipality' => $data['city'],
             'barangay'          => $data['barangay'],
         ]);
@@ -275,4 +275,3 @@ class AuthController extends Controller
         return response()->json(['message' => 'Password reset successfully. You can now sign in.'], 200);
     }
 }
-

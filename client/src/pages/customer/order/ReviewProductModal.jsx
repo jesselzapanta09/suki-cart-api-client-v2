@@ -10,8 +10,6 @@ export default function ReviewProductModal({ open, item, submitting, onCancel, o
                 rating: 5,
                 review: "",
             })
-        } else {
-            form.resetFields()
         }
     }, [form, open, item?.id])
 
@@ -29,6 +27,7 @@ export default function ReviewProductModal({ open, item, submitting, onCancel, o
             okText="Submit Review"
             okButtonProps={{ loading: submitting }}
             destroyOnHidden
+            forceRender
         >
             <div className="space-y-4">
                 <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">

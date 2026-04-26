@@ -74,7 +74,7 @@ class ProfileController extends Controller
 
         $data = $request->validate([
             'region'   => 'required|string|max:255',
-            'province' => 'required|string|max:255',
+            'province' => 'nullable|string|max:255',
             'city'     => 'required|string|max:255',
             'barangay' => 'required|string|max:255',
         ]);
@@ -86,7 +86,7 @@ class ProfileController extends Controller
             [
                 'status'            => 1,
                 'region'            => $data['region'],
-                'province'          => $data['province'],
+                'province'          => $data['province'] ?? '',
                 'city_municipality' => $data['city'],
                 'barangay'          => $data['barangay'],
             ]

@@ -50,15 +50,6 @@ export default function EditProfile() {
         })
 
         const loc = u.locations?.[0]
-        if (loc) {
-            addressForm.setFieldsValue({
-                region: loc.region,
-                province: loc.province,
-                city: loc.city_municipality,
-                barangay: loc.barangay,
-            })
-        }
-
         if (u.store) {
             storeForm.setFieldsValue({
                 store_name: u.store.store_name,

@@ -23,7 +23,7 @@ class RegisterSellerRequest extends FormRequest
             'store_description'  => ['required', 'string', 'max:500'],
             'store_banner'       => ['nullable', 'file', 'image', 'mimes:jpeg,png,jpg,webp', 'max:5120'],
             'region'             => ['required', 'string', 'max:255'],
-            'province'           => ['required', 'string', 'max:255'],
+            'province'           => ['nullable', 'string', 'max:255'],
             'city'               => ['required', 'string', 'max:255'],
             'barangay'           => ['required', 'string', 'max:255'],
             'email'              => ['required', 'string', 'email', 'max:255', 'unique:users'],

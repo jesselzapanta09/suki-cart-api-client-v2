@@ -185,7 +185,7 @@ export default function RegisterSeller() {
                     </div>
 
                     <div className="bg-white border border-gray-100 shadow-sm rounded-2xl p-7">
-                        <Form form={form} layout="vertical" onFinish={onFinish} autoComplete="off">
+                        <Form form={form} layout="vertical" onFinish={onFinish} requiredMark={false} autoComplete="off">
                             {/* Step 0: Personal Info */}
                             <div style={{ display: step === 0 ? undefined : 'none' }}>
                                     <Row gutter={16} className="mb-4">
@@ -203,7 +203,7 @@ export default function RegisterSeller() {
                                     <Form.Item label="Contact Number" name="contactNumber" rules={[{ required: true, message: "Required" }, { pattern: /^09\d{9}$/, message: "Enter a valid PH number" }]} className="mb-4">
                                         <Input size="large" placeholder="09123456789" />
                                     </Form.Item>
-                                    <Form.Item label="Profile Picture" name="profilePicture" rules={[{ required: true, message: "Please upload a photo" }]}>
+                                    <Form.Item label="Profile Picture" name="profilePicture" valuePropName="fileList" getValueFromEvent={e => Array.isArray(e) ? e : e?.fileList} rules={[{ required: true, message: "Please upload a photo" }]}>
                                         <Upload maxCount={1} beforeUpload={() => false} accept="image/*" listType="picture-card" onPreview={(file) => { const src = file.url || file.thumbUrl || (file.originFileObj && URL.createObjectURL(file.originFileObj)); if (src) { const w = window.open(); w.document.write(`<img src="${src}" style="max-width:100%" />`); } }}>
                                             <div className="flex flex-col items-center">
                                                 <UploadOutlined className="text-xl text-green-600" />
@@ -227,7 +227,7 @@ export default function RegisterSeller() {
                                     <Form.Item label="Store Description" name="storeDescription" rules={[{ required: true, message: "Required" }, { max: 500, message: "Max 500 characters" }]} className="mb-4">
                                         <Input.TextArea size="large" placeholder="Tell customers about your store..." rows={3} />
                                     </Form.Item>
-                                    <Form.Item label="Store Banner" name="storeBanner" rules={[{ required: true, message: "Please upload a banner" }]} className="mb-6">
+                                    <Form.Item label="Store Banner" name="storeBanner" valuePropName="fileList" getValueFromEvent={e => Array.isArray(e) ? e : e?.fileList} rules={[{ required: true, message: "Please upload a banner" }]} className="mb-6">
                                         <Upload maxCount={1} beforeUpload={() => false} accept="image/*" listType="picture-card" onPreview={(file) => { const src = file.url || file.thumbUrl || (file.originFileObj && URL.createObjectURL(file.originFileObj)); if (src) { const w = window.open(); w.document.write(`<img src="${src}" style="max-width:100%" />`); } }}>
                                             <div className="flex flex-col items-center">
                                                 <UploadOutlined className="text-xl text-green-600" />

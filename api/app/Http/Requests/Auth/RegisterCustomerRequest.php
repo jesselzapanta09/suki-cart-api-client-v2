@@ -19,7 +19,7 @@ class RegisterCustomerRequest extends FormRequest
             'contact_number'  => ['required', 'string', 'max:20'],
             'profile_picture' => ['nullable', 'file', 'image', 'mimes:jpeg,png,jpg,webp', 'max:5120'],
             'region'          => ['required', 'string', 'max:255'],
-            'province'        => ['required', 'string', 'max:255'],
+            'province'        => ['nullable', 'string', 'max:255'],
             'city'            => ['required', 'string', 'max:255'],
             'barangay'        => ['required', 'string', 'max:255'],
             'email'           => ['required', 'string', 'email', 'max:255', 'unique:users'],

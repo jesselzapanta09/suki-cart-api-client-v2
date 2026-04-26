@@ -11,6 +11,24 @@ import addressService from "../services/addressService";
  */
 export default function AddressSelect({ form, fieldPrefix = "", initialValues }) {
     const f = (name) => fieldPrefix ? `${fieldPrefix}_${name}` : name;
+    const normalizeText = (value) => String(value || "").trim().toLowerCase();
+    const canonicalizeLabel = (value) => normalizeText(value).replace(/^city of\s+/, "").replace(/\s+city$/, "");
+    const resolveOptionValue = (options, value) => {
+        if (!value) return undefined;
+
+        const directMatch = options.find((option) => String(option.value) === String(value));
+        if (directMatch) return directMatch.value;
+
+        const target = canonicalizeLabel(value);
+        const matchedOption = options.find((option) => {
+            return [
+                normalizeText(option.label),
+                canonicalizeLabel(option.label),
+            ].includes(target);
+        });
+
+        return matchedOption?.value;
+    };
 
     const [regions, setRegions] = useState([]);
     const [provinces, setProvinces] = useState([]);
@@ -28,37 +46,83 @@ export default function AddressSelect({ form, fieldPrefix = "", initialValues })
         setLoadingR(true);
         addressService.getRegions()
             .then(async (data) => {
-                setRegions(data.map(r => ({ label: r.name, value: r.code })));
+                const regionOptions = data.map(r => ({ label: r.name, value: r.code }));
+                setRegions(regionOptions);
 
                 if (initialValues?.region) {
+                    const resolvedRegion = resolveOptionValue(regionOptions, initialValues.region);
+                    if (resolvedRegion) {
+                        form.setFieldsValue({ [f("region")]: resolvedRegion });
+                    }
+
                     // Load provinces for saved region. NCR and similar regions skip this level.
                     setLoadingP(true);
-                    const provData = await addressService.getProvinces(initialValues.region).catch(() => []);
+                    const provData = await addressService.getProvinces(resolvedRegion || initialValues.region).catch(() => []);
                     const provinceOptions = provData.map(p => ({ label: p.name, value: p.code }));
                     const regionHasProvinces = provinceOptions.length > 0;
                     setHasProvinceLevel(regionHasProvinces);
                     setProvinces(provinceOptions);
                     setLoadingP(false);
 
-                    if (regionHasProvinces && initialValues?.province) {
+                    if (regionHasProvinces) {
+                        const resolvedProvince = resolveOptionValue(provinceOptions, initialValues.province);
+                        if (resolvedProvince) {
+                            form.setFieldsValue({ [f("province")]: resolvedProvince });
+                        }
+
                         // Load cities for saved province
                         setLoadingC(true);
-                        const cityData = await addressService.getCities(initialValues.province).catch(() => []);
-                        setCities(cityData.map(c => ({ label: c.name, value: c.code })));
+                        const cityData = resolvedProvince
+                            ? await addressService.getCities(resolvedProvince).catch(() => [])
+                            : [];
+                        const cityOptions = cityData.map(c => ({ label: c.name, value: c.code }));
+                        setCities(cityOptions);
                         setLoadingC(false);
-                    } else {
-                        setLoadingC(true);
-                        const cityData = await addressService.getCitiesByRegion(initialValues.region).catch(() => []);
-                        setCities(cityData.map(c => ({ label: c.name, value: c.code })));
-                        setLoadingC(false);
-                    }
 
-                    if (initialValues?.city) {
-                        // Load barangays for saved city
-                        setLoadingB(true);
-                        const brgyData = await addressService.getBarangays(initialValues.city).catch(() => []);
-                        setBarangays(brgyData.map(b => ({ label: b.name, value: b.code })));
-                        setLoadingB(false);
+                        const resolvedCity = resolveOptionValue(cityOptions, initialValues.city);
+                        if (resolvedCity) {
+                            form.setFieldsValue({ [f("city")]: resolvedCity });
+                        }
+
+                        if (resolvedCity) {
+                            // Load barangays for saved city
+                            setLoadingB(true);
+                            const brgyData = await addressService.getBarangays(resolvedCity).catch(() => []);
+                            const barangayOptions = brgyData.map(b => ({ label: b.name, value: b.code }));
+                            setBarangays(barangayOptions);
+                            setLoadingB(false);
+
+                            const resolvedBarangay = resolveOptionValue(barangayOptions, initialValues.barangay);
+                            if (resolvedBarangay) {
+                                form.setFieldsValue({ [f("barangay")]: resolvedBarangay });
+                            }
+                        }
+                    } else {
+                        form.setFieldsValue({ [f("province")]: undefined });
+                        setLoadingC(true);
+                        const cityData = await addressService.getCitiesByRegion(resolvedRegion || initialValues.region).catch(() => []);
+                        const cityOptions = cityData.map(c => ({ label: c.name, value: c.code }));
+                        setCities(cityOptions);
+                        setLoadingC(false);
+
+                        const resolvedCity = resolveOptionValue(cityOptions, initialValues.city);
+                        if (resolvedCity) {
+                            form.setFieldsValue({ [f("city")]: resolvedCity });
+                        }
+
+                        if (resolvedCity) {
+                            // Load barangays for saved city
+                            setLoadingB(true);
+                            const brgyData = await addressService.getBarangays(resolvedCity).catch(() => []);
+                            const barangayOptions = brgyData.map(b => ({ label: b.name, value: b.code }));
+                            setBarangays(barangayOptions);
+                            setLoadingB(false);
+
+                            const resolvedBarangay = resolveOptionValue(barangayOptions, initialValues.barangay);
+                            if (resolvedBarangay) {
+                                form.setFieldsValue({ [f("barangay")]: resolvedBarangay });
+                            }
+                        }
                     }
                 }
             })

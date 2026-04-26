@@ -512,7 +512,7 @@ export default function ProductDetailPage() {
                             <Button
                                 type="default"
                                 size="large"
-                                onClick={() => navigate(`/store/${product.store.id}`)}
+                                onClick={() => navigate(`/stores/${product.store.id}`)}
                                 className="whitespace-nowrap"
                                 icon={<Store size={20} />}
                             >

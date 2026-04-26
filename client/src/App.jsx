@@ -17,8 +17,7 @@ import SellerLayout   from "./layouts/SellerLayout.jsx";
 // Pages - Home
 import Home from "./Home.jsx";
 import ProductDetailPage from "./pages/home/ProductDetailPage.jsx";
-import SearchResultsPage from "./pages/home/SearchResultsPage.jsx";
-import CategoryProductsPage from "./pages/home/CategoryProductsPage.jsx";
+import ProductListingPage from "./pages/home/ProductListingPage.jsx";
 
 // Pages - Auth
 import Login            from "./pages/auth/Login.jsx";
@@ -99,8 +98,9 @@ export default function App() {
                                     <Route element={<HomeLayout />}>
                                         <Route path="/" element={<Home />} />
                                         <Route path="/products/:uuid" element={<ProductDetailPage />} />
-                                        <Route path="/search" element={<SearchResultsPage />} />
-                                        <Route path="/categories/:categoryId" element={<CategoryProductsPage />} />
+                                        <Route path="/search" element={<ProductListingPage />} />
+                                        <Route path="/categories/:categoryId" element={<ProductListingPage />} />
+                                        <Route path="/stores/:storeId" element={<ProductListingPage />} />
                                     </Route>
 
                                     {/* Auth pages */}

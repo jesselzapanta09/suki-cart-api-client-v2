@@ -40,6 +40,11 @@ class HomeProductSearchController extends Controller
             $query->where('category_id', $categoryId);
         }
 
+        // Store filter
+        if ($storeId = $request->input('store_id')) {
+            $query->where('store_id', $storeId);
+        }
+
         // Price range filter - now checking variant prices
         if ($minPrice = $request->input('min_price')) {
             $query->whereHas('variants', function ($q) use ($minPrice) {

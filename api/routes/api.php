@@ -8,6 +8,7 @@ use App\Http\Controllers\Home\HomeCategoryController;
 use App\Http\Controllers\Home\HomeLatestProductController;
 use App\Http\Controllers\Home\HomePopularProductController;
 use App\Http\Controllers\Home\HomeProductSearchController;
+use App\Http\Controllers\Home\HomeStoreController;
 use App\Http\Controllers\Notification\NotificationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Seller\SellerProductController;
@@ -33,6 +34,7 @@ Route::post('/reset-password',      [AuthController::class, 'resetPassword']);
 Route::get('/products/search', [HomeProductSearchController::class, 'index']);
 Route::get('/products/{uuid}/similar', [HomeProductSearchController::class, 'similar'])->where('uuid', '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}');
 Route::get('/products/{uuid}', [HomeProductSearchController::class, 'show'])->where('uuid', '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}');
+Route::get('/stores/{id}', [HomeStoreController::class, 'show'])->whereNumber('id');
 
 Route::get('/categories', [HomeCategoryController::class, 'index']);
 Route::get('/home/latest-products', [HomeLatestProductController::class, 'index']);

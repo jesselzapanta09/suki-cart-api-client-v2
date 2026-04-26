@@ -49,10 +49,18 @@ export function searchPublicProducts(params = {}) {
     return api.get('/products/search', { params });
 }
 
-export function getPublicProduct(uuid) {
-    return api.get(`/products/${uuid}`);
+export function getPublicProduct(uuid, params = {}) {
+    return api.get(`/products/${uuid}`, { params });
 }
 
 export function getSimilarPublicProducts(uuid, params = {}) {
     return api.get(`/products/${uuid}/similar`, { params });
+}
+
+export function getPopularHomeProducts() {
+    return api.get('/home/popular-products');
+}
+
+export function getLatestHomeProducts() {
+    return api.get('/home/latest-products');
 }

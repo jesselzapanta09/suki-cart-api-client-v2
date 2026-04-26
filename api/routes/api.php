@@ -4,6 +4,9 @@ use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\AdminCategoryController;
 use App\Http\Controllers\Admin\AdminStoreVerificationController;
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Home\HomeCategoryController;
+use App\Http\Controllers\Home\HomeLatestProductController;
+use App\Http\Controllers\Home\HomePopularProductController;
 use App\Http\Controllers\Home\HomeProductSearchController;
 use App\Http\Controllers\Notification\NotificationController;
 use App\Http\Controllers\ProfileController;
@@ -14,7 +17,6 @@ use App\Http\Controllers\Seller\SellerStoreController;
 use App\Http\Controllers\Customer\CustomerCartController;
 use App\Http\Controllers\Customer\CustomerOrderController;
 use App\Http\Controllers\Customer\CustomerProductReviewController;
-use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -32,9 +34,9 @@ Route::get('/products/search', [HomeProductSearchController::class, 'index']);
 Route::get('/products/{uuid}/similar', [HomeProductSearchController::class, 'similar'])->where('uuid', '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}');
 Route::get('/products/{uuid}', [HomeProductSearchController::class, 'show'])->where('uuid', '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}');
 
-Route::get('/categories', function () {
-    return response()->json(Category::where('status', 1)->orderBy('name')->get());
-});
+Route::get('/categories', [HomeCategoryController::class, 'index']);
+Route::get('/home/latest-products', [HomeLatestProductController::class, 'index']);
+Route::get('/home/popular-products', [HomePopularProductController::class, 'index']);
 
 // Authenticated routes
 Route::middleware('auth:api')->group(function () {

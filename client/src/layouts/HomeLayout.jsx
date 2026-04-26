@@ -71,6 +71,7 @@ export default function HomeLayout() {
     const isActiveRoute = (path) => location.pathname === path;
 
     const btnGradient = "rounded-xl font-semibold px-5 py-2 transition-all shadow text-white bg-gradient-to-br from-green-700 to-green-500 hover:opacity-90 hover:-translate-y-0.5";
+    const getProductImageUrl = (product) => product?.images?.[0]?.full_url || product?.images?.[0]?.image_path || null;
 
     return (
         <div className="flex flex-col min-h-screen bg-gray-50">
@@ -113,14 +114,23 @@ export default function HomeLayout() {
                                         <div>
                                             {searchResults.map(p => {
                                                 const price = typeof (p.variants?.[0]?.price) === 'number' ? p.variants[0].price : Number(p.variants?.[0]?.price || 0);
+                                                const imageUrl = getProductImageUrl(p);
                                                 return (
                                                 <div
                                                     key={p.id}
                                                     className="flex items-center gap-3 px-4 py-3 hover:bg-green-50 cursor-pointer transition-colors border-b border-gray-100 last:border-0"
                                                     onMouseDown={() => handleResultClick(p)}
                                                 >
-                                                    <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center shrink-0">
-                                                        <Package size={18} className="text-green-600" />
+                                                    <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center shrink-0 overflow-hidden">
+                                                        {imageUrl ? (
+                                                            <img
+                                                                src={imageUrl}
+                                                                alt={p.name}
+                                                                className="w-full h-full object-cover"
+                                                            />
+                                                        ) : (
+                                                            <Package size={18} className="text-green-600" />
+                                                        )}
                                                     </div>
                                                     <div className="flex-1 min-w-0">
                                                         <div className="text-sm font-semibold text-gray-800 truncate">{p.name}</div>
@@ -221,14 +231,23 @@ export default function HomeLayout() {
                                         <div>
                                             {searchResults.map(p => {
                                                 const price = typeof (p.variants?.[0]?.price) === 'number' ? p.variants[0].price : Number(p.variants?.[0]?.price || 0);
+                                                const imageUrl = getProductImageUrl(p);
                                                 return (
                                                 <div
                                                     key={p.id}
                                                     className="flex items-center gap-3 px-4 py-3 hover:bg-green-50 cursor-pointer transition-colors border-b border-gray-100 last:border-0"
                                                     onMouseDown={() => handleResultClick(p)}
                                                 >
-                                                    <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center shrink-0">
-                                                        <Package size={18} className="text-green-600" />
+                                                    <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center shrink-0 overflow-hidden">
+                                                        {imageUrl ? (
+                                                            <img
+                                                                src={imageUrl}
+                                                                alt={p.name}
+                                                                className="w-full h-full object-cover"
+                                                            />
+                                                        ) : (
+                                                            <Package size={18} className="text-green-600" />
+                                                        )}
                                                     </div>
                                                     <div className="flex-1 min-w-0">
                                                         <div className="text-sm font-semibold text-gray-800 truncate">{p.name}</div>

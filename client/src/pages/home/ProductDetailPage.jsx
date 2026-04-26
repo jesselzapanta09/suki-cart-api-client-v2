@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { App, Spin, InputNumber, Button } from "antd";
 import { ShoppingCart, ShoppingBag, Package, ArrowLeft, ChevronLeft, ChevronRight, Store, Star } from "lucide-react";
 import { getPublicProduct, getSimilarPublicProducts } from "../../services/productService";
 import { useCart } from "../../context/CartContext";
 import { useAuth } from "../../context/AuthContext";
-import SimilarProducts from "./SimilarProducts";
+import SimilarProducts from "../../components/home/SimilarProducts";
 import ProductReviewsSection from "../../components/home/ProductReviewsSection";
 
 export default function ProductDetailPage() {
@@ -19,31 +19,61 @@ export default function ProductDetailPage() {
     const [product, setProduct] = useState(null);
     const [similarProducts, setSimilarProducts] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [reviewLoading, setReviewLoading] = useState(false);
     const [similarLoading, setSimilarLoading] = useState(false);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [selectedVariant, setSelectedVariant] = useState(null);
     const [quantity, setQuantity] = useState(1);
+    const [selectedReviewRating, setSelectedReviewRating] = useState("all");
+    const [reviewPage, setReviewPage] = useState(1);
+    const hasLoadedProductRef = useRef(false);
+
+    useEffect(() => {
+        hasLoadedProductRef.current = false;
+        setProduct(null);
+        setLoading(true);
+        setReviewLoading(false);
+        setCurrentImageIndex(0);
+        setSelectedReviewRating("all");
+        setReviewPage(1);
+    }, [uuid]);
 
     useEffect(() => {
         const fetchProduct = async () => {
+            const isInitialLoad = !hasLoadedProductRef.current;
+
             try {
-                setLoading(true);
-                const response = await getPublicProduct(uuid);
+                if (isInitialLoad) {
+                    setLoading(true);
+                } else {
+                    setReviewLoading(true);
+                }
+
+                const response = await getPublicProduct(uuid, {
+                    review_rating: selectedReviewRating,
+                    review_page: reviewPage,
+                    review_per_page: 5,
+                });
                 setProduct(response.product);
+                hasLoadedProductRef.current = true;
             } catch (error) {
                 console.error("Error fetching product:", error);
                 message.error("Failed to load product");
             } finally {
-                setLoading(false);
+                if (isInitialLoad) {
+                    setLoading(false);
+                } else {
+                    setReviewLoading(false);
+                }
             }
         };
 
         fetchProduct();
-    }, [uuid, message]);
+    }, [uuid, message, selectedReviewRating, reviewPage]);
 
     useEffect(() => {
         const fetchSimilar = async () => {
-            if (!product) return;
+            if (!product?.uuid) return;
 
             try {
                 setSimilarLoading(true);
@@ -60,12 +90,26 @@ export default function ProductDetailPage() {
         };
 
         fetchSimilar();
-    }, [product]);
+    }, [product?.uuid]);
 
     useEffect(() => {
-        const firstAvailableVariant = product?.variants?.find((variant) => Number(variant.stock || 0) > 0) || product?.variants?.[0] || null;
-        setSelectedVariant(firstAvailableVariant);
-    }, [product]);
+        if (!product?.variants?.length) {
+            setSelectedVariant(null);
+            return;
+        }
+
+        setSelectedVariant((currentVariant) => {
+            if (currentVariant) {
+                const matchedVariant = product.variants.find((variant) => variant.id === currentVariant.id);
+
+                if (matchedVariant) {
+                    return matchedVariant;
+                }
+            }
+
+            return product.variants.find((variant) => Number(variant.stock || 0) > 0) || product.variants[0] || null;
+        });
+    }, [product?.uuid, product?.variants]);
 
     const renderStars = (rating, size = 18) => {
         const roundedRating = Math.round(Number(rating || 0));
@@ -230,6 +274,8 @@ export default function ProductDetailPage() {
     const images = product.images && product.images.length > 0 ? product.images : [];
     const currentImage = images.length > 0 ? images[currentImageIndex]?.full_url : null;
     const reviewSummary = product.review_summary || { average_rating: 0, review_count: 0, distribution: [] };
+    const reviewFilters = product.review_filters || { selected_rating: "all" };
+    const reviewPagination = product.review_pagination || { current_page: 1, per_page: 5, total: 0, last_page: 1 };
     const averageRating = Number(reviewSummary.average_rating || 0);
     const reviewCount = Number(reviewSummary.review_count || 0);
     const storeRating = Number(product.store?.rating || 0);
@@ -506,12 +552,21 @@ export default function ProductDetailPage() {
                 <ProductReviewsSection
                     reviewSummary={reviewSummary}
                     reviews={product.reviews || []}
+                    loading={reviewLoading}
+                    selectedRating={reviewFilters.selected_rating}
+                    currentPage={reviewPagination.current_page}
+                    totalReviews={reviewPagination.total}
+                    pageSize={reviewPagination.per_page}
+                    onFilterChange={(rating) => {
+                        setSelectedReviewRating(rating);
+                        setReviewPage(1);
+                    }}
+                    onPageChange={setReviewPage}
                 />
 
                 <SimilarProducts
                     similarProducts={similarProducts}
                     similarLoading={similarLoading}
-                    searchKeyword={state?.searchKeyword}
                     onAddToCart={async (p) => {
                         if (!isCustomer) {
                             message.warning("Only customers can add items to cart. Please log in as a customer.");

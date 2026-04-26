@@ -1,5 +1,9 @@
 import api from './api';
 
+export function getHomeCategories() {
+    return api.get('/categories');
+}
+
 export function getCategories({ page = 1, perPage = 10, search, sortField, sortOrder, status } = {}) {
     return api.get('/admin/categories', {
         params: {

@@ -5,6 +5,7 @@ import { AuthProvider, useAuth } from "./context/AuthContext.jsx";
 import { CartProvider } from "./context/CartContext.jsx";
 import { NotificationProvider } from "./context/NotificationContext.jsx";
 import ProtectedRoute from "./routes/ProtectedRoute.jsx";
+import ScrollToTop from "./components/ScrollToTop.jsx";
 
 // Layouts
 import HomeLayout   from "./layouts/HomeLayout.jsx";
@@ -17,6 +18,7 @@ import SellerLayout   from "./layouts/SellerLayout.jsx";
 import Home from "./Home.jsx";
 import ProductDetailPage from "./pages/home/ProductDetailPage.jsx";
 import SearchResultsPage from "./pages/home/SearchResultsPage.jsx";
+import CategoryProductsPage from "./pages/home/CategoryProductsPage.jsx";
 
 // Pages - Auth
 import Login            from "./pages/auth/Login.jsx";
@@ -34,7 +36,8 @@ import CategoryIndex from "./pages/admin/category/CategoryIndex.jsx";
 import SellerVerifyIndex from "./pages/admin/seller-verify/SellerVerifyIndex.jsx";
 import SellerVerifyShow from "./pages/admin/seller-verify/SellerVerifyShow.jsx";
 import SellerVerifyLogs from "./pages/admin/seller-verify/SellerVerifyLogs.jsx";
-import SellerVerifyAllLogs from "./pages/admin/seller-verify/SellerVerifyAllLogs.jsx";import ManageSellerIndex from "./pages/admin/seller/ManageSellerIndex.jsx"
+import SellerVerifyAllLogs from "./pages/admin/seller-verify/SellerVerifyAllLogs.jsx";
+import ManageSellerIndex from "./pages/admin/seller/ManageSellerIndex.jsx"
 import ManageSellerShow from "./pages/admin/seller/ManageSellerShow.jsx"
 
 // Pages - Seller
@@ -90,75 +93,77 @@ export default function App() {
                     <NotificationProvider>
                         <CartProvider>
                             <BrowserRouter>
-                            <Routes>
-                                {/* Public - Home */}
-                                <Route element={<HomeLayout />}>
-                                    <Route path="/" element={<Home />} />
-                                    <Route path="/products/:uuid" element={<ProductDetailPage />} />
-                                    <Route path="/search" element={<SearchResultsPage />} />
-                                </Route>
+                                <ScrollToTop />
+                                <Routes>
+                                    {/* Public - Home */}
+                                    <Route element={<HomeLayout />}>
+                                        <Route path="/" element={<Home />} />
+                                        <Route path="/products/:uuid" element={<ProductDetailPage />} />
+                                        <Route path="/search" element={<SearchResultsPage />} />
+                                        <Route path="/categories/:categoryId" element={<CategoryProductsPage />} />
+                                    </Route>
 
-                                {/* Auth pages */}
-                                <Route element={<AuthLayout />}>
-                                    <Route path="/login"             element={<Login />} />
-                                    <Route path="/register/customer" element={<RegisterCustomer />} />
-                                    <Route path="/register/seller"   element={<RegisterSeller />} />
-                                </Route>
+                                    {/* Auth pages */}
+                                    <Route element={<AuthLayout />}>
+                                        <Route path="/login"             element={<Login />} />
+                                        <Route path="/register/customer" element={<RegisterCustomer />} />
+                                        <Route path="/register/seller"   element={<RegisterSeller />} />
+                                    </Route>
 
-                                {/* Standalone */}
-                                <Route path="/verify-email"    element={<VerifyEmail />} />
-                                <Route path="/forgot-password" element={<ForgotPassword />} />
-                                <Route path="/reset-password"  element={<ResetPassword />} />
+                                    {/* Standalone */}
+                                    <Route path="/verify-email"    element={<VerifyEmail />} />
+                                    <Route path="/forgot-password" element={<ForgotPassword />} />
+                                    <Route path="/reset-password"  element={<ResetPassword />} />
 
-                                {/* Smart redirect */}
-                                <Route path="/dashboard" element={<ProtectedRoute><RoleRedirect /></ProtectedRoute>} />
+                                    {/* Smart redirect */}
+                                    <Route path="/dashboard" element={<ProtectedRoute><RoleRedirect /></ProtectedRoute>} />
 
-                                {/* Admin routes */}
-                                <Route element={<ProtectedRoute role="admin"><AdminLayout /></ProtectedRoute>}>
-                                    <Route path="/admin/dashboard"    element={<AdminDashboard />} />
-                                    <Route path="/admin/users"        element={<UserIndex />} />
-                                    <Route path="/admin/categories"   element={<CategoryIndex />} />
-                                    <Route path="/admin/seller-verify" element={<SellerVerifyIndex />} />
-                                    <Route path="/admin/seller-verify/logs" element={<SellerVerifyAllLogs />} />
-                                    <Route path="/admin/seller-verify/:id" element={<SellerVerifyShow />} />
-                                    <Route path="/admin/seller-verify/:id/logs" element={<SellerVerifyLogs />} />
-                                    <Route path="/admin/sellers" element={<ManageSellerIndex />} />
-                                    <Route path="/admin/sellers/:id" element={<ManageSellerShow />} />
-                                    <Route path="/admin/edit-profile" element={<EditProfile />} />
-                                    <Route path="/notifications" element={<NotificationsPage />} />
-                                </Route>
+                                    {/* Admin routes */}
+                                    <Route element={<ProtectedRoute role="admin"><AdminLayout /></ProtectedRoute>}>
+                                        <Route path="/admin/dashboard"    element={<AdminDashboard />} />
+                                        <Route path="/admin/users"        element={<UserIndex />} />
+                                        <Route path="/admin/categories"   element={<CategoryIndex />} />
+                                        <Route path="/admin/seller-verify" element={<SellerVerifyIndex />} />
+                                        <Route path="/admin/seller-verify/logs" element={<SellerVerifyAllLogs />} />
+                                        <Route path="/admin/seller-verify/:id" element={<SellerVerifyShow />} />
+                                        <Route path="/admin/seller-verify/:id/logs" element={<SellerVerifyLogs />} />
+                                        <Route path="/admin/sellers" element={<ManageSellerIndex />} />
+                                        <Route path="/admin/sellers/:id" element={<ManageSellerShow />} />
+                                        <Route path="/admin/edit-profile" element={<EditProfile />} />
+                                        <Route path="/notifications" element={<NotificationsPage />} />
+                                    </Route>
 
-                                {/* Customer routes */}
-                                <Route element={<ProtectedRoute role="customer"><CustomerLayout /></ProtectedRoute>}>
-                                    <Route path="/customer/dashboard"    element={<CustomerDashboard />} />
-                                    <Route path="/customer/edit-profile" element={<EditProfile />} />
-                                    <Route path="/customer/notifications" element={<NotificationsPage />} />
+                                    {/* Customer routes */}
+                                    <Route element={<ProtectedRoute role="customer"><CustomerLayout /></ProtectedRoute>}>
+                                        <Route path="/customer/dashboard"    element={<CustomerDashboard />} />
+                                        <Route path="/customer/edit-profile" element={<EditProfile />} />
+                                        <Route path="/customer/notifications" element={<NotificationsPage />} />
 
-                                    <Route path="/customer/cart" element={<CartIndex />} />
-                                    <Route path="/customer/checkout" element={<CheckoutIndex />} />
-                                    <Route path="/customer/orders" element={<OrderIndex />} />
-                                    <Route path="/customer/orders/items/:checkoutNo" element={<OrderDetailsPage />} />
-                                </Route>
+                                        <Route path="/customer/cart" element={<CartIndex />} />
+                                        <Route path="/customer/checkout" element={<CheckoutIndex />} />
+                                        <Route path="/customer/orders" element={<OrderIndex />} />
+                                        <Route path="/customer/orders/items/:checkoutNo" element={<OrderDetailsPage />} />
+                                    </Route>
 
-                                {/* Seller routes */}
-                                <Route element={<ProtectedRoute role="seller"><SellerLayout /></ProtectedRoute>}>
-                                    <Route path="/seller/dashboard"    element={<SellerDashboard />} />
-                                    <Route path="/seller/products"     element={<ProductIndex />} />
-                                    <Route path="/seller/products/create" element={<ProductFormPage mode="create" />} />
-                                    <Route path="/seller/products/:uuid/edit" element={<ProductFormPage mode="edit" />} />
-                                    <Route path="/seller/products/:uuid/variants" element={<ProductVariantManagementIndex />} />
-                                    <Route path="/seller/orders" element={<SellerOrderIndex />} />
-                                    <Route path="/seller/orders/items/:checkoutNo" element={<SellerOrderDetailsPage />} />
-                                    <Route path="/seller/order-items" element={<SellerOrderIndex />} />
-                                    <Route path="/seller/order-items/:checkoutNo" element={<SellerOrderDetailsPage />} />
-                                    <Route path="/seller/edit-profile" element={<EditProfile />} />
-                                    <Route path="/seller/notifications" element={<NotificationsPage />} />
-                                </Route>
+                                    {/* Seller routes */}
+                                    <Route element={<ProtectedRoute role="seller"><SellerLayout /></ProtectedRoute>}>
+                                        <Route path="/seller/dashboard"    element={<SellerDashboard />} />
+                                        <Route path="/seller/products"     element={<ProductIndex />} />
+                                        <Route path="/seller/products/create" element={<ProductFormPage mode="create" />} />
+                                        <Route path="/seller/products/:uuid/edit" element={<ProductFormPage mode="edit" />} />
+                                        <Route path="/seller/products/:uuid/variants" element={<ProductVariantManagementIndex />} />
+                                        <Route path="/seller/orders" element={<SellerOrderIndex />} />
+                                        <Route path="/seller/orders/items/:checkoutNo" element={<SellerOrderDetailsPage />} />
+                                        <Route path="/seller/order-items" element={<SellerOrderIndex />} />
+                                        <Route path="/seller/order-items/:checkoutNo" element={<SellerOrderDetailsPage />} />
+                                        <Route path="/seller/edit-profile" element={<EditProfile />} />
+                                        <Route path="/seller/notifications" element={<NotificationsPage />} />
+                                    </Route>
 
-                                {/* Fallback */}
-                                <Route path="*" element={<Navigate to="/" replace />} />
-                            </Routes>
-                        </BrowserRouter>
+                                    {/* Fallback */}
+                                    <Route path="*" element={<Navigate to="/" replace />} />
+                                </Routes>
+                            </BrowserRouter>
                     </CartProvider>
                     </NotificationProvider>
                 </AuthProvider>

@@ -1,20 +1,12 @@
 import React from "react";
 import { Spin } from "antd";
-import { useNavigate } from "react-router-dom";
-import ProductCard from "../../components/home/ProductCard";
+import ProductCard from "./ProductCard";
 
 export default function SimilarProducts({
     similarProducts = [],
     similarLoading = false,
-    searchKeyword,
     onAddToCart,
 }) {
-    const navigate = useNavigate();
-
-    const handleProductClick = (productUuid) => {
-        navigate(`/products/${productUuid}`, { state: { searchKeyword } });
-    };
-
     const buildCardProduct = (product) => ({
         ...product,
         rating: Number(product.rating ?? 0),
@@ -36,7 +28,6 @@ export default function SimilarProducts({
                         <ProductCard
                             key={product.uuid}
                             product={buildCardProduct(product)}
-                            onClick={() => handleProductClick(product.uuid)}
                             onAdd={() => onAddToCart(product)}
                         />
                     ))}

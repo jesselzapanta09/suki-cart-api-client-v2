@@ -55,8 +55,16 @@ class HomeProductSearchController extends Controller
         // Sort
         $sortField = $request->input('sort_field', 'created_at');
         $sortOrder = $request->input('sort_order', 'desc');
-        $allowedSorts = ['id', 'name', 'created_at'];
-        if (in_array($sortField, $allowedSorts)) {
+        $allowedSorts = ['id', 'name', 'created_at', 'price'];
+        if ($sortField === 'price') {
+            $direction = $sortOrder === 'ascend' ? 'asc' : 'desc';
+
+            $query->withMin([
+                'variants as sort_price' => function ($variantQuery) {
+                    $variantQuery->where('stock', '>', 0);
+                },
+            ], 'price')->orderBy('sort_price', $direction);
+        } elseif (in_array($sortField, $allowedSorts, true)) {
             $query->orderBy($sortField, $sortOrder === 'ascend' ? 'asc' : 'desc');
         }
 
@@ -152,8 +160,12 @@ class HomeProductSearchController extends Controller
      * No authentication required (public)
      * Only accessible if the store is verified/approved
      */
-    public function show($uuid)
+    public function show(Request $request, $uuid)
     {
+        $selectedRating = $request->input('review_rating', 'all');
+        $reviewPage = max((int) $request->input('review_page', 1), 1);
+        $reviewPerPage = max(1, min((int) $request->input('review_per_page', 5), 20));
+
         $product = $this->publicProductQuery()
             ->where('uuid', $uuid)
             ->with([
@@ -171,7 +183,12 @@ class HomeProductSearchController extends Controller
             ->firstOrFail();
 
         return response()->json([
-            'product' => $this->decorateProductDetail($product),
+            'product' => $this->decorateProductDetail(
+                $product,
+                $selectedRating,
+                $reviewPage,
+                $reviewPerPage
+            ),
         ]);
     }
 
@@ -185,7 +202,12 @@ class HomeProductSearchController extends Controller
         return $payload;
     }
 
-    private function decorateProductDetail(Product $product): array
+    private function decorateProductDetail(
+        Product $product,
+        string|int $selectedRating = 'all',
+        int $reviewPage = 1,
+        int $reviewPerPage = 5
+    ): array
     {
         $payload = $this->decorateProductSummary($product);
         $reviews = $product->reviews instanceof Collection ? $product->reviews : collect($product->reviews);
@@ -209,20 +231,38 @@ class HomeProductSearchController extends Controller
             'distribution' => $distribution,
         ];
 
-        $payload['reviews'] = $reviews->map(function ($review) {
-            return [
-                'id' => $review->id,
-                'rating' => $review->rating,
-                'review' => $review->review,
-                'variant_name' => $review->variant_name,
-                'created_at' => $review->created_at,
-                'user' => $review->user ? [
-                    'id' => $review->user->id,
-                    'firstname' => $review->user->firstname,
-                    'lastname' => $review->user->lastname,
-                ] : null,
-            ];
-        })->values()->all();
+        $selectedRating = $selectedRating === 'all' ? 'all' : (int) $selectedRating;
+        $reviewQuery = ProductReview::query()
+            ->where('product_id', $product->id)
+            ->with(['user', 'variant'])
+            ->latest();
+
+        if ($selectedRating !== 'all' && $selectedRating >= 1 && $selectedRating <= 5) {
+            $reviewQuery->where('rating', $selectedRating);
+        } else {
+            $selectedRating = 'all';
+        }
+
+        $paginatedReviews = $reviewQuery->paginate(
+            $reviewPerPage,
+            ['*'],
+            'review_page',
+            $reviewPage
+        );
+
+        $payload['reviews'] = collect($paginatedReviews->items())
+            ->map(fn ($review) => $this->mapReview($review))
+            ->values()
+            ->all();
+        $payload['review_filters'] = [
+            'selected_rating' => $selectedRating,
+        ];
+        $payload['review_pagination'] = [
+            'current_page' => $paginatedReviews->currentPage(),
+            'per_page' => $paginatedReviews->perPage(),
+            'total' => $paginatedReviews->total(),
+            'last_page' => $paginatedReviews->lastPage(),
+        ];
 
         if (!empty($payload['store'])) {
             $payload['store']['rating'] = $storeSummary['average_rating'];
@@ -230,6 +270,22 @@ class HomeProductSearchController extends Controller
         }
 
         return $payload;
+    }
+
+    private function mapReview(ProductReview $review): array
+    {
+        return [
+            'id' => $review->id,
+            'rating' => $review->rating,
+            'review' => $review->review,
+            'variant_name' => $review->variant_name,
+            'created_at' => $review->created_at,
+            'user' => $review->user ? [
+                'id' => $review->user->id,
+                'firstname' => $review->user->firstname,
+                'lastname' => $review->user->lastname,
+            ] : null,
+        ];
     }
 
     private function storeReviewSummary(int $storeId): array

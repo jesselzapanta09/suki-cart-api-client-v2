@@ -1,12 +1,18 @@
-import React, { useMemo, useState } from "react";
-import { Button, Pagination } from "antd";
+import React from "react";
+import { Button, Pagination, Spin } from "antd";
 import { Star } from "lucide-react";
 
-const PAGE_SIZE = 5;
-
-export default function ProductReviewsSection({ reviewSummary, reviews }) {
-    const [selectedRating, setSelectedRating] = useState("all");
-    const [currentPage, setCurrentPage] = useState(1);
+export default function ProductReviewsSection({
+    reviewSummary,
+    reviews,
+    loading = false,
+    selectedRating = "all",
+    currentPage = 1,
+    totalReviews = 0,
+    pageSize = 5,
+    onFilterChange,
+    onPageChange,
+}) {
 
     const averageRating = Number(reviewSummary?.average_rating || 0);
     const reviewCount = Number(reviewSummary?.review_count || 0);
@@ -30,24 +36,6 @@ export default function ProductReviewsSection({ reviewSummary, reviews }) {
         const fullName = `${firstname} ${lastname}`.trim();
 
         return fullName || "Verified Customer";
-    };
-
-    const filteredReviews = useMemo(() => {
-        if (selectedRating === "all") {
-            return reviews;
-        }
-
-        return reviews.filter((review) => Number(review.rating) === Number(selectedRating));
-    }, [reviews, selectedRating]);
-
-    const paginatedReviews = useMemo(() => {
-        const start = (currentPage - 1) * PAGE_SIZE;
-        return filteredReviews.slice(start, start + PAGE_SIZE);
-    }, [filteredReviews, currentPage]);
-
-    const handleFilterChange = (value) => {
-        setSelectedRating(value);
-        setCurrentPage(1);
     };
 
     return (
@@ -88,7 +76,8 @@ export default function ProductReviewsSection({ reviewSummary, reviews }) {
                 <div className="flex flex-wrap gap-2">
                     <Button
                         type={selectedRating === "all" ? "primary" : "default"}
-                        onClick={() => handleFilterChange("all")}
+                        disabled={loading}
+                        onClick={() => onFilterChange?.("all")}
                     >
                         All
                     </Button>
@@ -96,7 +85,8 @@ export default function ProductReviewsSection({ reviewSummary, reviews }) {
                         <Button
                             key={rating}
                             type={selectedRating === rating ? "primary" : "default"}
-                            onClick={() => handleFilterChange(rating)}
+                            disabled={loading}
+                            onClick={() => onFilterChange?.(rating)}
                         >
                             {rating} Star
                         </Button>
@@ -104,60 +94,63 @@ export default function ProductReviewsSection({ reviewSummary, reviews }) {
                 </div>
             </div>
 
-            {filteredReviews.length > 0 ? (
-                <>
-                    <div className="space-y-6">
-                        {paginatedReviews.map((review) => (
-                            <div key={review.id} className="pb-6 border-b border-gray-100 last:border-b-0">
-                                <div className="flex items-start justify-between mb-3">
-                                    <div>
-                                        <div className="flex items-center gap-2 mb-2 flex-wrap">
-                                            <h4 className="font-semibold text-gray-800">{formatReviewerName(review)}</h4>
-                                            <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs font-semibold rounded">
-                                                Verified
-                                            </span>
-                                            {review.variant_name && (
-                                                <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs font-medium rounded">
-                                                    {review.variant_name}
+            <Spin spinning={loading}>
+                {reviews.length > 0 ? (
+                    <>
+                        <div className="space-y-6">
+                            {reviews.map((review) => (
+                                <div key={review.id} className="pb-6 border-b border-gray-100 last:border-b-0">
+                                    <div className="flex items-start justify-between mb-3">
+                                        <div>
+                                            <div className="flex items-center gap-2 mb-2 flex-wrap">
+                                                <h4 className="font-semibold text-gray-800">{formatReviewerName(review)}</h4>
+                                                <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs font-semibold rounded">
+                                                    Verified
                                                 </span>
-                                            )}
-                                        </div>
-                                        <div className="flex items-center gap-3">
-                                            <div className="flex gap-0.5">
-                                                {renderStars(review.rating, 14)}
+                                                {review.variant_name && (
+                                                    <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs font-medium rounded">
+                                                        {review.variant_name}
+                                                    </span>
+                                                )}
                                             </div>
-                                            <span className="text-xs text-gray-500">
-                                                {new Date(review.created_at).toLocaleDateString("en-PH", { year: "numeric", month: "long", day: "numeric" })}
-                                            </span>
+                                            <div className="flex items-center gap-3">
+                                                <div className="flex gap-0.5">
+                                                    {renderStars(review.rating, 14)}
+                                                </div>
+                                                <span className="text-xs text-gray-500">
+                                                    {new Date(review.created_at).toLocaleDateString("en-PH", { year: "numeric", month: "long", day: "numeric" })}
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
+
+                                    <p className="text-gray-600 text-sm leading-relaxed">{review.review}</p>
                                 </div>
+                            ))}
+                        </div>
 
-                                <p className="text-gray-600 text-sm leading-relaxed">{review.review}</p>
-                            </div>
-                        ))}
+                        <div className="mt-8 flex justify-center">
+                            <Pagination
+                                current={currentPage}
+                                pageSize={pageSize}
+                                total={totalReviews}
+                                onChange={onPageChange}
+                                showSizeChanger={false}
+                                disabled={loading}
+                            />
+                        </div>
+                    </>
+                ) : (
+                    <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-6 py-10 text-center">
+                        <p className="text-base font-semibold text-gray-700">No reviews found</p>
+                        <p className="mt-2 text-sm text-gray-500">
+                            {selectedRating === "all"
+                                ? "Be the first customer to review this product after delivery."
+                                : `There are no ${selectedRating}-star reviews for this product yet.`}
+                        </p>
                     </div>
-
-                    <div className="mt-8 flex justify-center">
-                        <Pagination
-                            current={currentPage}
-                            pageSize={PAGE_SIZE}
-                            total={filteredReviews.length}
-                            onChange={setCurrentPage}
-                            showSizeChanger={false}
-                        />
-                    </div>
-                </>
-            ) : (
-                <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-6 py-10 text-center">
-                    <p className="text-base font-semibold text-gray-700">No reviews found</p>
-                    <p className="mt-2 text-sm text-gray-500">
-                        {selectedRating === "all"
-                            ? "Be the first customer to review this product after delivery."
-                            : `There are no ${selectedRating}-star reviews for this product yet.`}
-                    </p>
-                </div>
-            )}
+                )}
+            </Spin>
         </div>
     );
 }

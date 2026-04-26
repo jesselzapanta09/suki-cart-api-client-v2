@@ -1,36 +1,64 @@
-import React, { useEffect, useState } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import React, { useEffect, useMemo, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { App, Spin, Pagination } from "antd";
-import { Package, Search } from "lucide-react";
+import { Package, ShoppingBasket } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import ProductCard from "../../components/home/ProductCard";
 import ProductFiltersCard from "../../components/home/ProductFiltersCard";
+import { getHomeCategories } from "../../services/categoryService";
 import { searchPublicProducts } from "../../services/productService";
 
-export default function SearchResultsPage() {
-    const [searchParams] = useSearchParams();
+export default function CategoryProductsPage() {
+    const { categoryId } = useParams();
     const navigate = useNavigate();
     const { message } = App.useApp();
     const { isCustomer } = useAuth();
 
-    const query = searchParams.get("q") || "";
-    const initialPage = parseInt(searchParams.get("page") || "1", 10);
+    const numericCategoryId = useMemo(() => Number(categoryId), [categoryId]);
 
+    const [categories, setCategories] = useState(null);
     const [results, setResults] = useState([]);
     const [loading, setLoading] = useState(false);
     const [minPrice, setMinPrice] = useState("");
     const [maxPrice, setMaxPrice] = useState("");
     const [sortBy, setSortBy] = useState("created_at");
     const [pagination, setPagination] = useState({
-        current: initialPage,
+        current: 1,
         pageSize: 12,
         total: 0,
     });
     const { current: currentPage, pageSize } = pagination;
 
     useEffect(() => {
-        if (!query.trim()) {
-            navigate("/");
+        let active = true;
+
+        getHomeCategories()
+            .then((data) => {
+                if (active) {
+                    setCategories(Array.isArray(data) ? data : []);
+                }
+            })
+            .catch(() => {
+                if (active) {
+                    setCategories([]);
+                }
+            });
+
+        return () => {
+            active = false;
+        };
+    }, []);
+
+    useEffect(() => {
+        setPagination((prev) => ({
+            ...prev,
+            current: 1,
+        }));
+    }, [categoryId]);
+
+    useEffect(() => {
+        if (!Number.isInteger(numericCategoryId) || numericCategoryId <= 0) {
+            navigate("/", { replace: true });
             return;
         }
 
@@ -38,7 +66,7 @@ export default function SearchResultsPage() {
             try {
                 setLoading(true);
                 const response = await searchPublicProducts({
-                    search: query,
+                    category_id: numericCategoryId,
                     page: currentPage,
                     per_page: pageSize,
                     ...(minPrice && { min_price: minPrice }),
@@ -52,9 +80,8 @@ export default function SearchResultsPage() {
                     ...prev,
                     total: response.total || 0,
                 }));
-            } catch (error) {
-                console.error("Error fetching search results:", error);
-                message.error("Failed to load search results");
+            } catch {
+                message.error("Failed to load category products");
                 setResults([]);
             } finally {
                 setLoading(false);
@@ -62,7 +89,13 @@ export default function SearchResultsPage() {
         };
 
         fetchResults();
-    }, [query, currentPage, pageSize, minPrice, maxPrice, sortBy, navigate, message]);
+    }, [numericCategoryId, currentPage, pageSize, minPrice, maxPrice, sortBy, navigate, message]);
+
+    const category = Array.isArray(categories)
+        ? categories.find((item) => item.id === numericCategoryId)
+        : null;
+
+    const categoryName = category?.name || "Category";
 
     const handleAddToCart = (product) => {
         if (!isCustomer) {
@@ -72,7 +105,7 @@ export default function SearchResultsPage() {
         }
 
         navigate(`/products/${product.uuid}`, {
-            state: { searchKeyword: query },
+            state: { searchKeyword: categoryName },
         });
     };
 
@@ -109,12 +142,12 @@ export default function SearchResultsPage() {
                 <div className="flex items-center rounded-lg bg-white px-5 py-4 shadow-sm ring-1 ring-gray-200">
                     <div className="flex items-center gap-3">
                         <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-linear-to-br from-green-600 to-emerald-500 shadow-sm">
-                            <Search size={18} className="text-white" />
+                            <ShoppingBasket size={18} className="text-white" />
                         </div>
                         <div>
-                            <h1 className="font-sora text-base font-bold text-green-700">Search Results</h1>
+                            <h1 className="font-sora text-base font-bold text-green-700">{categoryName}</h1>
                             <p className="mt-0.5 text-xs text-gray-500">
-                                Found {pagination.total} product{pagination.total !== 1 ? "s" : ""} for "{query}"
+                                Found {pagination.total} product{pagination.total !== 1 ? "s" : ""} in this category
                             </p>
                         </div>
                     </div>
@@ -134,7 +167,7 @@ export default function SearchResultsPage() {
                     />
 
                     <div className="flex-1">
-                        {loading ? (
+                        {loading || categories === null ? (
                             <div className="flex items-center justify-center py-16">
                                 <Spin size="large" />
                             </div>
@@ -184,7 +217,7 @@ export default function SearchResultsPage() {
                                 <Package size={64} className="mb-4 text-gray-300" />
                                 <h2 className="mb-2 text-2xl font-bold text-gray-800">No Products Found</h2>
                                 <p className="mb-6 max-w-md text-center text-gray-600">
-                                    We couldn't find any products matching <span className="font-semibold">"{query}"</span>. Try searching with different keywords.
+                                    There are no available products in <span className="font-semibold">{categoryName}</span> yet.
                                 </p>
                                 <button
                                     onClick={() => navigate("/")}

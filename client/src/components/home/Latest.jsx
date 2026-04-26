@@ -1,23 +1,29 @@
-import { Link } from "react-router-dom";
-import { ChevronRight } from "lucide-react";
+import { Spin } from "antd";
 import ProductCard from "./ProductCard";
+import SectionHeading from "./SectionHeading";
 
-export default function Latest({ products, onAdd, isAuthenticated }) {
+export default function Latest({ products, onAdd }) {
+    const isLoading = products === null;
+
     return (
-        <section className="py-16 px-4 sm:px-6 bg-white">
-            <div className="max-w-6xl mx-auto">
-                <div className="flex items-center justify-between mb-10">
-                    <div>
-                        <div className="inline-block px-4 py-1 rounded-full mb-2 bg-green-100 text-green-700 text-xs font-mono font-semibold tracking-wider uppercase">New Arrivals</div>
-                        <h2 className="font-bold text-3xl text-green-900">Latest Products</h2>
+        <section className="bg-white px-4 py-12 sm:px-6 sm:py-16">
+            <div className="mx-auto max-w-6xl">
+                <SectionHeading
+                    tag="New Arrivals"
+                    title="Latest Products"
+                    subtitle="Fresh additions from verified sellers"
+                />
+                {isLoading ? (
+                    <div className="flex min-h-64 items-center justify-center rounded-2xl bg-gray-50">
+                        <Spin size="large" />
                     </div>
-                    <Link to={isAuthenticated ? "/customer/dashboard" : "/register/customer"} className="text-green-600 font-semibold text-sm flex items-center gap-1 hover:gap-2 transition-all">
-                        View all <ChevronRight size={16} />
-                    </Link>
-                </div>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {products.map(p => <ProductCard key={p.id} product={p} onAdd={onAdd} />)}
-                </div>
+                ) : (
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                        {products.map((p) => (
+                            <ProductCard key={p.id} product={p} onAdd={onAdd} />
+                        ))}
+                    </div>
+                )}
             </div>
         </section>
     );

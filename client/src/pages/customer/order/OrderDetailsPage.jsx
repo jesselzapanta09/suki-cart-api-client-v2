@@ -4,6 +4,7 @@ import { ArrowLeft, Clock, CheckCircle, Truck, X, Package, Store, ShoppingBag, M
 import { useNavigate, useParams } from "react-router-dom"
 import * as orderService from "../../../services/orderService"
 import ReviewProductModal from "./ReviewProductModal"
+import LocationAddress from "../../../components/LocationAddress"
 
 const statusConfig = {
     pending: { color: "orange", icon: Clock, label: "Order placed" },
@@ -277,11 +278,9 @@ export default function OrderDetailsPage() {
                                 <div className="w-10 h-10 rounded-xl bg-blue-50 ring-1 ring-blue-100 flex items-center justify-center shrink-0">
                                     <MapPin size={20} className="text-blue-700" />
                                 </div>
-                                <div>
+                                    <div>
                                     <h2 className="text-lg font-bold text-gray-900">Delivery Information</h2>
-                                    <p className="text-sm text-gray-700 mt-2">
-                                        {order.location?.barangay}, {order.location?.city_municipality}, {order.location?.province}
-                                    </p>
+                                    <LocationAddress location={order.location} inline className="text-sm text-gray-700 mt-2 inline-block" />
                                     {order.address_extra && (
                                         <p className="text-sm text-gray-500 mt-1">{order.address_extra}</p>
                                     )}

@@ -25,7 +25,7 @@ export default function Popular({ products, onAdd }) {
                             <Button
                                 type="text"
                                 icon={<ArrowRight size={16} />}
-                                iconPosition="end"
+                                iconPlacement="end"
                                 onClick={() => navigate("/search?sort=popular")}
                             >
                                 View more

@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { Button, Select, Input, Empty, App, Form } from "antd";
 import { MapPin, ShoppingBag, ShoppingCart, Package } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useCart } from "../../../context/CartContext";
 import { useAuth } from "../../../context/auth-context";
 import * as orderService from "../../../services/orderService";
+import addressService from "../../../services/addressService";
 
 export default function CheckoutIndex() {
     const navigate = useNavigate();
@@ -19,6 +20,7 @@ export default function CheckoutIndex() {
     const [itemMessages, setItemMessages] = useState({});
     const [checkoutLoading, setCheckoutLoading] = useState(false);
     const [locations, setLocations] = useState([]);
+    const [locationOptions, setLocationOptions] = useState([]);
     const [shippingData, setShippingData] = useState(null);
     const [shippingLoading, setShippingLoading] = useState(false);
 
@@ -41,7 +43,7 @@ export default function CheckoutIndex() {
 
         // Calculate shipping fees
         calculateShippingFees();
-    }, [user, items, navigate]);
+    }, [user, items, navigate, calculateShippingFees]);
 
     useEffect(() => {
         if (locations.length !== 1 || selectedLocation) {
@@ -53,7 +55,40 @@ export default function CheckoutIndex() {
         form.setFieldValue("delivery_location", defaultLocationId);
     }, [locations, selectedLocation, form]);
 
-    const calculateShippingFees = async () => {
+    useEffect(() => {
+        let active = true;
+
+        const loadLocationOptions = async () => {
+            const resolvedLocations = await Promise.all(
+                locations.map(async (loc) => {
+                    const resolved = await addressService.resolveLocationParts(loc);
+                    return {
+                        value: loc.id,
+                        label: addressService.formatLocation(resolved),
+                    };
+                })
+            );
+
+            if (active) {
+                setLocationOptions(resolvedLocations);
+            }
+        };
+
+        if (!locations.length) {
+            setLocationOptions([]);
+            return () => {
+                active = false;
+            };
+        }
+
+        loadLocationOptions();
+
+        return () => {
+            active = false;
+        };
+    }, [locations]);
+
+    const calculateShippingFees = useCallback(async () => {
         if (items.length === 0) return;
 
         setShippingLoading(true);
@@ -78,7 +113,7 @@ export default function CheckoutIndex() {
         } finally {
             setShippingLoading(false);
         }
-    };
+    }, [items, message]);
 
     const getPrice = (item) => {
         const price = item.price ?? item.variant?.price ?? 0;
@@ -220,10 +255,7 @@ export default function CheckoutIndex() {
                                             setSelectedLocation(value);
                                             form.setFieldValue('delivery_location', value);
                                         }}
-                                        options={locations.map(loc => ({
-                                            value: loc.id,
-                                            label: `${loc.barangay}, ${loc.city_municipality}, ${loc.province}`,
-                                        }))}
+                                        options={locationOptions}
                                     />
                                 </Form.Item>
 

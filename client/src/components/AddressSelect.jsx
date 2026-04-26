@@ -16,6 +16,7 @@ export default function AddressSelect({ form, fieldPrefix = "", initialValues })
     const [provinces, setProvinces] = useState([]);
     const [cities, setCities] = useState([]);
     const [barangays, setBarangays] = useState([]);
+    const [hasProvinceLevel, setHasProvinceLevel] = useState(true);
 
     const [loadingR, setLoadingR] = useState(false);
     const [loadingP, setLoadingP] = useState(false);
@@ -30,26 +31,34 @@ export default function AddressSelect({ form, fieldPrefix = "", initialValues })
                 setRegions(data.map(r => ({ label: r.name, value: r.code })));
 
                 if (initialValues?.region) {
-                    // Load provinces for saved region
+                    // Load provinces for saved region. NCR and similar regions skip this level.
                     setLoadingP(true);
                     const provData = await addressService.getProvinces(initialValues.region).catch(() => []);
-                    setProvinces(provData.map(p => ({ label: p.name, value: p.code })));
+                    const provinceOptions = provData.map(p => ({ label: p.name, value: p.code }));
+                    const regionHasProvinces = provinceOptions.length > 0;
+                    setHasProvinceLevel(regionHasProvinces);
+                    setProvinces(provinceOptions);
                     setLoadingP(false);
 
-                    if (initialValues?.province) {
+                    if (regionHasProvinces && initialValues?.province) {
                         // Load cities for saved province
                         setLoadingC(true);
                         const cityData = await addressService.getCities(initialValues.province).catch(() => []);
                         setCities(cityData.map(c => ({ label: c.name, value: c.code })));
                         setLoadingC(false);
+                    } else {
+                        setLoadingC(true);
+                        const cityData = await addressService.getCitiesByRegion(initialValues.region).catch(() => []);
+                        setCities(cityData.map(c => ({ label: c.name, value: c.code })));
+                        setLoadingC(false);
+                    }
 
-                        if (initialValues?.city) {
-                            // Load barangays for saved city
-                            setLoadingB(true);
-                            const brgyData = await addressService.getBarangays(initialValues.city).catch(() => []);
-                            setBarangays(brgyData.map(b => ({ label: b.name, value: b.code })));
-                            setLoadingB(false);
-                        }
+                    if (initialValues?.city) {
+                        // Load barangays for saved city
+                        setLoadingB(true);
+                        const brgyData = await addressService.getBarangays(initialValues.city).catch(() => []);
+                        setBarangays(brgyData.map(b => ({ label: b.name, value: b.code })));
+                        setLoadingB(false);
                     }
                 }
             })
@@ -63,9 +72,19 @@ export default function AddressSelect({ form, fieldPrefix = "", initialValues })
         setProvinces([]); setCities([]); setBarangays([]);
         if (!code) return;
         setLoadingP(true);
-        const data = await addressService.getProvinces(code).catch(() => []);
-        setProvinces(data.map(p => ({ label: p.name, value: p.code })));
+        const provinceData = await addressService.getProvinces(code).catch(() => []);
+        const provinceOptions = provinceData.map(p => ({ label: p.name, value: p.code }));
+        const regionHasProvinces = provinceOptions.length > 0;
+        setHasProvinceLevel(regionHasProvinces);
+        setProvinces(provinceOptions);
         setLoadingP(false);
+
+        if (!regionHasProvinces) {
+            setLoadingC(true);
+            const cityData = await addressService.getCitiesByRegion(code).catch(() => []);
+            setCities(cityData.map(c => ({ label: c.name, value: c.code })));
+            setLoadingC(false);
+        }
     };
 
     const handleProvinceChange = async (code) => {
@@ -99,8 +118,8 @@ export default function AddressSelect({ form, fieldPrefix = "", initialValues })
                     </Form.Item>
                 </Col>
                 <Col xs={24} sm={12}>
-                    <Form.Item label="Province" name={f("province")} rules={[{ required: true, message: "Province is required" }]} className="mb-0">
-                        <Select {...selectProps} placeholder="Select province" onChange={handleProvinceChange} loading={loadingP} options={provinces} disabled={!provinces.length} />
+                    <Form.Item label="Province" name={f("province")} rules={hasProvinceLevel ? [{ required: true, message: "Province is required" }] : []} className="mb-0">
+                        <Select {...selectProps} placeholder={hasProvinceLevel ? "Select province" : "No province for this region"} onChange={handleProvinceChange} loading={loadingP} options={provinces} disabled={!hasProvinceLevel || !provinces.length} />
                     </Form.Item>
                 </Col>
             </Row>

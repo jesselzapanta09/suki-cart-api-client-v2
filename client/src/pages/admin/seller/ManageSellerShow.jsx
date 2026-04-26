@@ -28,7 +28,7 @@ export default function ManageSellerShow() {
             }
         }
         fetchStore()
-    }, [id])
+    }, [id, message, navigate])
 
     if (loading) {
         return <div className="flex justify-center items-center min-h-[60vh]"><Spin size="large" /></div>

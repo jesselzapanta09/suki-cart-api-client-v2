@@ -83,12 +83,17 @@ export default function EditProfile() {
         profileService.getProfile()
             .then(data => {
                 setProfile(data.user)
-                populateForms(data.user)
             })
             .catch(() => message.error("Failed to load profile."))
             .finally(() => setLoading(false))
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
+
+    useEffect(() => {
+        if (!loading && profile) {
+            populateForms(profile)
+        }
+    }, [loading, profile, infoForm, addressForm, storeForm])
 
     // --- Avatar handlers ---
     const handleAvatarChange = (file) => {
@@ -219,6 +224,7 @@ export default function EditProfile() {
         {
             key: "info",
             label: <span className="font-medium">Personal Info</span>,
+            forceRender: true,
             children: (
                 <Form form={infoForm} layout="vertical" onFinish={handleInfoSave} requiredMark={false} size="large" className="space-y-4">
                     <Form.Item label={<span className={labelClass}>Profile Photo</span>}>
@@ -258,6 +264,7 @@ export default function EditProfile() {
         {
             key: "address",
             label: <span className="font-medium">Address</span>,
+            forceRender: true,
             children: (
                 <Form form={addressForm} layout="vertical" onFinish={handleAddressSave} requiredMark={false} size="large" className="space-y-4">
                     <AddressSelect form={addressForm} initialValues={profile?.locations?.[0] ? {
@@ -278,6 +285,7 @@ export default function EditProfile() {
         ...(isSeller ? [{
             key: "store",
             label: <span className="font-medium">Store</span>,
+            forceRender: true,
             children: (
                 <Form form={storeForm} layout="vertical" onFinish={handleStoreSave} requiredMark={false} size="large" className="space-y-4">
                     <Form.Item label={<span className={labelClass}>Store Banner</span>}>
@@ -322,6 +330,7 @@ export default function EditProfile() {
         {
             key: "password",
             label: <span className="font-medium">Credentials</span>,
+            forceRender: true,
             children: (
                 <Form form={passForm} layout="vertical" onFinish={handlePasswordSave} requiredMark={false} size="large" className="space-y-4">
                     <Form.Item name="currentPassword" label={<span className={labelClass}>Current password</span>} rules={[{ required: true, message: "Current password is required" }]}>

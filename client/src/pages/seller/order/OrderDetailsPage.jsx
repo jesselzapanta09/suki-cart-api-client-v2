@@ -7,6 +7,7 @@ import {
     getSellerOrder,
     updateSellerOrderStatus,
 } from "../../../services/sellerService"
+import LocationAddress from "../../../components/LocationAddress"
 
 const statusConfig = {
     pending: { color: "orange", icon: Clock, label: "Order placed" },
@@ -274,9 +275,7 @@ export default function OrderDetailsPage() {
                                     </div>
                                     <div>
                                         <h2 className="text-lg font-bold text-gray-900">Delivery</h2>
-                                        <p className="text-sm text-gray-700 mt-2">
-                                            {order.location?.barangay}, {order.location?.city_municipality}, {order.location?.province}
-                                        </p>
+                                        <LocationAddress location={order.location} inline className="text-sm text-gray-700 mt-2 inline-block" />
                                         {order.address_extra && <p className="text-sm text-gray-500 mt-1">{order.address_extra}</p>}
                                     </div>
                                 </div>

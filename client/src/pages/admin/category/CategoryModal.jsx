@@ -29,7 +29,8 @@ export default function CategoryModal({ open, onClose, onSubmit, initialValues, 
             open={open}
             onCancel={onClose}
             footer={null}
-            destroyOnClose
+            destroyOnHidden
+            forceRender
             width={480}
         >
             {/* Modal header — Option B: left accent stripe */}

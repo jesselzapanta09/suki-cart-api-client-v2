@@ -35,7 +35,7 @@ export default function ProductVariantModal({ open, onClose, onSubmit, initialVa
             open={open}
             onCancel={onClose}
             footer={null}
-            destroyOnClose
+            destroyOnHidden
             width={480}
         >
             {/* Header */}

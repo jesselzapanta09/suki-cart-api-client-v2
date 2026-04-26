@@ -37,6 +37,7 @@ import UserIndex from "./pages/admin/user/UserIndex.jsx";
 import CategoryIndex from "./pages/admin/category/CategoryIndex.jsx";
 import ActiveProductIndex from "./pages/admin/products/ActiveProductIndex.jsx";
 import ActiveProductShow from "./pages/admin/products/ActiveProductShow.jsx";
+import AdminLogsIndex from "./pages/admin/logs/AdminLogsIndex.jsx";
 import SellerVerifyIndex from "./pages/admin/seller-verify/SellerVerifyIndex.jsx";
 import SellerVerifyShow from "./pages/admin/seller-verify/SellerVerifyShow.jsx";
 import SellerVerifyLogs from "./pages/admin/seller-verify/SellerVerifyLogs.jsx";
@@ -132,6 +133,7 @@ export default function App() {
                                         <Route path="/admin/categories"   element={<CategoryIndex />} />
                                         <Route path="/admin/products" element={<ActiveProductIndex />} />
                                         <Route path="/admin/products/:uuid" element={<ActiveProductShow />} />
+                                        <Route path="/admin/logs" element={<AdminLogsIndex />} />
                                         <Route path="/admin/seller-verify" element={<SellerVerifyIndex />} />
                                         <Route path="/admin/seller-verify/logs" element={<SellerVerifyAllLogs />} />
                                         <Route path="/admin/seller-verify/:id" element={<SellerVerifyShow />} />

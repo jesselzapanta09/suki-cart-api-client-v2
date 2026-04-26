@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
 import { App, Modal, Button } from "antd";
-import { LayoutDashboard, Users, LogOut, Menu, X, LayoutGrid, ShieldCheck, Store, Package } from "lucide-react";
+import { LayoutDashboard, Users, LogOut, Menu, X, LayoutGrid, ShieldCheck, Store, Package, History } from "lucide-react";
 import NotificationBell from "../components/NotificationBell";
 import { useAuth } from "../context/auth-context";
 import Avatar from "../components/Avatar";
@@ -16,6 +16,7 @@ const NAV = [
     { label: "Seller Verify", to: "/admin/seller-verify", icon: ShieldCheck },
     { label: "Verified Sellers", to: "/admin/sellers", icon: Store },
     { label: "Active products", to: "/admin/products", icon: Package },
+    { label: "Logs", to: "/admin/logs", icon: History },
 ];
 
 function useIsDesktop() {

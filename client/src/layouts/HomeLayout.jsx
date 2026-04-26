@@ -116,31 +116,31 @@ export default function HomeLayout() {
                                                 const price = typeof (p.variants?.[0]?.price) === 'number' ? p.variants[0].price : Number(p.variants?.[0]?.price || 0);
                                                 const imageUrl = getProductImageUrl(p);
                                                 return (
-                                                <div
-                                                    key={p.id}
-                                                    className="flex items-center gap-3 px-4 py-3 hover:bg-green-50 cursor-pointer transition-colors border-b border-gray-100 last:border-0"
-                                                    onMouseDown={() => handleResultClick(p)}
-                                                >
-                                                    <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center shrink-0 overflow-hidden">
-                                                        {imageUrl ? (
-                                                            <img
-                                                                src={imageUrl}
-                                                                alt={p.name}
-                                                                className="w-full h-full object-cover"
-                                                            />
-                                                        ) : (
-                                                            <Package size={18} className="text-green-600" />
-                                                        )}
+                                                    <div
+                                                        key={p.id}
+                                                        className="flex items-center gap-3 px-4 py-3 hover:bg-green-50 cursor-pointer transition-colors border-b border-gray-100 last:border-0"
+                                                        onMouseDown={() => handleResultClick(p)}
+                                                    >
+                                                        <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center shrink-0 overflow-hidden">
+                                                            {imageUrl ? (
+                                                                <img
+                                                                    src={imageUrl}
+                                                                    alt={p.name}
+                                                                    className="w-full h-full object-cover"
+                                                                />
+                                                            ) : (
+                                                                <Package size={18} className="text-green-600" />
+                                                            )}
+                                                        </div>
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="text-sm font-semibold text-gray-800 truncate">{p.name}</div>
+                                                            <div className="text-xs text-gray-500">{p.category?.name || "Unknown"}</div>
+                                                        </div>
+                                                        <div className="flex flex-col items-end shrink-0">
+                                                            <span className="text-green-600 font-semibold text-sm">₱{price.toFixed(2)}</span>
+                                                            <span className="text-xs text-gray-400"> {(p.variants?.reduce((sum, v) => sum + (v.stock || 0), 0) || 0)} in stock</span>
+                                                        </div>
                                                     </div>
-                                                    <div className="flex-1 min-w-0">
-                                                        <div className="text-sm font-semibold text-gray-800 truncate">{p.name}</div>
-                                                        <div className="text-xs text-gray-500">{p.category?.name || "Unknown"}</div>
-                                                    </div>
-                                                    <div className="flex flex-col items-end shrink-0">
-                                                        <span className="text-green-600 font-semibold text-sm">₱{price.toFixed(2)}</span>
-                                                        <span className="text-xs text-gray-400"> {(p.variants?.reduce((sum, v) => sum + (v.stock || 0), 0) || 0)} in stock</span>
-                                                    </div>
-                                                </div>
                                                 );
                                             })}
                                             <div className="px-4 py-3 bg-gray-50 border-t border-gray-100 text-center">
@@ -202,8 +202,8 @@ export default function HomeLayout() {
                             <div className="font-display font-bold text-green-900 text-[1rem]">SukiCart</div>
                         </div>
                     </Link>
-                    
-                    
+
+
 
                     {/* Search Bar - grows to fill space */}
                     <div className="flex-1 relative">
@@ -233,31 +233,31 @@ export default function HomeLayout() {
                                                 const price = typeof (p.variants?.[0]?.price) === 'number' ? p.variants[0].price : Number(p.variants?.[0]?.price || 0);
                                                 const imageUrl = getProductImageUrl(p);
                                                 return (
-                                                <div
-                                                    key={p.id}
-                                                    className="flex items-center gap-3 px-4 py-3 hover:bg-green-50 cursor-pointer transition-colors border-b border-gray-100 last:border-0"
-                                                    onMouseDown={() => handleResultClick(p)}
-                                                >
-                                                    <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center shrink-0 overflow-hidden">
-                                                        {imageUrl ? (
-                                                            <img
-                                                                src={imageUrl}
-                                                                alt={p.name}
-                                                                className="w-full h-full object-cover"
-                                                            />
-                                                        ) : (
-                                                            <Package size={18} className="text-green-600" />
-                                                        )}
+                                                    <div
+                                                        key={p.id}
+                                                        className="flex items-center gap-3 px-4 py-3 hover:bg-green-50 cursor-pointer transition-colors border-b border-gray-100 last:border-0"
+                                                        onMouseDown={() => handleResultClick(p)}
+                                                    >
+                                                        <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center shrink-0 overflow-hidden">
+                                                            {imageUrl ? (
+                                                                <img
+                                                                    src={imageUrl}
+                                                                    alt={p.name}
+                                                                    className="w-full h-full object-cover"
+                                                                />
+                                                            ) : (
+                                                                <Package size={18} className="text-green-600" />
+                                                            )}
+                                                        </div>
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="text-sm font-semibold text-gray-800 truncate">{p.name}</div>
+                                                            <div className="text-xs text-gray-500">{p.category?.name || "Unknown"}</div>
+                                                        </div>
+                                                        <div className="flex flex-col items-end shrink-0">
+                                                            <span className="text-green-600 font-semibold text-sm">₱{price.toFixed(2)}</span>
+                                                            <span className="text-xs text-gray-400"> {(p.variants?.reduce((sum, v) => sum + (v.stock || 0), 0) || 0)} in stock</span>
+                                                        </div>
                                                     </div>
-                                                    <div className="flex-1 min-w-0">
-                                                        <div className="text-sm font-semibold text-gray-800 truncate">{p.name}</div>
-                                                        <div className="text-xs text-gray-500">{p.category?.name || "Unknown"}</div>
-                                                    </div>
-                                                    <div className="flex flex-col items-end shrink-0">
-                                                        <span className="text-green-600 font-semibold text-sm">₱{price.toFixed(2)}</span>
-                                                        <span className="text-xs text-gray-400"> {(p.variants?.reduce((sum, v) => sum + (v.stock || 0), 0) || 0)} in stock</span>
-                                                    </div>
-                                                </div>
                                                 );
                                             })}
                                             <div className="px-4 py-3 bg-gray-50 border-t border-gray-100 text-center">
@@ -348,10 +348,18 @@ export default function HomeLayout() {
                     <div className="flex flex-wrap justify-between gap-8">
                         <div className="max-w-xs">
                             <div className="flex items-center gap-2 mb-3">
-                                <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-white/20"><ShoppingBag size={20} /></div>
-                                <span className="font-bold text-lg">SukiCart</span>
+                                <div className="w-14 h-14 flex items-center justify-center shrink-0">
+                                    <img
+                                        src="/suki-cart-logo-home.png"
+                                        alt="SukiCart Logo"
+                                        className="w-10 h-10 rounded-xl object-contain"
+                                    />
+                                </div>
+                                <span className="font-display font-bold text-lg text-white">SukiCart</span>
                             </div>
-                            <p className="text-green-200 text-sm leading-relaxed">Your trusted online palengke. Fresh groceries from local farmers, delivered to your door.</p>
+                            <p className="text-green-200 text-sm leading-relaxed">
+                                Your trusted online palengke for household essentials. Practical items for everyday living, delivered to your door.
+                            </p>
                         </div>
                         <div>
                             <p className="font-semibold text-xs text-green-300 uppercase tracking-wide mb-3">Shop</p>
@@ -363,13 +371,20 @@ export default function HomeLayout() {
                         </div>
                         <div className="flex flex-col justify-center">
                             <p className="font-bold text-white mb-4">Ready to shop?</p>
-                            <Link to="/register/customer" className="rounded-xl font-semibold px-5 py-2.5 text-center text-white bg-gradient-to-br from-green-700 to-green-500 hover:opacity-90 transition shadow-md text-sm">Create Free Account</Link>
+                            <Link to="/register/customer" className="rounded-xl font-semibold px-5 py-2.5 text-center text-white bg-linear-to-br from-green-700 to-green-500 hover:opacity-90 transition shadow-md text-sm">Create Free Account</Link>
                         </div>
                     </div>
                     <div className="border-t border-white/20 pt-6 flex flex-wrap justify-between items-center gap-4">
-                        <p className="text-gray-400 text-xs">© {new Date().getFullYear()} SukiCart. Connecting communities with fresh local produce.</p>
+                        <p className="text-gray-400 text-xs">© {new Date().getFullYear()} SukiCart. Educational project only, not a real commerce application.</p>
                         <div className="flex gap-6">
-                            {["Privacy Policy", "Terms of Service"].map(l => <span key={l} className="text-gray-400 text-xs cursor-pointer hover:text-gray-200 transition">{l}</span>)}
+                            {[
+                                ["Privacy Policy", "/privacy-policy"],
+                                ["Terms of Service", "/terms-of-service"],
+                            ].map(([label, to]) => (
+                                <Link key={label} to={to} className="text-gray-400 text-xs hover:text-gray-200 transition">
+                                    {label}
+                                </Link>
+                            ))}
                         </div>
                     </div>
                 </div>

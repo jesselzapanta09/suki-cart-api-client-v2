@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
-import { App } from "antd";
-import { LayoutDashboard, Package, User, LogOut, Menu, X, Lock, ShoppingBag } from "lucide-react";
+import { App, Modal, Button } from "antd";
+import { LayoutDashboard, Package, LogOut, Menu, X, Lock, ShoppingBag } from "lucide-react";
 import NotificationBell from "../components/NotificationBell";
 import { useAuth } from "../context/AuthContext";
 import Avatar from "../components/Avatar";
@@ -14,7 +14,6 @@ const NAV = [
     { label: "Dashboard", to: "/seller/dashboard", icon: LayoutDashboard, alwaysVisible: true },
     { label: "Products", to: "/seller/products", icon: Package, alwaysVisible: false },
     { label: "Orders", to: "/seller/orders", icon: ShoppingBag, alwaysVisible: false },
-    { label: "Edit Profile", to: "/seller/edit-profile", icon: User, alwaysVisible: true },
 ];
 
 function readCachedStoreVerification() {
@@ -49,6 +48,8 @@ function useIsDesktop() {
 }
 
 function SidebarContent({ user, location, handleLogout, storeVerified }) {
+    const profileActive = location.pathname === "/seller/edit-profile";
+
     return (
         <div className="w-60 h-screen bg-rail-950 flex flex-col shadow-[2px_0_20px_rgba(0,0,0,0.18)]">
             {/* Brand */}
@@ -98,7 +99,13 @@ function SidebarContent({ user, location, handleLogout, storeVerified }) {
 
             {/* User + logout */}
             <div className="px-3 py-4 border-t border-white/8">
-                <div className="flex items-center gap-2.5 px-3.5 py-2.5 mb-1.5 rounded-[10px] bg-white/5">
+                <Link
+                    to="/seller/edit-profile"
+                    className="flex items-center gap-2.5 px-3.5 py-2.5 mb-1.5 rounded-[10px] no-underline transition-[background] duration-150"
+                    style={{
+                        background: profileActive ? "rgba(34,197,94,0.25)" : "rgba(255,255,255,0.05)",
+                    }}
+                >
                     <Avatar user={user} />
                     <div className="overflow-hidden">
                         <div className="text-white font-body font-semibold text-[0.85rem] whitespace-nowrap overflow-hidden text-ellipsis">{user?.username}</div>
@@ -108,7 +115,7 @@ function SidebarContent({ user, location, handleLogout, storeVerified }) {
                                 : "SELLER"
                         }</div>
                     </div>
-                </div>
+                </Link>
                 <button onClick={handleLogout} className="w-full flex items-center gap-2.5 px-3.5 py-2 rounded-[10px] border-none bg-transparent text-white/50 font-body text-[0.875rem] cursor-pointer transition-all duration-150 hover:bg-[rgba(231,74,74,0.15)] hover:text-[rgba(255,130,130,0.9)]">
                     <LogOut size={16} /> Logout
                 </button>
@@ -124,6 +131,8 @@ export default function SellerLayout() {
     const location = useLocation();
     const isDesktop = useIsDesktop();
     const [menuOpen, setMenuOpen] = useState(false);
+    const [logoutModalOpen, setLogoutModalOpen] = useState(false);
+    const [logoutLoading, setLogoutLoading] = useState(false);
     const [storeVerification, setStoreVerification] = useState(() => readCachedStoreVerification());
     const [storeStatusLoaded, setStoreStatusLoaded] = useState(false);
     const storeVerified = storeVerification?.store_status === "approved";
@@ -167,10 +176,21 @@ export default function SellerLayout() {
         if (isDesktop) setMenuOpen(false);
     }
 
+    const profileActive = location.pathname === "/seller/edit-profile";
+
     const handleLogout = async () => {
-        await logoutUser();
-        message.success("Logged out successfully");
-        navigate("/");
+        setLogoutLoading(true);
+        try {
+            await logoutUser();
+            message.success("Logged out successfully");
+            setLogoutModalOpen(false);
+            navigate("/");
+        } catch (error) {
+            console.error("Logout failed:", error);
+            message.error("Failed to logout");
+        } finally {
+            setLogoutLoading(false);
+        }
     };
 
     return (
@@ -178,7 +198,7 @@ export default function SellerLayout() {
             {/* DESKTOP: fixed sidebar */}
             {isDesktop && (
                 <div className="w-60 shrink-0">
-                    <div className="fixed top-0 left-0 z-40"><SidebarContent user={user} location={location} handleLogout={handleLogout} storeVerified={storeVerified} /></div>
+                    <div className="fixed top-0 left-0 z-40"><SidebarContent user={user} location={location} handleLogout={() => setLogoutModalOpen(true)} storeVerified={storeVerified} /></div>
                 </div>
             )}
 
@@ -209,7 +229,13 @@ export default function SellerLayout() {
                 <>
                     <div onClick={() => setMenuOpen(false)} className="fixed inset-0 z-44 bg-black/35" />
                     <div className="fixed top-15.5 left-0 right-0 z-45 bg-rail-950 border-b border-white/8 shadow-[0_8px_24px_rgba(0,0,0,0.3)] px-4 py-3">
-                        <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-[10px] bg-white/6 mb-3">
+                        <Link
+                            to="/seller/edit-profile"
+                            className="flex items-center gap-2.5 px-3 py-2.5 rounded-[10px] no-underline mb-3 transition-[background] duration-150"
+                            style={{
+                                background: profileActive ? "rgba(34,197,94,0.25)" : "rgba(255,255,255,0.06)",
+                            }}
+                        >
                             <Avatar user={user} />
                             <div>
                                 <div className="text-white font-body font-semibold text-[0.9rem]">{user?.username}</div>
@@ -219,7 +245,7 @@ export default function SellerLayout() {
                                         : "SELLER"
                                 }</div>
                             </div>
-                        </div>
+                        </Link>
                         {NAV.map((n) => {
                             const active = location.pathname === n.to;
                             const IconComponent = n.icon;
@@ -248,7 +274,7 @@ export default function SellerLayout() {
                             );
                         })}
                         <div className="border-t border-white/8 my-2" />
-                        <button onClick={handleLogout} className="w-full flex items-center gap-2.5 px-3 py-3 rounded-[9px] border-none bg-transparent text-[rgba(255,120,120,0.85)] font-body font-medium text-[0.9rem] cursor-pointer transition-colors duration-150 hover:bg-[rgba(231,74,74,0.15)]">
+                        <button onClick={() => setLogoutModalOpen(true)} className="w-full flex items-center gap-2.5 px-3 py-3 rounded-[9px] border-none bg-transparent text-[rgba(255,120,120,0.85)] font-body font-medium text-[0.9rem] cursor-pointer transition-colors duration-150 hover:bg-[rgba(231,74,74,0.15)]">
                             <LogOut size={16} /> Logout
                         </button>
                     </div>
@@ -269,6 +295,28 @@ export default function SellerLayout() {
                     setStoreVerification: updateStoreVerification,
                 }} />
             </main>
+
+            <Modal
+                title="Logout"
+                open={logoutModalOpen}
+                onCancel={() => !logoutLoading && setLogoutModalOpen(false)}
+                footer={[
+                    <Button key="cancel" onClick={() => setLogoutModalOpen(false)} disabled={logoutLoading}>
+                        Cancel
+                    </Button>,
+                    <Button
+                        key="logout"
+                        type="primary"
+                        danger
+                        loading={logoutLoading}
+                        onClick={handleLogout}
+                    >
+                        Logout
+                    </Button>,
+                ]}
+            >
+                Are you sure you want to logout?
+            </Modal>
         </div>
     );
 }

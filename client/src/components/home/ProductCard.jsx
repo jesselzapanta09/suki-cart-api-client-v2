@@ -1,9 +1,13 @@
+import { App } from "antd";
 import { ShoppingCart, Package } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 
 export default function ProductCard({ product, onAdd }) {
     const navigate = useNavigate();
     const location = useLocation();
+    const { message } = App.useApp();
+    const { isCustomer } = useAuth();
 
     const variants = Array.isArray(product.variants) ? product.variants : [];
     const images = Array.isArray(product.images) ? product.images : [];
@@ -47,6 +51,17 @@ export default function ProductCard({ product, onAdd }) {
         navigate(`/products/${product.uuid}`, {
             state: searchKeyword ? { searchKeyword } : undefined,
         });
+    };
+
+    const handleAddClick = (event) => {
+        event.stopPropagation();
+
+        if (!isCustomer) {
+            message.warning("To perform this action, log in as a customer.");
+            return;
+        }
+
+        onAdd(product);
     };
 
     return (
@@ -124,10 +139,7 @@ export default function ProductCard({ product, onAdd }) {
                     </div>
 
                     <button
-                        onClick={(event) => {
-                            event.stopPropagation();
-                            onAdd(product);
-                        }}
+                        onClick={handleAddClick}
                         disabled={!hasPrice}
                         className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border-none text-white shadow-sm transition-colors ${
                             hasPrice ? "cursor-pointer bg-green-600 hover:bg-green-700" : "cursor-not-allowed bg-gray-400"

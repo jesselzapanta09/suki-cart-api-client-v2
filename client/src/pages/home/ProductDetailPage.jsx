@@ -15,6 +15,7 @@ export default function ProductDetailPage() {
     const { message } = App.useApp();
     const { addItem } = useCart();
     const { isCustomer } = useAuth();
+    const customerActionMessage = "To perform this action, log in as a customer.";
 
     const [product, setProduct] = useState(null);
     const [similarProducts, setSimilarProducts] = useState([]);
@@ -178,16 +179,7 @@ export default function ProductDetailPage() {
         }
 
         if (!isCustomer) {
-            const pendingAddToCart = {
-                product_uuid: product.uuid,
-                product_name: product.name,
-                variant_id: selectedVariant.id,
-                quantity,
-                variant: selectedVariant,
-            };
-            sessionStorage.setItem("pendingAddToCart", JSON.stringify(pendingAddToCart));
-            message.warning("Please sign in to view your cart.");
-            navigate("/login");
+            message.warning(customerActionMessage);
             return;
         }
 
@@ -229,8 +221,7 @@ export default function ProductDetailPage() {
         }
 
         if (!isCustomer) {
-            message.warning("Please sign in to checkout.");
-            navigate("/login");
+            message.warning(customerActionMessage);
             return;
         }
 
@@ -569,8 +560,7 @@ export default function ProductDetailPage() {
                     similarLoading={similarLoading}
                     onAddToCart={async (p) => {
                         if (!isCustomer) {
-                            message.warning("Only customers can add items to cart. Please log in as a customer.");
-                            navigate("/login");
+                            message.warning(customerActionMessage);
                             return;
                         }
 

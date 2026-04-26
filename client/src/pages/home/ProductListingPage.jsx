@@ -15,6 +15,7 @@ export default function ProductListingPage() {
     const navigate = useNavigate();
     const { message } = App.useApp();
     const { isCustomer } = useAuth();
+    const customerActionMessage = "To perform this action, log in as a customer.";
 
     const isCategoryMode = Boolean(categoryId);
     const isStoreMode = Boolean(storeId);
@@ -241,8 +242,7 @@ export default function ProductListingPage() {
 
     const handleAddToCart = (product) => {
         if (!isCustomer) {
-            message.warning("Only customers can add items to cart. Please log in as a customer.");
-            navigate("/login");
+            message.warning(customerActionMessage);
             return;
         }
 

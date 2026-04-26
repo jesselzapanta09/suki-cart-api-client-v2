@@ -18,6 +18,8 @@ import SellerLayout   from "./layouts/SellerLayout.jsx";
 import Home from "./Home.jsx";
 import ProductDetailPage from "./pages/home/ProductDetailPage.jsx";
 import ProductListingPage from "./pages/home/ProductListingPage.jsx";
+import PrivacyPolicyPage from "./pages/home/PrivacyPolicyPage.jsx";
+import TermsOfServicePage from "./pages/home/TermsOfServicePage.jsx";
 
 // Pages - Auth
 import Login            from "./pages/auth/Login.jsx";
@@ -101,6 +103,8 @@ export default function App() {
                                         <Route path="/search" element={<ProductListingPage />} />
                                         <Route path="/categories/:categoryId" element={<ProductListingPage />} />
                                         <Route path="/stores/:storeId" element={<ProductListingPage />} />
+                                        <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+                                        <Route path="/terms-of-service" element={<TermsOfServicePage />} />
                                     </Route>
 
                                     {/* Auth pages */}

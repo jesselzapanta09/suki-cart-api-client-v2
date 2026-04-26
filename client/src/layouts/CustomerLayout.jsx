@@ -11,7 +11,6 @@ const NAV = [
     { label: "Dashboard", to: "/customer/dashboard", icon: LayoutDashboard },
     { label: "Cart", to: "/customer/cart", icon: ShoppingCart, cartBadge: true },
     { label: "Order", to: "/customer/orders", icon: ShoppingBag },
-    { label: "Edit Profile", to: "/customer/edit-profile", icon: User },
 ];
 
 export default function CustomerLayout() {
@@ -39,6 +38,7 @@ export default function CustomerLayout() {
     };
 
     const isActive = (to) => location.pathname === to;
+    const profileActive = isActive("/customer/edit-profile");
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -77,12 +77,19 @@ export default function CustomerLayout() {
                     {/* Column 3: Notifications, user info, and logout */}
                     <div className="flex items-center gap-1 sm:gap-2 justify-end">
                         <NotificationBell />
-                        <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-green-50 border border-green-100">
+                        <Link
+                            to="/customer/edit-profile"
+                            className={`hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl no-underline transition-colors ${
+                                profileActive
+                                    ? "bg-green-100 border border-green-200"
+                                    : "bg-green-50 border border-green-100 hover:bg-green-100"
+                            }`}
+                        >
                             <Avatar user={user} />
                             <div>
                                 <div className="text-[10px] text-green-600 font-mono">{user?.firstname} {user?.lastname}</div>
                             </div>
-                        </div>
+                        </Link>
                         <button onClick={() => setLogoutModalOpen(true)} className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-xl border border-gray-200 text-gray-500 hover:border-red-200 hover:text-red-500 hover:bg-red-50 transition-colors cursor-pointer bg-transparent text-sm font-medium">
                             <LogOut size={14} /> Logout
                         </button>
@@ -120,9 +127,9 @@ export default function CustomerLayout() {
             <Modal
                 title="Logout"
                 open={logoutModalOpen}
-                onCancel={() => setLogoutModalOpen(false)}
+                onCancel={() => !logoutLoading && setLogoutModalOpen(false)}
                 footer={[
-                    <Button key="cancel" onClick={() => setLogoutModalOpen(false)}>
+                    <Button key="cancel" onClick={() => setLogoutModalOpen(false)} disabled={logoutLoading}>
                         Cancel
                     </Button>,
                     <Button

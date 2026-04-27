@@ -39,9 +39,14 @@ export default function CustomerLayout() {
 
     const isActive = (to) => location.pathname === to;
     const profileActive = isActive("/customer/edit-profile");
+    const getMobileNavClass = (active) =>
+        `flex min-h-13 flex-col items-center justify-center gap-1 rounded-2xl px-2 transition-colors ${active
+            ? "bg-green-50 text-green-700 ring-1 ring-green-100"
+            : "text-gray-500 hover:bg-gray-50 hover:text-gray-700"
+        }`;
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="flex min-h-screen flex-col bg-gray-50 text-gray-900">
             {/* Top Navbar */}
             <nav className="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-sm">
                 {/* Desktop Layout (md and above): 3-column grid */}
@@ -64,10 +69,10 @@ export default function CustomerLayout() {
                             return (
                                 <div key={n.to} className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 rounded-md text-xs sm:text-sm font-medium transition-all ${active ? "bg-green-50 text-green-700" : "text-gray-500 hover:bg-gray-100 hover:text-gray-700"}`}>
                                     <Link to={n.to} className="flex items-center gap-1 sm:gap-2 no-underline text-inherit">
-                                    {n.cartBadge ? (
-                                        <Badge count={totalItems} size="small" color="#16a34a" offset={[4, -2]}><Icon size={16} /></Badge>
-                                    ) : <Icon size={16} />}
-                                    <span className="hidden sm:inline">{n.label}</span>
+                                        {n.cartBadge ? (
+                                            <Badge count={totalItems} size="small" color="#16a34a" offset={[4, -2]}><Icon size={16} /></Badge>
+                                        ) : <Icon size={16} />}
+                                        <span className="hidden sm:inline">{n.label}</span>
                                     </Link>
                                 </div>
                             );
@@ -79,11 +84,10 @@ export default function CustomerLayout() {
                         <NotificationBell />
                         <Link
                             to="/customer/edit-profile"
-                            className={`hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl no-underline transition-colors ${
-                                profileActive
+                            className={`hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl no-underline transition-colors ${profileActive
                                     ? "bg-green-100 border border-green-200"
                                     : "bg-green-50 border border-green-100 hover:bg-green-100"
-                            }`}
+                                }`}
                         >
                             <Avatar user={user} />
                             <div>
@@ -96,32 +100,91 @@ export default function CustomerLayout() {
                     </div>
                 </div>
 
-                {/* Mobile Layout (< md): Logo and notification bell only */}
-                <div className="md:hidden flex items-center justify-between px-3 sm:px-4 h-16">
-                    <Link to="/" className="no-underline flex items-center gap-1 shrink-0">
-                        <div className="w-12 h-12 rounded-lg sm:rounded-[9px] bg-white flex items-center justify-center">
-                            <img src="/suki-cart-logo-home.png" alt="SukiCart Logo" className="w-8 sm:w-10 h-8 sm:h-10 rounded-lg object-contain" />
+                {/* Mobile Layout (< md): Logo, profile, and notification bell */}
+                <div className="flex items-center justify-between px-4 py-3 md:hidden">
+                    <Link to="/" className="flex shrink-0 items-center gap-2 no-underline">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-green-50">
+                            <img src="/suki-cart-logo-home.png" alt="SukiCart Logo" className="h-8 w-8 rounded-xl object-contain" />
+                        </div>
+                        <div className="min-w-0">
+                            <div className="text-base font-bold leading-tight text-green-900">SukiCart</div>
+                            <div className="text-xs font-medium text-green-700/75">Customer area</div>
                         </div>
                     </Link>
-                    <NotificationBell />
+                    <div className="flex items-center gap-2">
+                        <Link
+                            to="/customer/edit-profile"
+                            className={`flex h-10 w-10 items-center justify-center rounded-2xl border transition-colors ${profileActive
+                                ? "border-green-200 bg-green-100"
+                                : "border-green-100 bg-green-50 hover:bg-green-100"
+                                }`}
+                            aria-label="Open profile"
+                        >
+                            {user ? (
+                                <Avatar user={user} size={28} fontSize="0.8rem" />
+                            ) : (
+                                <User size={18} className="text-green-700" />
+                            )}
+                        </Link>
+                        <NotificationBell />
+                    </div>
                 </div>
             </nav>
 
-            <main className="flex-1"><Outlet /></main>
+            <main className="flex-1 pb-4"><Outlet /></main>
 
-            {/* Mobile Bottom Nav (< md) */}
-            <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 flex items-center justify-around py-2 px-2 shadow-[0_-2px_10px_rgba(0,0,0,0.06)]">
-                <Link to="/customer/dashboard" className={`flex flex-col items-center gap-0.5 min-w-12 ${isActive("/customer/dashboard") ? "text-green-600" : "text-gray-400"}`}><LayoutDashboard size={20} /><span className="text-[10px]">Dashboard</span></Link>
-                <Link to="/cart" className={`flex flex-col items-center gap-0.5 min-w-12 ${isActive("/cart") ? "text-green-600" : "text-gray-400"}`}>
-                    <Badge count={totalItems} size="small" color="#16a34a" offset={[6, -2]}><ShoppingCart size={20} /></Badge>
-                    <span className="text-[10px]">Cart</span>
-                </Link>
-                <Link to="/customer/edit-profile" className={`flex flex-col items-center gap-0.5 min-w-12 ${isActive("/customer/edit-profile") ? "text-green-600" : "text-gray-400"}`}><User size={20} /><span className="text-[10px]">Profile</span></Link>
-                <button onClick={() => setLogoutModalOpen(true)} className="flex flex-col items-center gap-0.5 min-w-12 text-gray-400 hover:text-red-500 cursor-pointer bg-transparent border-none">
-                    <LogOut size={20} /><span className="text-[10px]">Logout</span>
-                </button>
+            {/* Mobile Bottom Nav */}
+            <nav
+                className="fixed bottom-0 left-0 right-0 z-50 border-t border-gray-200 bg-white/95 px-3 py-2 shadow-[0_-6px_24px_rgba(15,23,42,0.08)] backdrop-blur md:hidden"
+                style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 0.5rem)" }}
+            >
+                <div className="grid grid-cols-4 gap-2 text-green-600">
+
+                    {/* Dashboard */}
+                    <Link
+                        to="/customer/dashboard"
+                        className={getMobileNavClass(isActive("/customer/dashboard"))}
+                        aria-current={isActive("/customer/dashboard") ? "page" : undefined}
+                    >
+                        <LayoutDashboard size={18} className="text-inherit" />
+                        <span className="text-[11px] font-semibold">Dashboard</span>
+                    </Link>
+
+                    {/* Cart */}
+                    <Link
+                        to="/customer/cart"
+                        className={getMobileNavClass(isActive("/customer/cart"))}
+                        aria-current={isActive("/customer/cart") ? "page" : undefined}
+                    >
+                        <Badge count={totalItems} size="small" offset={[6, -2]}>
+                            {/* force color in case Badge acts up */}
+                            <ShoppingCart size={18} className="text-inherit" style={{ color: "#16a34a" }} />
+                        </Badge>
+                        <span className="text-[11px] font-semibold">Cart</span>
+                    </Link>
+
+                    {/* Profile */}
+                    <Link
+                        to="/customer/edit-profile"
+                        className={getMobileNavClass(isActive("/customer/edit-profile"))}
+                        aria-current={isActive("/customer/edit-profile") ? "page" : undefined}
+                    >
+                        <User size={18} className="text-inherit" />
+                        <span className="text-[11px] font-semibold">Profile</span>
+                    </Link>
+
+                    {/* Logout */}
+                    <button
+                        onClick={() => setLogoutModalOpen(true)}
+                        className="flex min-h-13 flex-col items-center justify-center gap-1 rounded-2xl px-2 text-inherit transition-colors hover:bg-gray-50 hover:text-green-700"
+                    >
+                        <LogOut size={18} className="text-inherit" />
+                        <span className="text-[11px] font-semibold">Logout</span>
+                    </button>
+
+                </div>
             </nav>
-            <div className="md:hidden h-16" />
+            <div className="h-20 md:hidden" style={{ height: "calc(env(safe-area-inset-bottom, 0px) + 5rem)" }} />
 
             {/* Logout Confirmation Modal */}
             <Modal

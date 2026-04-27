@@ -3,7 +3,7 @@ import { Link, Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/auth-context";
 import { useCart } from "../context/CartContext";
 import { Badge, App, Spin } from "antd";
-import { ShoppingBag, ShoppingCart, Package, User, LogIn, Rocket } from "lucide-react";
+import { ShoppingBag, ShoppingCart, Package, LogIn, Rocket, LayoutDashboard } from "lucide-react";
 import { searchPublicProducts } from "../services/productService";
 import SearchBar from "../components/SearchBar";
 
@@ -293,7 +293,7 @@ export default function HomeLayout() {
                 className="fixed bottom-0 left-0 right-0 z-50 border-t border-gray-200 bg-white/95 px-3 py-2 shadow-[0_-6px_24px_rgba(15,23,42,0.08)] backdrop-blur sm:hidden"
                 style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 0.5rem)" }}
             >
-                <div className="grid grid-cols-4 gap-2">
+                <div className={`grid gap-2 ${isAuthenticated ? "grid-cols-3" : "grid-cols-4"}`}>
                     <Link to="/" className={getMobileNavClass(isActiveRoute("/"))} aria-current={isActiveRoute("/") ? "page" : undefined}>
                         <ShoppingBag size={18} />
                         <span className="text-[11px] font-semibold">Home</span>
@@ -306,14 +306,23 @@ export default function HomeLayout() {
                         <Package size={18} />
                         <span className="text-[11px] font-semibold">Products</span>
                     </Link>
-                    <Link to="/login" className={getMobileNavClass(isActiveRoute("/login"))} aria-current={isActiveRoute("/login") ? "page" : undefined}>
-                        <LogIn  size={18} />
-                        <span className="text-[11px] font-semibold">Sign in</span>
-                    </Link>
-                    <Link to="/register/customer" className={getMobileNavClass(isActiveRoute("/register/customer"))} aria-current={isActiveRoute("/register/customer") ? "page" : undefined}>
-                        <Rocket  size={18} />
-                        <span className="text-[11px] font-semibold">Get started</span>
-                    </Link>
+                    {isAuthenticated ? (
+                        <Link to="/dashboard" className={getMobileNavClass(isActiveRoute("/dashboard"))} aria-current={isActiveRoute("/dashboard") ? "page" : undefined}>
+                            <LayoutDashboard size={18} />
+                            <span className="text-[11px] font-semibold">Go to Dashboard</span>
+                        </Link>
+                    ) : (
+                        <>
+                            <Link to="/login" className={getMobileNavClass(isActiveRoute("/login"))} aria-current={isActiveRoute("/login") ? "page" : undefined}>
+                                <LogIn size={18} />
+                                <span className="text-[11px] font-semibold">Sign in</span>
+                            </Link>
+                            <Link to="/register/customer" className={getMobileNavClass(isActiveRoute("/register/customer"))} aria-current={isActiveRoute("/register/customer") ? "page" : undefined}>
+                                <Rocket size={18} />
+                                <span className="text-[11px] font-semibold">Get started</span>
+                            </Link>
+                        </>
+                    )}
                 </div>
             </nav>
 

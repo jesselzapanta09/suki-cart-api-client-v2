@@ -22,10 +22,11 @@ export default function SearchBar({
                     onKeyDown={handleSearchSubmit}
                     allowClear
                     size="large"
-                    className="rounded-lg"
+                    className="rounded-2xl"
                     style={{
-                        fontSize: "14px",
+                        fontSize: "15px",
                         borderColor: "#e5e7eb",
+                        minHeight: "48px",
                     }}
                 />
                 {children}
@@ -45,9 +46,10 @@ export default function SearchBar({
                     onKeyDown={handleSearchSubmit}
                     allowClear
                     size="large"
-                    className="rounded-lg"
+                    className="rounded-2xl"
                     style={{
-                        fontSize: "14px",
+                        fontSize: "15px",
+                        minHeight: "48px",
                     }}
                 />
                 {children}

@@ -53,8 +53,8 @@ export default function CustomerLayout() {
                 <div className="hidden md:grid grid-cols-3 items-center px-4 sm:px-6 lg:px-8 h-16 sm:h-20 max-w-7xl mx-auto gap-2 sm:gap-4">
                     {/* Column 1: Logo */}
                     <Link to="/" className="no-underline flex items-center gap-1 shrink-0">
-                        <div className="w-12 sm:w-14 h-12 sm:h-14 bg-white flex items-center justify-center rounded-lg sm:rounded-xl">
-                            <img src="/suki-cart-logo-home.png" alt="SukiCart Logo" className="w-8 sm:w-10 h-8 sm:h-10 rounded-lg sm:rounded-xl object-contain" />
+                        <div className="flex h-10 w-10 items-center justify-center rounded-2xl">
+                            <img src="/suki-cart-logo-home.png" alt="SukiCart Logo" className="h-full w-full rounded-xl object-contain" />
                         </div>
                         <div className="hidden sm:block">
                             <div className="font-display font-bold text-green-900 text-sm sm:text-base">SukiCart</div>
@@ -103,30 +103,27 @@ export default function CustomerLayout() {
                 {/* Mobile Layout (< md): Logo, profile, and notification bell */}
                 <div className="flex items-center justify-between px-4 py-3 md:hidden">
                     <Link to="/" className="flex shrink-0 items-center gap-2 no-underline">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-green-50">
-                            <img src="/suki-cart-logo-home.png" alt="SukiCart Logo" className="h-8 w-8 rounded-xl object-contain" />
+                        <div className="flex h-10 w-10 items-center justify-center rounded-2xl">
+                            <img src="/suki-cart-logo-home.png" alt="SukiCart Logo" className="h-full w-full rounded-xl object-contain" />
                         </div>
                         <div className="min-w-0">
                             <div className="text-base font-bold leading-tight text-green-900">SukiCart</div>
-                            <div className="text-xs font-medium text-green-700/75">Customer area</div>
+                            <div className="text-xs font-medium text-green-700/75">Customer</div>
                         </div>
                     </Link>
                     <div className="flex items-center gap-2">
+                        <NotificationBell />
                         <Link
                             to="/customer/edit-profile"
-                            className={`flex h-10 w-10 items-center justify-center rounded-2xl border transition-colors ${profileActive
-                                ? "border-green-200 bg-green-100"
-                                : "border-green-100 bg-green-50 hover:bg-green-100"
-                                }`}
+                            className="flex h-12 w-12 items-center justify-center rounded-2xl"
                             aria-label="Open profile"
                         >
                             {user ? (
-                                <Avatar user={user} size={28} fontSize="0.8rem" />
+                                <Avatar user={user} />
                             ) : (
                                 <User size={18} className="text-green-700" />
                             )}
                         </Link>
-                        <NotificationBell />
                     </div>
                 </div>
             </nav>
@@ -163,14 +160,14 @@ export default function CustomerLayout() {
                         <span className="text-[11px] font-semibold">Cart</span>
                     </Link>
 
-                    {/* Profile */}
+                    {/* Order */}
                     <Link
-                        to="/customer/edit-profile"
-                        className={getMobileNavClass(isActive("/customer/edit-profile"))}
-                        aria-current={isActive("/customer/edit-profile") ? "page" : undefined}
+                        to="/customer/orders"
+                        className={getMobileNavClass(isActive("/customer/orders"))}
+                        aria-current={isActive("/customer/orders") ? "page" : undefined}
                     >
-                        <User size={18} className="text-inherit" />
-                        <span className="text-[11px] font-semibold">Profile</span>
+                        <ShoppingBag size={18} className="text-inherit" />
+                        <span className="text-[11px] font-semibold">Order</span>
                     </Link>
 
                     {/* Logout */}

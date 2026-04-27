@@ -218,7 +218,7 @@ export default function NotificationBell() {
             open={open}
             onOpenChange={onOpenChange}
         >
-            <button className="relative flex items-center justify-center w-9 h-9 rounded-xl bg-gray-100 hover:bg-green-100 text-gray-600 hover:text-green-700 transition-colors cursor-pointer border-none">
+            <button className="relative flex items-center justify-center w-12 h-12 rounded-xl bg-green-50 hover:bg-green-100 text-gray-600 hover:text-green-700 transition-colors cursor-pointer border-none">
                 <Badge count={unread} size="small" color="#16a34a" offset={[2, -2]}>
                     <Bell size={18} />
                 </Badge>

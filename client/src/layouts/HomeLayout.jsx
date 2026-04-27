@@ -80,16 +80,14 @@ export default function HomeLayout() {
                 {/* Desktop Layout (lg and above): 4-column grid */}
                 <div className="mx-auto hidden h-20 max-w-7xl grid-cols-4 items-center gap-4 px-6 sm:px-8 lg:grid">
                     {/* Column 1: Logo */}
-                    <Link to="/" className="flex shrink-0 items-center gap-2 no-underline">
-                        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-green-50">
-                            <img src="/suki-cart-logo-home.png" alt="SukiCart Logo" className="h-10 w-10 rounded-xl object-contain" />
+                    <Link to="/" className="no-underline flex items-center gap-1 shrink-0">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-2xl">
+                            <img src="/suki-cart-logo-home.png" alt="SukiCart Logo" className="h-full w-full rounded-xl object-contain" />
                         </div>
-                        <div>
-                            <div className="font-display text-base font-bold text-green-900">SukiCart</div>
-                            <div className="text-xs font-medium text-green-700/75">Everyday essentials</div>
+                        <div className="hidden sm:block">
+                            <div className="font-display font-bold text-green-900 text-sm sm:text-base">SukiCart</div>
                         </div>
                     </Link>
-
                     {/* Columns 2-3: Search Bar (spans 2 columns) */}
                     <div className="relative col-span-2">
                         <SearchBar
@@ -196,8 +194,8 @@ export default function HomeLayout() {
                 <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-3 sm:px-6 lg:hidden">
                     <div className="flex items-center gap-3">
                         <Link to="/" className="flex min-w-0 flex-1 items-center gap-3 no-underline">
-                            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-green-50">
-                                <img src="/suki-cart-logo-home.png" alt="SukiCart Logo" className="h-9 w-9 rounded-xl object-contain" />
+                            <div className="flex h-10 w-10 items-center justify-center rounded-2xl">
+                                <img src="/suki-cart-logo-home.png" alt="SukiCart Logo" className="h-full w-full rounded-xl object-contain" />
                             </div>
                             <div className="min-w-0">
                                 <div className="font-display text-base font-bold leading-tight text-green-900">SukiCart</div>
@@ -337,12 +335,8 @@ export default function HomeLayout() {
                     <div className="flex flex-col gap-8 md:flex-row md:flex-wrap md:justify-between">
                         <div className="max-w-sm">
                             <div className="mb-3 flex items-center gap-3">
-                                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 shrink-0">
-                                    <img
-                                        src="/suki-cart-logo-home.png"
-                                        alt="SukiCart Logo"
-                                        className="h-9 w-9 rounded-xl object-contain"
-                                    />
+                                <div className="flex h-10 w-10 items-center justify-center rounded-2xl">
+                                    <img src="/suki-cart-logo-home.png" alt="SukiCart Logo" className="h-full w-full rounded-xl object-contain" />
                                 </div>
                                 <div>
                                     <span className="font-display text-lg font-bold text-white">SukiCart</span>

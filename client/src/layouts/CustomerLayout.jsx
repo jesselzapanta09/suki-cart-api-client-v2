@@ -45,8 +45,69 @@ export default function CustomerLayout() {
             : "text-gray-500 hover:bg-gray-50 hover:text-gray-700"
         }`;
 
+    const mobileBottomNav = (
+        <>
+            {/* Mobile Bottom Nav */}
+            <nav
+                className="fixed bottom-0 left-0 right-0 z-120 border-t border-gray-200 bg-white/95 px-3 py-2 shadow-[0_-6px_24px_rgba(15,23,42,0.08)] backdrop-blur md:hidden"
+                style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 0.5rem)" }}
+            >
+                <div className="grid grid-cols-4 gap-2 text-green-600">
+
+                    {/* Dashboard */}
+                    <Link
+                        to="/customer/dashboard"
+                        className={getMobileNavClass(isActive("/customer/dashboard"))}
+                        aria-current={isActive("/customer/dashboard") ? "page" : undefined}
+                    >
+                        <LayoutDashboard size={18} className="text-inherit" />
+                        <span className="text-[11px] font-semibold">Dashboard</span>
+                    </Link>
+
+                    {/* Cart */}
+                    <Link
+                        to="/customer/cart"
+                        className={getMobileNavClass(isActive("/customer/cart"))}
+                        aria-current={isActive("/customer/cart") ? "page" : undefined}
+                    >
+                        <Badge count={totalItems} size="small" offset={[6, -2]}>
+                            {/* force color in case Badge acts up */}
+                            <ShoppingCart size={18} className="text-inherit" style={{ color: "#16a34a" }} />
+                        </Badge>
+                        <span className="text-[11px] font-semibold">Cart</span>
+                    </Link>
+
+                    {/* Order */}
+                    <Link
+                        to="/customer/orders"
+                        className={getMobileNavClass(isActive("/customer/orders"))}
+                        aria-current={isActive("/customer/orders") ? "page" : undefined}
+                    >
+                        <ShoppingBag size={18} className="text-inherit" />
+                        <span className="text-[11px] font-semibold">Order</span>
+                    </Link>
+
+                    {/* Logout */}
+                    <Button
+                        type="text"
+                        danger
+                        onClick={() => setLogoutModalOpen(true)}
+                        className="h-auto! min-h-13! w-full! p-0! rounded-2xl! border-0! bg-red-50! text-inherit transition-colors hover:bg-red-100/70! hover:text-red-600!"
+                    >
+                        <span className="flex min-h-13 flex-col items-center justify-center gap-1 rounded-2xl px-2">
+                            <LogOut size={18} className="text-inherit" />
+                            <span className="text-[11px] font-semibold">Logout</span>
+                        </span>
+                    </Button>
+
+                </div>
+            </nav>
+            <div className="h-20 md:hidden" style={{ height: "calc(env(safe-area-inset-bottom, 0px) + 5rem)" }} />
+        </>
+    );
+
     return (
-        <div className="flex min-h-screen flex-col bg-gray-50 text-gray-900">
+        <div className="flex min-h-screen flex-col overflow-x-hidden bg-gray-50 text-gray-900">
             {/* Top Navbar */}
             <nav className="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-sm">
                 {/* Desktop Layout (md and above): 3-column grid */}
@@ -128,60 +189,8 @@ export default function CustomerLayout() {
                 </div>
             </nav>
 
-            <main className="flex-1 pb-4"><Outlet /></main>
-
-            {/* Mobile Bottom Nav */}
-            <nav
-                className="fixed bottom-0 left-0 right-0 z-50 border-t border-gray-200 bg-white/95 px-3 py-2 shadow-[0_-6px_24px_rgba(15,23,42,0.08)] backdrop-blur md:hidden"
-                style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 0.5rem)" }}
-            >
-                <div className="grid grid-cols-4 gap-2 text-green-600">
-
-                    {/* Dashboard */}
-                    <Link
-                        to="/customer/dashboard"
-                        className={getMobileNavClass(isActive("/customer/dashboard"))}
-                        aria-current={isActive("/customer/dashboard") ? "page" : undefined}
-                    >
-                        <LayoutDashboard size={18} className="text-inherit" />
-                        <span className="text-[11px] font-semibold">Dashboard</span>
-                    </Link>
-
-                    {/* Cart */}
-                    <Link
-                        to="/customer/cart"
-                        className={getMobileNavClass(isActive("/customer/cart"))}
-                        aria-current={isActive("/customer/cart") ? "page" : undefined}
-                    >
-                        <Badge count={totalItems} size="small" offset={[6, -2]}>
-                            {/* force color in case Badge acts up */}
-                            <ShoppingCart size={18} className="text-inherit" style={{ color: "#16a34a" }} />
-                        </Badge>
-                        <span className="text-[11px] font-semibold">Cart</span>
-                    </Link>
-
-                    {/* Order */}
-                    <Link
-                        to="/customer/orders"
-                        className={getMobileNavClass(isActive("/customer/orders"))}
-                        aria-current={isActive("/customer/orders") ? "page" : undefined}
-                    >
-                        <ShoppingBag size={18} className="text-inherit" />
-                        <span className="text-[11px] font-semibold">Order</span>
-                    </Link>
-
-                    {/* Logout */}
-                    <button
-                        onClick={() => setLogoutModalOpen(true)}
-                        className="flex min-h-13 flex-col items-center justify-center gap-1 rounded-2xl px-2 text-inherit transition-colors hover:bg-gray-50 hover:text-green-700"
-                    >
-                        <LogOut size={18} className="text-inherit" />
-                        <span className="text-[11px] font-semibold">Logout</span>
-                    </button>
-
-                </div>
-            </nav>
-            <div className="h-20 md:hidden" style={{ height: "calc(env(safe-area-inset-bottom, 0px) + 5rem)" }} />
+            <main className="flex-1 overflow-x-hidden pb-4"><Outlet /></main>
+            {mobileBottomNav}
 
             {/* Logout Confirmation Modal */}
             <Modal

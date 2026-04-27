@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
 import { App, Modal, Button } from "antd";
-import { LayoutDashboard, Package, LogOut, Menu, X, Lock, ShoppingBag } from "lucide-react";
+import { LayoutDashboard, Package, LogOut, Lock, ShoppingBag } from "lucide-react";
 import NotificationBell from "../components/NotificationBell";
 import { useAuth } from "../context/auth-context";
 import Avatar from "../components/Avatar";
@@ -130,7 +130,6 @@ export default function SellerLayout() {
     const navigate = useNavigate();
     const location = useLocation();
     const isDesktop = useIsDesktop();
-    const [menuOpen, setMenuOpen] = useState(false);
     const [logoutModalOpen, setLogoutModalOpen] = useState(false);
     const [logoutLoading, setLogoutLoading] = useState(false);
     const [storeVerification, setStoreVerification] = useState(() => readCachedStoreVerification());
@@ -164,19 +163,14 @@ export default function SellerLayout() {
         }
     }, [location.pathname, storeStatusLoaded, storeVerified, navigate]);
 
-    const [prevPathname, setPrevPathname] = useState(location.pathname);
-    if (location.pathname !== prevPathname) {
-        setPrevPathname(location.pathname);
-        setMenuOpen(false);
-    }
-
-    const [prevIsDesktop, setPrevIsDesktop] = useState(isDesktop);
-    if (isDesktop !== prevIsDesktop) {
-        setPrevIsDesktop(isDesktop);
-        if (isDesktop) setMenuOpen(false);
-    }
-
-    const profileActive = location.pathname === "/seller/edit-profile";
+    const isActive = (to) => location.pathname === to;
+    const getMobileNavClass = (active, disabled = false) =>
+        `flex min-h-13 flex-col items-center justify-center gap-1 rounded-2xl px-2 transition-colors ${disabled
+            ? "cursor-not-allowed text-gray-300"
+            : active
+                ? "bg-green-50 text-green-700 ring-1 ring-green-100"
+                : "text-gray-500 hover:bg-gray-50 hover:text-gray-700"
+        }`;
 
     const handleLogout = async () => {
         setLogoutLoading(true);
@@ -193,8 +187,81 @@ export default function SellerLayout() {
         }
     };
 
+    const mobileBottomNav = (
+        <nav
+            className="fixed bottom-0 left-0 right-0 z-120 border-t border-gray-200 bg-white/95 px-3 py-2 shadow-[0_-6px_24px_rgba(15,23,42,0.08)] backdrop-blur"
+            style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 0.5rem)" }}
+        >
+            <div className="grid grid-cols-4 gap-2 text-green-600">
+                <Link
+                    to="/seller/dashboard"
+                    className={getMobileNavClass(isActive("/seller/dashboard"))}
+                    aria-current={isActive("/seller/dashboard") ? "page" : undefined}
+                >
+                    <LayoutDashboard size={18} className="text-inherit" />
+                    <span className="text-[11px] font-semibold">Dashboard</span>
+                </Link>
+
+                {!storeVerified ? (
+                    <button
+                        type="button"
+                        disabled
+                        className={getMobileNavClass(false, true)}
+                        title="Available after store verification"
+                    >
+                        <Package size={18} className="text-inherit" />
+                        <span className="text-[11px] font-semibold">Products</span>
+                    </button>
+                ) : (
+                    <Link
+                        to="/seller/products"
+                        className={getMobileNavClass(isActive("/seller/products"))}
+                        aria-current={isActive("/seller/products") ? "page" : undefined}
+                    >
+                        <Package size={18} className="text-inherit" />
+                        <span className="text-[11px] font-semibold">Products</span>
+                    </Link>
+                )}
+
+                {!storeVerified ? (
+                    <button
+                        type="button"
+                        disabled
+                        className={getMobileNavClass(false, true)}
+                        title="Available after store verification"
+                    >
+                        <ShoppingBag size={18} className="text-inherit" />
+                        <span className="text-[11px] font-semibold">Orders</span>
+                    </button>
+                ) : (
+                    <Link
+                        to="/seller/orders"
+                        className={getMobileNavClass(isActive("/seller/orders"))}
+                        aria-current={isActive("/seller/orders") ? "page" : undefined}
+                    >
+                        <ShoppingBag size={18} className="text-inherit" />
+                        <span className="text-[11px] font-semibold">Orders</span>
+                    </Link>
+                )}
+
+                {/* Logout */}
+                <Button
+                    type="text"
+                    danger
+                    onClick={() => setLogoutModalOpen(true)}
+                    className="h-auto! min-h-13! w-full! p-0! rounded-2xl! border-0! bg-red-50! text-inherit transition-colors hover:bg-red-100/70! hover:text-red-600!"
+                >
+                    <span className="flex min-h-13 flex-col items-center justify-center gap-1 rounded-2xl px-2">
+                        <LogOut size={18} className="text-inherit" />
+                        <span className="text-[11px] font-semibold">Logout</span>
+                    </span>
+                </Button>
+            </div>
+        </nav>
+    );
+
     return (
-        <div className="flex min-h-screen bg-gray-50">
+        <div className="flex min-h-screen overflow-x-hidden bg-gray-50">
             {/* DESKTOP: fixed sidebar */}
             {isDesktop && (
                 <div className="w-60 shrink-0">
@@ -204,84 +271,30 @@ export default function SellerLayout() {
 
             {/* MOBILE: top navbar */}
             {!isDesktop && (
-                <nav className="fixed top-0 left-0 right-0 z-50 h-15.5 bg-rail-950 flex items-center justify-between px-5 shadow-[0_2px_8px_rgba(0,0,0,0.25)]">
-                    <Link to="/seller/dashboard" className="no-underline flex items-center gap-2.5">
-                        <div className="w-8 h-8 rounded-[9px] bg-white flex items-center justify-center">
-                            <img src="/suki-cart-logo.png" alt="SukiCart Logo" className="w-6 h-6 rounded-xl object-contain" />
+                <nav className="fixed top-0 left-0 right-0 z-50 h-15.5 bg-white border-b border-gray-100 flex items-center justify-between px-4 shadow-sm">
+                    <Link to="/" className="flex shrink-0 items-center gap-2 no-underline">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-2xl">
+                            <img src="/suki-cart-logo-home.png" alt="SukiCart Logo" className="h-full w-full rounded-xl object-contain" />
                         </div>
-                        <div>
-                            <div className="font-display font-bold text-white text-[0.9rem]">SukiCart</div>
-                            <div className="text-[0.6rem] text-[#86efac] font-mono">SELLER</div>
+                        <div className="min-w-0">
+                            <div className="text-base font-bold leading-tight text-green-900">SukiCart</div>
+                            <div className="text-xs font-medium text-green-700/75">Seller</div>
                         </div>
                     </Link>
                     <div className="flex items-center gap-2.5">
                         <NotificationBell />
-                        <Avatar user={user} />
-                        <button onClick={() => setMenuOpen(v => !v)} className="bg-white/10 border border-white/20 rounded-lg px-1.5 py-1 text-white cursor-pointer flex items-center">
-                            {menuOpen ? <X size={22} /> : <Menu size={22} />}
-                        </button>
+                        <Link
+                            to="/seller/edit-profile"
+                            className="flex h-10 w-10 items-center justify-center rounded-2xl no-underline"
+                            aria-label="Open profile"
+                        >
+                            <Avatar user={user} />
+                        </Link>
                     </div>
                 </nav>
             )}
 
-            {/* MOBILE: dropdown menu */}
-            {!isDesktop && menuOpen && (
-                <>
-                    <div onClick={() => setMenuOpen(false)} className="fixed inset-0 z-44 bg-black/35" />
-                    <div className="fixed top-15.5 left-0 right-0 z-45 bg-rail-950 border-b border-white/8 shadow-[0_8px_24px_rgba(0,0,0,0.3)] px-4 py-3">
-                        <Link
-                            to="/seller/edit-profile"
-                            className="flex items-center gap-2.5 px-3 py-2.5 rounded-[10px] no-underline mb-3 transition-[background] duration-150"
-                            style={{
-                                background: profileActive ? "rgba(34,197,94,0.25)" : "rgba(255,255,255,0.06)",
-                            }}
-                        >
-                            <Avatar user={user} />
-                            <div>
-                                <div className="text-white font-body font-semibold text-[0.9rem]">{user?.username}</div>
-                                <div className="text-[#86efac] text-[0.65rem] font-mono">{
-                                    user?.firstname || user?.lastname
-                                        ? `${user?.firstname || ""} ${user?.lastname || ""}`.trim().toUpperCase()
-                                        : "SELLER"
-                                }</div>
-                            </div>
-                        </Link>
-                        {NAV.map((n) => {
-                            const active = location.pathname === n.to;
-                            const IconComponent = n.icon;
-                            const disabled = !storeVerified && !n.alwaysVisible;
-                            if (disabled) {
-                                return (
-                                    <div key={n.to}
-                                        className="flex items-center gap-2.5 px-3 py-2.75 rounded-[9px] font-body text-[0.9rem] mb-1 cursor-not-allowed opacity-40"
-                                        style={{ color: "rgba(255,255,255,0.4)" }}
-                                    >
-                                        <Lock size={18} className="text-white/30" />
-                                        {n.label}
-                                    </div>
-                                );
-                            }
-                            return (
-                                <Link key={n.to} to={n.to}
-                                    className={`flex items-center gap-2.5 px-3 py-2.75 rounded-[9px] no-underline font-body text-[0.9rem] mb-1 transition-[background] duration-150 ${active ? 'font-semibold' : 'font-normal'}`}
-                                    style={{
-                                        color: active ? "white" : "rgba(255,255,255,0.7)",
-                                        background: active ? "rgba(34,197,94,0.25)" : "transparent",
-                                    }}>
-                                    <IconComponent size={18} className={active ? "text-[#86efac]" : "text-white/40"} />
-                                    {n.label}
-                                </Link>
-                            );
-                        })}
-                        <div className="border-t border-white/8 my-2" />
-                        <button onClick={() => setLogoutModalOpen(true)} className="w-full flex items-center gap-2.5 px-3 py-3 rounded-[9px] border-none bg-transparent text-[rgba(255,120,120,0.85)] font-body font-medium text-[0.9rem] cursor-pointer transition-colors duration-150 hover:bg-[rgba(231,74,74,0.15)]">
-                            <LogOut size={16} /> Logout
-                        </button>
-                    </div>
-                </>
-            )}
-
-            <main className={`flex-1 min-w-0 ${isDesktop ? 'pt-0' : 'pt-15.5'}`}>
+            <main className={`flex-1 min-w-0 overflow-x-hidden ${isDesktop ? 'pt-0' : 'pt-15.5 pb-[calc(env(safe-area-inset-bottom,0px)+5rem)]'}`}>
                 {/* Desktop topbar */}
                 {isDesktop && (
                     <div className="sticky top-0 z-30 h-14 bg-white border-b border-gray-100 shadow-sm flex items-center justify-end px-6 gap-3">
@@ -295,6 +308,9 @@ export default function SellerLayout() {
                     setStoreVerification: updateStoreVerification,
                 }} />
             </main>
+
+            {/* MOBILE/TABLET Bottom Nav */}
+            {!isDesktop && mobileBottomNav}
 
             <Modal
                 title="Logout"

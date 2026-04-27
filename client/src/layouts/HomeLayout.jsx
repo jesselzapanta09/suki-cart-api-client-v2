@@ -74,8 +74,56 @@ export default function HomeLayout() {
     const btnSecondary = "inline-flex min-h-12 items-center justify-center rounded-2xl border border-gray-200 px-4 py-3 text-sm font-semibold text-green-700 transition hover:bg-green-50";
     const getProductImageUrl = (product) => product?.images?.[0]?.full_url || product?.images?.[0]?.image_path || null;
 
+    const mobileBottomNav = (
+        <>
+            {/* Mobile Bottom Nav */}
+            <nav
+                className="fixed bottom-0 left-0 right-0 z-120 border-t border-gray-200 bg-white/95 px-3 py-2 shadow-[0_-6px_24px_rgba(15,23,42,0.08)] backdrop-blur sm:hidden"
+                style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 0.5rem)" }}
+            >
+                <div className={`grid gap-2 ${isAuthenticated ? "grid-cols-3" : "grid-cols-4"}`}>
+                    <Link to="/" className={getMobileNavClass(isActiveRoute("/"))} aria-current={isActiveRoute("/") ? "page" : undefined}>
+                        <ShoppingBag size={18} />
+                        <span className="text-[11px] font-semibold">Home</span>
+                    </Link>
+                    <Link
+                        to="/search?sort=latest"
+                        className={getMobileNavClass(isActiveRoute("/search"))}
+                        aria-current={isActiveRoute("/search") ? "page" : undefined}
+                    >
+                        <Package size={18} />
+                        <span className="text-[11px] font-semibold">Products</span>
+                    </Link>
+                    {isAuthenticated ? (
+                        <Link to="/dashboard" className={getMobileNavClass(isActiveRoute("/dashboard"))} aria-current={isActiveRoute("/dashboard") ? "page" : undefined}>
+                            <LayoutDashboard size={18} />
+                            <span className="text-[11px] font-semibold">Go to Dashboard</span>
+                        </Link>
+                    ) : (
+                        <>
+                            <Link to="/login" className={getMobileNavClass(isActiveRoute("/login"))} aria-current={isActiveRoute("/login") ? "page" : undefined}>
+                                <LogIn size={18} />
+                                <span className="text-[11px] font-semibold">Sign in</span>
+                            </Link>
+                            <Link to="/register/customer" className={getMobileNavClass(isActiveRoute("/register/customer"))} aria-current={isActiveRoute("/register/customer") ? "page" : undefined}>
+                                <Rocket size={18} />
+                                <span className="text-[11px] font-semibold">Get started</span>
+                            </Link>
+                        </>
+                    )}
+                </div>
+            </nav>
+
+            {/* Spacer for mobile bottom nav */}
+            <div
+                className="h-20 sm:hidden"
+                style={{ height: "calc(env(safe-area-inset-bottom, 0px) + 5rem)" }}
+            />
+        </>
+    );
+
     return (
-        <div className="flex min-h-screen flex-col bg-gray-50 text-gray-900">
+        <div className="flex min-h-screen flex-col overflow-x-hidden bg-gray-50 text-gray-900">
             <nav className="sticky top-0 z-50 border-b border-gray-200 bg-white/95 shadow-sm backdrop-blur">
                 {/* Desktop Layout (lg and above): 4-column grid */}
                 <div className="mx-auto hidden h-20 max-w-7xl grid-cols-4 items-center gap-4 px-6 sm:px-8 lg:grid">
@@ -284,51 +332,8 @@ export default function HomeLayout() {
             </nav>
 
 
-            <main className="flex-1"><Outlet /></main>
-
-            {/* Mobile Bottom Nav */}
-            <nav
-                className="fixed bottom-0 left-0 right-0 z-50 border-t border-gray-200 bg-white/95 px-3 py-2 shadow-[0_-6px_24px_rgba(15,23,42,0.08)] backdrop-blur sm:hidden"
-                style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 0.5rem)" }}
-            >
-                <div className={`grid gap-2 ${isAuthenticated ? "grid-cols-3" : "grid-cols-4"}`}>
-                    <Link to="/" className={getMobileNavClass(isActiveRoute("/"))} aria-current={isActiveRoute("/") ? "page" : undefined}>
-                        <ShoppingBag size={18} />
-                        <span className="text-[11px] font-semibold">Home</span>
-                    </Link>
-                    <Link
-                        to="/search?sort=latest"
-                        className={getMobileNavClass(isActiveRoute("/search"))}
-                        aria-current={isActiveRoute("/search") ? "page" : undefined}
-                    >
-                        <Package size={18} />
-                        <span className="text-[11px] font-semibold">Products</span>
-                    </Link>
-                    {isAuthenticated ? (
-                        <Link to="/dashboard" className={getMobileNavClass(isActiveRoute("/dashboard"))} aria-current={isActiveRoute("/dashboard") ? "page" : undefined}>
-                            <LayoutDashboard size={18} />
-                            <span className="text-[11px] font-semibold">Go to Dashboard</span>
-                        </Link>
-                    ) : (
-                        <>
-                            <Link to="/login" className={getMobileNavClass(isActiveRoute("/login"))} aria-current={isActiveRoute("/login") ? "page" : undefined}>
-                                <LogIn size={18} />
-                                <span className="text-[11px] font-semibold">Sign in</span>
-                            </Link>
-                            <Link to="/register/customer" className={getMobileNavClass(isActiveRoute("/register/customer"))} aria-current={isActiveRoute("/register/customer") ? "page" : undefined}>
-                                <Rocket size={18} />
-                                <span className="text-[11px] font-semibold">Get started</span>
-                            </Link>
-                        </>
-                    )}
-                </div>
-            </nav>
-
-            {/* Spacer for mobile bottom nav */}
-            <div
-                className="h-20 sm:hidden"
-                style={{ height: "calc(env(safe-area-inset-bottom, 0px) + 5rem)" }}
-            />
+            <main className="flex-1 overflow-x-hidden"><Outlet /></main>
+            {mobileBottomNav}
 
             <footer className="bg-green-950 px-4 py-10 text-white sm:px-6 sm:py-12">
                 <div className="mx-auto flex max-w-7xl flex-col gap-10">

@@ -32,6 +32,23 @@ function timeAgo(dateStr) {
     return `${Math.floor(hrs / 24)}d ago`;
 }
 
+function normalizePushNotification(payload) {
+    const data = payload?.data ?? {};
+    const notificationId = data.notification_id;
+
+    if (!notificationId) return null;
+
+    return {
+        id: notificationId,
+        type: payload?.type ?? "system",
+        title: payload?.title ?? "Notification",
+        message: payload?.message ?? "",
+        data,
+        read_at: null,
+        created_at: new Date().toISOString(),
+    };
+}
+
 export default function NotificationBell() {
     const navigate = useNavigate();
     const location = useLocation();
@@ -46,27 +63,7 @@ export default function NotificationBell() {
             ? "/seller/notifications"
             : "/customer/notifications";
 
-    const refreshCount = useCallback(async () => {
-        try {
-            const res = await getUnreadCount();
-            setUnread(res.count ?? 0);
-        } catch { /* empty */ }
-    }, []);
-
-    useEffect(() => {
-        // Defer initial refreshCount to avoid setState in effect body
-        const timeout = setTimeout(refreshCount, 0);
-        // Reduced polling frequency: once every 30 seconds instead of every 5 seconds
-        const id = setInterval(refreshCount, 30000);
-        return () => {
-            clearTimeout(timeout);
-            clearInterval(id);
-        };
-    }, [refreshCount]);
-
-    const onOpenChange = useCallback(async (visible) => {
-        setOpen(visible);
-        if (!visible) return;
+    const syncBell = useCallback(async () => {
         try {
             const [countRes, listRes] = await Promise.all([
                 getUnreadCount(),
@@ -76,6 +73,49 @@ export default function NotificationBell() {
             setNotifications(listRes.data ?? []);
         } catch { /* empty */ }
     }, []);
+
+    useEffect(() => {
+        const timeout = setTimeout(syncBell, 0);
+        return () => {
+            clearTimeout(timeout);
+        };
+    }, [syncBell]);
+
+    useEffect(() => {
+        const handlePushNotification = (event) => {
+            const nextNotification = normalizePushNotification(event.detail);
+            if (!nextNotification) return;
+
+            setUnread(prev => prev + 1);
+            setNotifications(prev => {
+                const existing = prev.find(n => n.id === nextNotification.id);
+
+                if (existing) {
+                    return prev.map(n => n.id === nextNotification.id ? { ...n, ...nextNotification } : n);
+                }
+
+                return [nextNotification, ...prev].slice(0, 10);
+            });
+        };
+
+        const handleWindowFocus = () => {
+            syncBell();
+        };
+
+        window.addEventListener("pushNotification", handlePushNotification);
+        window.addEventListener("focus", handleWindowFocus);
+
+        return () => {
+            window.removeEventListener("pushNotification", handlePushNotification);
+            window.removeEventListener("focus", handleWindowFocus);
+        };
+    }, [syncBell]);
+
+    const onOpenChange = useCallback(async (visible) => {
+        setOpen(visible);
+        if (!visible) return;
+        await syncBell();
+    }, [syncBell]);
 
     const handleMarkRead = async (e, id) => {
         e.stopPropagation();

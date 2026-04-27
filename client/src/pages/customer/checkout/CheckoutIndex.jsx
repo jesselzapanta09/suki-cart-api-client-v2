@@ -31,6 +31,33 @@ export default function CheckoutIndex() {
     const shippingCost = shippingData?.total_shipping_fee || 0;
     const finalTotal = checkedTotal + shippingCost;
 
+    const calculateShippingFees = useCallback(async () => {
+        if (items.length === 0) return;
+
+        setShippingLoading(true);
+        try {
+            const shippingPayload = {
+                items: items.map(item => ({
+                    cart_id: item.cartId || null,
+                    product_id: item.id,
+                    product_variant_id: item.variant_id || null,
+                    quantity: item.qty,
+                })),
+            };
+
+            const response = await orderService.calculateShipping(shippingPayload);
+            
+            if (response?.data) {
+                setShippingData(response.data);
+            }
+        } catch (err) {
+            console.error('Failed to calculate shipping:', err);
+            message.error("Failed to calculate shipping fees");
+        } finally {
+            setShippingLoading(false);
+        }
+    }, [items, message]);
+
     useEffect(() => {
         if (items.length === 0) {
             navigate("/customer/cart");
@@ -87,33 +114,6 @@ export default function CheckoutIndex() {
             active = false;
         };
     }, [locations]);
-
-    const calculateShippingFees = useCallback(async () => {
-        if (items.length === 0) return;
-
-        setShippingLoading(true);
-        try {
-            const shippingPayload = {
-                items: items.map(item => ({
-                    cart_id: item.cartId || null,
-                    product_id: item.id,
-                    product_variant_id: item.variant_id || null,
-                    quantity: item.qty,
-                })),
-            };
-
-            const response = await orderService.calculateShipping(shippingPayload);
-            
-            if (response?.data) {
-                setShippingData(response.data);
-            }
-        } catch (err) {
-            console.error('Failed to calculate shipping:', err);
-            message.error("Failed to calculate shipping fees");
-        } finally {
-            setShippingLoading(false);
-        }
-    }, [items, message]);
 
     const getPrice = (item) => {
         const price = item.price ?? item.variant?.price ?? 0;
@@ -222,6 +222,12 @@ export default function CheckoutIndex() {
                     </div>
                 </div>
 
+                <Form
+                    form={form}
+                    layout="vertical"
+                    requiredMark={false}
+                    size="large"
+                >
                 <div className="space-y-5">
                     {/* Order Summary */}
                     <div className="space-y-6">
@@ -237,12 +243,6 @@ export default function CheckoutIndex() {
                                 </div>
                             </div>
 
-                            <Form
-                                form={form}
-                                layout="vertical"
-                                requiredMark={false}
-                                size="large"
-                            >
                                 <Form.Item
                                     name="delivery_location"
                                     label="Delivery Location"
@@ -274,7 +274,6 @@ export default function CheckoutIndex() {
                                     />
                                 </Form.Item>
 
-                            </Form>
                         </div>
 
                         {/* Order Items Review */}
@@ -511,6 +510,7 @@ export default function CheckoutIndex() {
                         </div>
                     </div>
                 </div>
+                </Form>
             </div>
         </div>
         

@@ -58,7 +58,7 @@ export default function ManageSellerShow() {
                         {store.banner ? (
                             <img src={`/${store.banner}`} alt="Store banner" className="w-full h-48 object-cover" />
                         ) : (
-                            <div className="w-full h-48 bg-gradient-to-br from-orange-400 to-amber-300 flex items-center justify-center">
+                            <div className="w-full h-48 bg-linear-to-br from-orange-400 to-amber-300 flex items-center justify-center">
                                 <Store size={48} className="text-white/60" />
                             </div>
                         )}

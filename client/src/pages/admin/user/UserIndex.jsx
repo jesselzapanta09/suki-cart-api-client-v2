@@ -231,7 +231,7 @@ export default function UserIndex() {
                 </div>
             )
         }
-    ].filter(column => !(isMobile && column.key === "id"))
+    ]
 
     return (
         <div className="mx-auto max-w-7xl space-y-4 px-3 pb-6 pt-3 sm:space-y-5 sm:px-4 sm:pb-8 sm:pt-4 lg:px-8">

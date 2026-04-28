@@ -6,5 +6,9 @@ export default function AuthLayout() {
     const { isAuthenticated, loading } = useAuth();
     if (loading) return null;
     if (isAuthenticated) return <Navigate to="/dashboard" replace />;
-    return <Outlet />;
+    return (
+        <div className="min-h-screen overflow-x-hidden overscroll-x-none">
+            <Outlet />
+        </div>
+    );
 }

@@ -107,7 +107,7 @@ export default function CustomerLayout() {
     );
 
     return (
-        <div className="flex min-h-screen flex-col overflow-x-hidden bg-gray-50 text-gray-900">
+        <div className="flex min-h-screen flex-col overflow-x-hidden overscroll-x-none bg-gray-50 text-gray-900">
             {/* Top Navbar */}
             <nav className="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-sm">
                 {/* Desktop Layout (md and above): 3-column grid */}

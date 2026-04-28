@@ -123,7 +123,7 @@ export default function HomeLayout() {
     );
 
     return (
-        <div className="flex min-h-screen flex-col overflow-x-hidden bg-gray-50 text-gray-900">
+        <div className="flex min-h-screen flex-col overflow-x-hidden overscroll-x-none bg-gray-50 text-gray-900">
             <nav className="sticky top-0 z-50 border-b border-gray-200 bg-white/95 shadow-sm backdrop-blur">
                 {/* Desktop Layout (lg and above): 4-column grid */}
                 <div className="mx-auto hidden h-20 max-w-7xl grid-cols-4 items-center gap-4 px-6 sm:px-8 lg:grid">

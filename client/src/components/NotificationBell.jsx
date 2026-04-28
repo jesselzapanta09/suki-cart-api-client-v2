@@ -1,5 +1,5 @@
 ﻿import React, { useState, useEffect, useCallback } from "react";
-import { Badge, Dropdown } from "antd";
+import { Badge, Drawer, Dropdown } from "antd";
 import { Bell, ShoppingBag, Tag, Settings, Store, CheckCheck } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/auth-context";
@@ -20,6 +20,8 @@ const TYPE_META = {
 function getTypeMeta(type) {
     return TYPE_META[type] ?? TYPE_META.system;
 }
+
+const MOBILE_BREAKPOINT = 768;
 
 function timeAgo(dateStr) {
     if (!dateStr) return "";
@@ -56,6 +58,7 @@ export default function NotificationBell() {
     const [notifications, setNotifications] = useState([]);
     const [unread,        setUnread]        = useState(0);
     const [open,          setOpen]          = useState(false);
+    const [isMobile,      setIsMobile]      = useState(window.innerWidth < MOBILE_BREAKPOINT);
 
     const notificationsPath = isAdmin
         ? "/notifications"
@@ -80,6 +83,12 @@ export default function NotificationBell() {
             clearTimeout(timeout);
         };
     }, [syncBell]);
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
+        window.addEventListener("resize", handleResize);
+        return () => window.removeEventListener("resize", handleResize);
+    }, []);
 
     useEffect(() => {
         const handlePushNotification = (event) => {
@@ -140,7 +149,9 @@ export default function NotificationBell() {
     };
 
     const panel = (
-        <div className="w-80 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
+        <div
+            className={`bg-white overflow-hidden flex flex-col ${isMobile ? "w-full h-full" : "w-[min(20rem,calc(100vw-1rem))] rounded-2xl border border-gray-100 shadow-2xl"}`}
+        >
             <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
                 <span className="font-semibold text-green-900 text-sm">Notifications</span>
                 {unread > 0 && (
@@ -152,7 +163,7 @@ export default function NotificationBell() {
                     </button>
                 )}
             </div>
-            <div className="max-h-80 overflow-y-auto">
+            <div className={`${isMobile ? "flex-1 min-h-0" : "max-h-80"} overflow-y-auto`}>
                 {notifications.length === 0 ? (
                     <div className="py-10 text-center text-gray-400 text-sm">No notifications</div>
                 ) : (
@@ -210,6 +221,43 @@ export default function NotificationBell() {
         </div>
     );
 
+    const triggerContent = (
+        <span className="relative flex items-center justify-center w-12 h-12 rounded-xl bg-green-50 hover:bg-green-100 text-gray-600 hover:text-green-700 transition-colors">
+            <Badge count={unread} size="small" color="#16a34a" offset={[2, -2]}>
+                <Bell size={18} />
+            </Badge>
+        </span>
+    );
+
+    if (isMobile) {
+        return (
+            <>
+                <button
+                    type="button"
+                    onClick={() => onOpenChange(true)}
+                    className="cursor-pointer border-none bg-transparent p-0"
+                    aria-label="Open notifications"
+                >
+                    {triggerContent}
+                </button>
+                <Drawer
+                    title="Notifications"
+                    placement="bottom"
+                    open={open}
+                    onClose={() => onOpenChange(false)}
+                    height={420}
+                    styles={{
+                        header: { paddingInline: 16, paddingBlock: 14 },
+                        body: { padding: 0, overflow: "hidden" },
+                    }}
+                    className="sm:hidden"
+                >
+                    {panel}
+                </Drawer>
+            </>
+        );
+    }
+
     return (
         <Dropdown
             popupRender={() => panel}
@@ -217,11 +265,14 @@ export default function NotificationBell() {
             placement="bottomRight"
             open={open}
             onOpenChange={onOpenChange}
+            styles={{ root: { maxWidth: "calc(100vw - 1rem)" } }}
         >
-            <button className="relative flex items-center justify-center w-12 h-12 rounded-xl bg-green-50 hover:bg-green-100 text-gray-600 hover:text-green-700 transition-colors cursor-pointer border-none">
-                <Badge count={unread} size="small" color="#16a34a" offset={[2, -2]}>
-                    <Bell size={18} />
-                </Badge>
+            <button
+                type="button"
+                className="cursor-pointer border-none bg-transparent p-0"
+                aria-label="Open notifications"
+            >
+                {triggerContent}
             </button>
         </Dropdown>
     );

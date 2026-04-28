@@ -1,8 +1,10 @@
 import React, { useEffect } from "react"
-import { Modal, Form, Input, Select, Button, App } from "antd"
-import { LayoutGrid, Tag } from "lucide-react"
+import { Modal, Form, Input, Select, Button, Grid } from "antd"
+import { LayoutGrid } from "lucide-react"
 
 export default function CategoryModal({ open, onClose, onSubmit, initialValues, loading, mode }) {
+    const screens = Grid.useBreakpoint()
+    const isMobile = !screens.sm
     const [form] = Form.useForm()
 
     useEffect(() => {
@@ -31,39 +33,55 @@ export default function CategoryModal({ open, onClose, onSubmit, initialValues, 
             footer={null}
             destroyOnHidden
             forceRender
-            width={480}
+            width={isMobile ? "calc(100vw - 0.75rem)" : 480}
+            centered
+            className="overflow-hidden rounded-2xl"
+            styles={{
+                body: {
+                    padding: isMobile ? "14px" : "24px",
+                    paddingBottom: isMobile ? "calc(env(safe-area-inset-bottom, 0px) + 20px)" : "24px",
+                    maxHeight: "calc(100vh - 1rem)",
+                    overflowY: "auto",
+                },
+            }}
         >
-            {/* Modal header — Option B: left accent stripe */}
-            <div className="absolute top-0 left-0 w-full rounded-t-xl z-10 overflow-hidden">
+            <div className="absolute top-0 left-0 z-10 w-full overflow-hidden rounded-t-xl">
                 <div className="flex border-b border-gray-200 bg-linear-to-r from-green-50/80 to-white">
-                    <div className="w-1.5 bg-linear-to-b from-green-600 to-emerald-400 rounded-tl-xl" />
-                    <div className="px-5 py-4 flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-lg bg-green-50 flex items-center justify-center ring-1 ring-green-200">
-                            <LayoutGrid className="w-4 h-4 text-green-700" />
+                    <div className="w-1.5 rounded-tl-xl bg-linear-to-b from-green-600 to-emerald-400" />
+                    <div className="flex items-center gap-3 px-4 py-4 sm:px-5">
+                        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-green-50 ring-1 ring-green-200">
+                            <LayoutGrid className="h-4 w-4 text-green-700" />
                         </div>
                         <div>
-                            <h3 className="font-sora font-bold text-base text-gray-900 leading-tight">{mode === "add" ? "Add Category" : "Edit Category"}</h3>
+                            <h3 className="font-sora text-base font-bold leading-tight text-gray-900">{mode === "add" ? "Add Category" : "Edit Category"}</h3>
                             <p className="text-[11px] text-gray-400">{mode === "add" ? "Fill in the details below" : "Modify category info"}</p>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div className="pt-20">
-                <Form form={form} layout="vertical" requiredMark={false} onFinish={handleFinish} className="space-y-1">
+            <div className="pt-18 sm:pt-20">
+                <Form
+                    form={form}
+                    layout="vertical"
+                    requiredMark={false}
+                    onFinish={handleFinish}
+                    size="large"
+                    className="space-y-1 [&_.ant-form-item]:mb-4 [&_.ant-form-item-label>label]:text-sm [&_.ant-input]:min-h-12 [&_.ant-input-affix-wrapper]:min-h-12 [&_.ant-select-selector]:min-h-12 [&_.ant-select-selector]:items-center"
+                >
                     <Form.Item
                         name="name"
                         label={<span className="font-medium text-gray-700">Category Name</span>}
                         rules={[{ required: true, message: "Please enter category name" }]}
                     >
-                        <Input size="large" placeholder="e.g. Convenience Store" className="rounded-xl" />
+                        <Input placeholder="e.g. Convenience Store" className="rounded-xl" />
                     </Form.Item>
 
                     <Form.Item
                         name="description"
                         label={<span className="font-medium text-gray-700">Description</span>}
                     >
-                        <Input.TextArea size="large" rows={3} placeholder="Optional description" className="rounded-xl" />
+                        <Input.TextArea rows={isMobile ? 4 : 3} placeholder="Optional description" className="rounded-xl" />
                     </Form.Item>
 
                     <Form.Item
@@ -72,7 +90,6 @@ export default function CategoryModal({ open, onClose, onSubmit, initialValues, 
                         rules={[{ required: true, message: "Please select status" }]}
                     >
                         <Select
-                            size="large"
                             options={[
                                 { label: "Active", value: 1 },
                                 { label: "Inactive", value: 0 },
@@ -81,9 +98,9 @@ export default function CategoryModal({ open, onClose, onSubmit, initialValues, 
                         />
                     </Form.Item>
 
-                    <div className="flex justify-end gap-2 pt-2">
-                        <Button size="large" onClick={onClose}>Cancel</Button>
-                        <Button size="large" type="primary" htmlType="submit" loading={loading}>
+                    <div className="grid grid-cols-1 gap-3 pt-2 sm:grid-cols-2">
+                        <Button size="large" onClick={onClose} className="h-11 rounded-xl font-semibold">Cancel</Button>
+                        <Button size="large" type="primary" htmlType="submit" loading={loading} className="h-11 rounded-xl font-semibold">
                             {mode === "add" ? "Create" : "Update"}
                         </Button>
                     </div>

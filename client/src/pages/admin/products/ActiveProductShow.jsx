@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { App, Carousel, Spin, Table, Grid } from "antd";
-import { Package } from "lucide-react";
+import { Package, Store, UserRound } from "lucide-react";
 import * as adminProductService from "../../../services/adminProductService";
 import { getStorageUrl } from "../../../utils/storage";
 
@@ -94,28 +94,8 @@ export default function ActiveProductShow() {
     const storeBanner = resolveMediaUrl(product.store?.banner);
     const sellerProfilePicture = resolveMediaUrl(product.store?.user?.profile_picture);
 
-    const mobileVariantColumns = [
-        {
-            title: "Variant",
-            key: "variant_card",
-            render: (_, record) => (
-                <div className="space-y-2 rounded-2xl border border-gray-200 bg-gray-50 p-4">
-                    <div className="font-semibold text-gray-900">{record.name}</div>
-                    <div className="flex items-center justify-between gap-3 text-sm">
-                        <span className="text-gray-500">Price</span>
-                        <span className="font-mono text-gray-800">{formatCurrency(record.price)}</span>
-                    </div>
-                    <div className="flex items-center justify-between gap-3 text-sm">
-                        <span className="text-gray-500">Stock</span>
-                        <span className="font-mono font-semibold text-gray-900">{Number(record.stock || 0)}</span>
-                    </div>
-                </div>
-            ),
-        },
-    ];
-
     return (
-        <div className="mx-auto max-w-275 space-y-4 px-3 pb-6 pt-3 font-body sm:space-y-5 sm:px-4 sm:pb-8 sm:pt-4 lg:px-8">
+        <div className="mx-auto max-w-7xl space-y-4 px-3 pb-6 pt-3 font-body sm:space-y-5 sm:px-4 sm:pb-8 sm:pt-4 lg:px-8">
             <div className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-gray-200">
                 <div className="bg-linear-to-r from-green-50 via-white to-emerald-50 px-4 py-4 sm:hidden">
                     <div className="mt-4 flex items-start gap-3">
@@ -142,35 +122,35 @@ export default function ActiveProductShow() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-                <div className="lg:col-span-2 space-y-5">
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-5">
+                <div className="space-y-4 lg:col-span-2 lg:space-y-5">
                     <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
                         {images.length > 0 ? (
                             <Carousel dots={images.length > 1} className="bg-gray-100">
                                 {images.map((image) => (
                                     <div key={image.id}>
-                                        <div className="h-64 bg-gray-100 sm:h-72 md:h-96 flex items-center justify-center">
+                                        <div className="flex h-56 items-center justify-center bg-gray-100 sm:h-72 md:h-96">
                                             <img src={image.src} alt={product.name} className="w-full h-full object-cover" />
                                         </div>
                                     </div>
                                 ))}
                             </Carousel>
                         ) : (
-                            <div className="h-64 bg-linear-to-br from-green-50 to-emerald-100 sm:h-72 md:h-96 flex items-center justify-center">
+                            <div className="flex h-56 items-center justify-center bg-linear-to-br from-green-50 to-emerald-100 sm:h-72 md:h-96">
                                 <Package size={64} className="text-green-300" />
                             </div>
                         )}
                     </div>
 
-                    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 sm:p-6 space-y-5">
+                    <div className="space-y-5 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-6">
                         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                             <div className="min-w-0">
-                                <div className="text-xs font-semibold uppercase tracking-wide text-green-600 mb-2">
+                                <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-green-600">
                                     {product.category?.name || "Uncategorized"}
                                 </div>
-                                <h2 className="font-bold text-xl text-gray-900 sm:text-2xl">{product.name}</h2>
+                                <h2 className="text-xl font-bold text-gray-900 sm:text-2xl">{product.name}</h2>
                             </div>
-                            <div className={`${isMobile ? "rounded-2xl bg-green-50 p-3 text-left" : "text-right"}`}>
+                            <div className={`${isMobile ? "rounded-2xl border border-green-100 bg-green-50 px-4 py-3 text-left" : "text-right"}`}>
                                 <div className="text-sm text-gray-400">Lowest variant price</div>
                                 <div className="text-xl font-bold text-green-700">{formatCurrency(lowestPrice)}</div>
                             </div>
@@ -212,7 +192,7 @@ export default function ActiveProductShow() {
                         </div>
                     </div>
 
-                    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 sm:p-6">
+                    <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-6">
                         <div className="flex items-center gap-3 mb-4">
                             <div className="w-10 h-10 rounded-xl bg-emerald-50 ring-1 ring-emerald-100 flex items-center justify-center">
                                 <Package size={18} className="text-emerald-700" />
@@ -223,20 +203,22 @@ export default function ActiveProductShow() {
                             </div>
                         </div>
 
+                        <div className="overflow-x-auto [&_.ant-table]:min-w-[520px]">
                         <Table
-                            columns={isMobile ? mobileVariantColumns : variantColumns}
+                            columns={variantColumns}
                             dataSource={product.variants || []}
                             rowKey="id"
                             pagination={false}
-                            showHeader={!isMobile}
-                            className={isMobile ? "[&_.ant-table-tbody>tr>td]:border-0 [&_.ant-table-cell]:px-0! [&_.ant-table-cell]:py-2!" : undefined}
+                            size={isMobile ? "middle" : "large"}
+                            scroll={{ x: 520 }}
                             locale={{
                                 emptyText: "No variants found.",
                             }}
                         />
+                        </div>
                     </div>
 
-                    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 sm:p-6">
+                    <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-6">
                         <div className="text-xs font-semibold text-gray-700 mb-4">Specifications</div>
                         {specsEntries.length > 0 ? (
                             <div className="grid grid-cols-1 gap-3 md:grid-cols-2 md:gap-4">
@@ -253,9 +235,9 @@ export default function ActiveProductShow() {
                     </div>
                 </div>
 
-                <div className="space-y-5">
-                    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-                        <div className="h-32 bg-gray-100 sm:h-36">
+                <div className="space-y-4 lg:space-y-5">
+                    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+                        <div className="h-28 bg-gray-100 sm:h-36">
                             {storeBanner ? (
                                 <img src={storeBanner} alt={product.store?.store_name || "Store banner"} className="w-full h-full object-cover" />
                             ) : (
@@ -264,7 +246,7 @@ export default function ActiveProductShow() {
                                 </div>
                             )}
                         </div>
-                        <div className="p-4 space-y-4 sm:p-6">
+                        <div className="space-y-4 p-4 sm:p-6">
                             <div className="text-xs font-semibold text-gray-700">Store</div>
                             <div>
                                 <div className="font-semibold text-gray-900">{product.store?.store_name || "No store name"}</div>
@@ -276,7 +258,7 @@ export default function ActiveProductShow() {
                         </div>
                     </div>
 
-                    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 space-y-4 sm:p-6">
+                    <div className="space-y-4 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-6">
                         <div className="text-xs font-semibold text-gray-700">Seller</div>
                         <div className="flex items-center gap-3">
                             {sellerProfilePicture ? (
@@ -300,7 +282,7 @@ export default function ActiveProductShow() {
                         </div>
                     </div>
 
-                    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 space-y-3 sm:p-6">
+                    <div className="space-y-3 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-6">
                         <div className="text-xs font-semibold text-gray-700">Quick Info</div>
                         <div className="text-sm text-gray-500">
                             Product UUID: <span className="font-mono text-gray-700 break-all">{product.uuid}</span>

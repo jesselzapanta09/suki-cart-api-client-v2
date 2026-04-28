@@ -197,6 +197,8 @@ export default function UserModal({ open, onClose, onSubmit, initialValues, load
                 body: {
                     padding: isMobile ? "14px" : "24px",
                     paddingBottom: isMobile ? "calc(env(safe-area-inset-bottom, 0px) + 20px)" : "24px",
+                    maxHeight: "calc(100vh - 1rem)",
+                    overflowY: "auto",
                 },
             }}
         >
@@ -218,7 +220,7 @@ export default function UserModal({ open, onClose, onSubmit, initialValues, load
             </div>
 
             <div className="mt-18 sm:mt-19">
-                <div className="mb-5 rounded-2xl border border-gray-100 bg-gray-50/80 px-3 py-3 sm:border-0 sm:bg-transparent sm:px-0 sm:py-0">
+                <div className="mb-5 rounded-2xl border border-gray-100 bg-gray-50/80 px-3 py-3 sm:mb-6 sm:border-0 sm:bg-transparent sm:px-0 sm:py-0">
                     {isMobile ? (
                         <div className="space-y-3">
                             <div className="flex items-center justify-between text-xs font-medium text-gray-500">
@@ -244,7 +246,7 @@ export default function UserModal({ open, onClose, onSubmit, initialValues, load
                     form={form}
                     requiredMark={false}
                     size="large"
-                    className="[&_.ant-form-item]:mb-4 [&_.ant-form-item-label>label]:text-sm [&_.ant-input]:min-h-12 [&_.ant-input-affix-wrapper]:min-h-12 [&_.ant-input-password]:min-h-12 [&_.ant-select-selector]:min-h-12 [&_.ant-select-selector]:items-center [&_.ant-upload-list-item-container]:w-full!"
+                    className="[&_.ant-form-item]:mb-4 [&_.ant-form-item-label>label]:text-sm [&_.ant-input]:min-h-12 [&_.ant-input-affix-wrapper]:min-h-12 [&_.ant-input-password]:min-h-12 [&_.ant-select-selector]:min-h-12 [&_.ant-select-selector]:items-center [&_.ant-upload-list-item-container]:w-full! [&_.ant-upload-wrapper]:w-full"
                 >
                     <div style={{ display: step === aboutStep ? undefined : "none" }}>
                         <Form.Item label={<span className={labelClass}>Profile Photo <span className="font-normal text-gray-400">(optional)</span></span>}>

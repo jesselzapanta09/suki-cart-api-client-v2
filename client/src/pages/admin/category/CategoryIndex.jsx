@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useCallback, useRef } from "react"
-import { Table, Button, Popconfirm, Input, Tag, Tooltip, App, Modal, Spin } from "antd"
+import { Table, Button, Popconfirm, Input, Tag, Tooltip, App, Modal, Spin, Grid } from "antd"
 import { Plus, Edit, Trash2, Search, Grid3x3 } from "lucide-react"
 import CategoryModal from "./CategoryModal"
 import * as categoryService from "../../../services/categoryService"
 
 export default function CategoryIndex() {
     const { message } = App.useApp()
+    const screens = Grid.useBreakpoint()
+    const isMobile = !screens.md
 
     const [categories, setCategories] = useState([])
     const [loading, setLoading] = useState(false)
@@ -138,7 +140,7 @@ export default function CategoryIndex() {
             title: "ID", dataIndex: "id", key: "id", width: 64,
             sorter: true,
             defaultSortOrder: "descend",
-            render: id => <span className="bg-green-100 text-green-800 px-2 py-0.5 rounded font-mono text-xs font-semibold">#{id}</span>
+            render: id => <span className="rounded bg-green-100 px-2 py-0.5 font-mono text-xs font-semibold text-green-800">#{id}</span>
         },
         {
             title: "Name", dataIndex: "name", key: "name",
@@ -146,7 +148,7 @@ export default function CategoryIndex() {
             render: (name, record) => (
                 <span
                     onClick={() => openView(record.id)}
-                    className="font-semibold text-green-900 text-sm cursor-pointer hover:underline"
+                    className="cursor-pointer text-sm font-semibold text-green-900 hover:underline"
                 >
                     {name}
                 </span>
@@ -154,11 +156,11 @@ export default function CategoryIndex() {
         },
         {
             title: "Description", dataIndex: "description", key: "description",
-            render: desc => <span className="text-gray-500 text-xs">{desc || "—"}</span>
+            render: desc => <span className="text-xs text-gray-500">{desc || "-"}</span>
         },
         {
             title: "Stores", dataIndex: "stores_count", key: "stores_count", width: 90,
-            render: count => <span className="text-gray-600 text-sm font-medium">{count ?? 0}</span>
+            render: count => <span className="text-sm font-medium text-gray-600">{count ?? 0}</span>
         },
         {
             title: "Status", dataIndex: "status", key: "status", width: 110,
@@ -176,18 +178,29 @@ export default function CategoryIndex() {
         {
             title: "Created", dataIndex: "created_at", key: "created_at", width: 130,
             sorter: true,
-            render: d => <span className="text-gray-400 text-xs">{new Date(d).toLocaleDateString("en-PH", { year: "numeric", month: "short", day: "numeric" })}</span>
+            render: d => <span className="text-xs text-gray-400">{new Date(d).toLocaleDateString("en-PH", { year: "numeric", month: "short", day: "numeric" })}</span>
         },
         {
             title: "Actions", width: 100,
             render: (_, record) => (
                 <div className="flex gap-2">
                     <Tooltip title="Edit">
-                        <Button size="small" type="primary" onClick={() => openEdit(record)} icon={<Edit size={14} />} />
+                        <Button
+                            size={isMobile ? "middle" : "small"}
+                            type="primary"
+                            onClick={() => openEdit(record)}
+                            icon={<Edit size={14} />}
+                            className="min-h-9 rounded-lg px-3"
+                        />
                     </Tooltip>
                     <Tooltip title="Delete">
                         <Popconfirm title={`Delete "${record.name}"?`} description="This action cannot be undone." onConfirm={() => handleDelete(record.id)} okText="Delete" cancelText="Cancel" okButtonProps={{ danger: true }}>
-                            <Button size="small" danger className="rounded-md" icon={<Trash2 size={14} />} />
+                            <Button
+                                size={isMobile ? "middle" : "small"}
+                                danger
+                                className="min-h-9 rounded-lg px-3"
+                                icon={<Trash2 size={14} />}
+                            />
                         </Popconfirm>
                     </Tooltip>
                 </div>
@@ -196,35 +209,44 @@ export default function CategoryIndex() {
     ]
 
     return (
-        <div className="p-6 lg:p-8 max-w-275 mx-auto space-y-5">
-            {/* Header */}
-            <div className="flex items-center justify-between rounded-xl px-6 py-5 bg-white ring-1 ring-gray-200 shadow-sm">
-                <div className="flex items-center gap-4">
-                    <div className="w-11 h-11 rounded-lg bg-linear-to-br from-green-600 to-emerald-500 flex items-center justify-center shadow-sm">
-                        <Grid3x3 size={22} className="text-white" />
+        <div className="mx-auto max-w-7xl space-y-4 px-3 pb-6 pt-3 sm:space-y-5 sm:px-4 sm:pb-8 sm:pt-4 lg:px-8">
+            <div className="rounded-2xl bg-white px-4 py-4 shadow-sm ring-1 ring-gray-200 sm:px-6 sm:py-5">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex items-start gap-3 sm:items-center sm:gap-4">
+                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-linear-to-br from-green-600 to-emerald-500 shadow-sm sm:h-12 sm:w-12">
+                            <Grid3x3 size={22} className="text-white" />
+                        </div>
+                        <div className="min-w-0">
+                            <h1 className="font-sora text-lg font-bold text-gray-900 sm:text-xl">Category Management</h1>
+                            <p className="mt-1 text-xs leading-5 text-gray-500 sm:text-sm">Manage store categories</p>
+                        </div>
                     </div>
-                    <div>
-                        <h1 className="font-sora font-bold text-xl text-gray-900">Category Management</h1>
-                        <p className="text-xs text-gray-400 mt-1">Manage store categories</p>
-                    </div>
+                    <Button
+                        onClick={openAdd}
+                        type="primary"
+                        icon={<Plus size={16} />}
+                        size="large"
+                        className="h-11 w-full rounded-xl px-4 font-semibold sm:w-auto"
+                    >
+                        Add Category
+                    </Button>
                 </div>
-                <Button onClick={openAdd} type="primary" icon={<Plus size={14} />} size="large">Add Category</Button>
             </div>
 
-            {/* Table card */}
-            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm">
-                <div className="flex flex-wrap justify-between items-center gap-3 px-5 py-4 border-b border-gray-100">
+            <div className="rounded-2xl border border-gray-200 bg-white shadow-sm">
+                <div className="flex flex-col gap-3 border-b border-gray-100 px-4 py-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:px-5">
                     <div className="flex items-center gap-2">
-                        <span className="font-sora font-semibold text-sm text-green-900">All Categories</span>
-                        <span className="text-gray-400 text-xs bg-gray-100 rounded-full px-2 py-0.5">{total}</span>
+                        <span className="font-sora text-sm font-semibold text-green-900">All Categories</span>
+                        <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-400">{total}</span>
                     </div>
                     <Input
-                        placeholder="Search name, description…"
+                        placeholder="Search name, description..."
                         prefix={<Search size={14} className="text-gray-400" />}
                         value={search}
                         onChange={e => handleSearch(e.target.value)}
                         allowClear
-                        className="w-64 rounded-lg"
+                        size="large"
+                        className="w-full rounded-xl sm:w-72"
                     />
                 </div>
                 <div className="overflow-x-auto">
@@ -234,47 +256,62 @@ export default function CategoryIndex() {
                         rowKey="id"
                         loading={loading}
                         onChange={handleTableChange}
+                        size={isMobile ? "middle" : "large"}
+                        scroll={{ x: 760 }}
+                        className={isMobile ? "[&_.ant-table-pagination]:px-4" : undefined}
                         pagination={{
                             current: pagination.current,
                             pageSize: pagination.pageSize,
                             total,
                             showSizeChanger: false,
-                            showTotal: t => <span className="text-gray-400 text-sm">{t} categories total</span>,
+                            showTotal: t => <span className="text-sm text-gray-400">{t} categories total</span>,
                         }}
                     />
                 </div>
             </div>
 
-            <CategoryModal 
-                open={modalOpen} 
-                onClose={() => setModalOpen(false)} 
-                onSubmit={handleSubmit} i
-                nitialValues={editRecord} l
-                oading={submitLoading} 
-                mode={modalMode} 
+            <CategoryModal
+                open={modalOpen}
+                onClose={() => setModalOpen(false)}
+                onSubmit={handleSubmit}
+                initialValues={editRecord}
+                loading={submitLoading}
+                mode={modalMode}
             />
 
-            {/* View Modal */}
-            <Modal open={viewModalOpen} onCancel={() => setViewModalOpen(false)} footer={null}>
+            <Modal
+                open={viewModalOpen}
+                onCancel={() => setViewModalOpen(false)}
+                footer={null}
+                width={isMobile ? "calc(100vw - 1rem)" : 520}
+                centered
+                className="max-w-[calc(100vw-1rem)] sm:max-w-130"
+                styles={{
+                    body: {
+                        padding: isMobile ? "16px" : "24px",
+                        paddingBottom: isMobile ? "calc(env(safe-area-inset-bottom, 0px) + 16px)" : "24px",
+                    },
+                }}
+            >
                 {viewLoading ? (
                     <div className="flex justify-center py-10"><Spin /></div>
                 ) : viewCategory && (
-                    <div className="space-y-4 pt-20">
-                        <div className="absolute top-0 left-0 w-full rounded-t-xl z-10 overflow-hidden">
+                    <div className="space-y-4 pt-18 sm:pt-20">
+                        <div className="absolute top-0 left-0 z-10 w-full overflow-hidden rounded-t-xl">
                             <div className="flex border-b border-gray-200 bg-linear-to-r from-green-50/80 to-white">
-                                <div className="w-1.5 bg-linear-to-b from-green-600 to-emerald-400 rounded-tl-xl" />
-                                <div className="px-5 py-4">
-                                    <h3 className="font-sora font-bold text-base text-gray-900">Category Details</h3>
+                                <div className="w-1.5 rounded-tl-xl bg-linear-to-b from-green-600 to-emerald-400" />
+                                <div className="px-4 py-4 sm:px-5">
+                                    <h3 className="font-sora text-base font-bold text-gray-900">Category Details</h3>
                                 </div>
                             </div>
                         </div>
-                        <div>
+                        <div className="rounded-2xl bg-gray-50 px-4 py-4">
                             <div className="font-semibold text-green-900">{viewCategory.name}</div>
-                            <div className="text-gray-400 text-sm mt-1">{viewCategory.description || "—"}</div>
+                            <div className="mt-1 text-sm leading-6 text-gray-500">{viewCategory.description || "-"}</div>
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex flex-wrap gap-2">
                             <Tag color={viewCategory.status ? "green" : "red"}>{viewCategory.status ? "Active" : "Inactive"}</Tag>
-                            <span className="text-gray-600 text-sm">Stores: {viewCategory.stores_count ?? 0}</span>
+                            <span className="text-sm text-gray-600">Stores: {viewCategory.stores_count ?? 0}</span>
                         </div>
                         <div className="text-sm text-gray-500">
                             Created: {new Date(viewCategory.created_at).toLocaleDateString("en-PH", { year: "numeric", month: "long", day: "numeric" })}

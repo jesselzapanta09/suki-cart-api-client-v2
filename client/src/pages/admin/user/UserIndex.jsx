@@ -248,62 +248,6 @@ export default function UserIndex() {
         }
     ]
 
-    const mobileColumns = [
-        {
-            title: "Users",
-            key: "user_card",
-            render: (_, record) => (
-                <div className="space-y-4 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
-                    <div className="flex items-start gap-3">
-                        <Avatar user={record} size={44} fontSize="1rem" />
-                        <div className="min-w-0 flex-1">
-                            <button
-                                type="button"
-                                onClick={() => openView(record.id)}
-                                className="block text-left font-semibold text-green-900 text-sm leading-5 hover:underline"
-                            >
-                                {record.firstname} {record.lastname}
-                            </button>
-                            <div className="mt-1 break-all text-xs leading-5 text-gray-500">{record.email}</div>
-                        </div>
-                        <span className="rounded-full bg-green-100 px-2 py-1 font-mono text-[11px] font-semibold text-green-800">#{record.id}</span>
-                    </div>
-
-                    <div className="flex flex-wrap gap-2">
-                        <Tag variant="filled" color={roleColors[record.role] || "default"}>{record.role.toUpperCase()}</Tag>
-                        <Tag color={record.email_verified_at ? "green" : "red"}>{record.email_verified_at ? "Verified" : "Not Verified"}</Tag>
-                    </div>
-
-                    <div className="grid grid-cols-1 gap-2 rounded-2xl bg-gray-50 p-3 text-sm text-gray-600">
-                        <div className="flex items-center justify-between gap-3">
-                            <span className="text-gray-500">Joined</span>
-                            <span className="text-right font-medium text-gray-800">
-                                {new Date(record.created_at).toLocaleDateString("en-PH", { year: "numeric", month: "short", day: "numeric" })}
-                            </span>
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                        <Button
-                            size="large"
-                            type="primary"
-                            onClick={() => openEdit(record)}
-                            icon={<Edit size={15} />}
-                            className="h-11 rounded-xl font-semibold"
-                        >
-                            Edit
-                        </Button>
-                        <Popconfirm title={`Delete ${record.firstname}?`} description="This action cannot be undone." onConfirm={() => handleDelete(record.id)} okText="Delete" cancelText="Cancel" okButtonProps={{ danger: true }}>
-                            <Button size="large" danger icon={<Trash2 size={15} />} className="h-11 w-full rounded-xl font-semibold">
-                                Delete
-                            </Button>
-                        </Popconfirm>
-                    </div>
-                </div>
-            ),
-        },
-    ]
-
     return (
         <div className="mx-auto max-w-7xl space-y-4 px-3 pb-6 pt-3 sm:space-y-5 sm:px-4 sm:pb-8 sm:pt-4 lg:px-8">
             <div className="rounded-2xl bg-white px-4 py-4 shadow-sm ring-1 ring-gray-200 sm:px-6 sm:py-5">
@@ -372,17 +316,15 @@ export default function UserIndex() {
                         )}
                     </div>
                 </div>
-                <div className="overflow-x-auto [&_.ant-table-pagination.ant-pagination]:justify-center [&_.ant-table-wrapper_.ant-pagination]:justify-center">
+                <div className="overflow-x-auto [&_.ant-table]:min-w-[980px] [&_.ant-table-pagination.ant-pagination]:justify-center [&_.ant-table-wrapper_.ant-pagination]:justify-center">
                     <Table
                         dataSource={users}
-                        columns={isMobile ? mobileColumns : columns}
+                        columns={columns}
                         rowKey="id"
                         loading={loading}
                         onChange={handleTableChange}
-                        scroll={isMobile ? undefined : { x: 900 }}
+                        scroll={{ x: 980 }}
                         size={isMobile ? "middle" : "large"}
-                        showHeader={!isMobile}
-                        className={isMobile ? "[&_.ant-table-tbody>tr>td]:border-0 [&_.ant-table-cell]:px-0! [&_.ant-table-cell]:py-2! [&_.ant-table-pagination]:px-4" : undefined}
                         pagination={{
                             current: pagination.current,
                             pageSize: pagination.pageSize,

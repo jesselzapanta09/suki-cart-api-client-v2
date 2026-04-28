@@ -279,7 +279,7 @@ export default function UserIndex() {
                 footer={null}
                 width={isMobile ? "calc(100vw - 1rem)" : 520}
                 centered
-                className="max-w-[calc(100vw-1rem)] sm:max-w-[520px]"
+                className="max-w-[calc(100vw-1rem)] sm:max-w-130"
                 styles={{
                     body: {
                         padding: isMobile ? "16px" : "24px",

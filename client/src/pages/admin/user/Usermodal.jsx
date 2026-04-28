@@ -318,7 +318,7 @@ export default function UserModal({ open, onClose, onSubmit, initialValues, load
                         </Form.Item>
 
                         <Form.Item name="store_banner" label={<span className={labelClass}>Store Banner <span className="font-normal text-gray-400">(optional)</span></span>} valuePropName="fileList" getValueFromEvent={e => Array.isArray(e) ? e : e?.fileList}>
-                            <Upload maxCount={1} beforeUpload={() => false} accept="image/*" listType="picture-card" onPreview={(file) => { const src = file.url || file.thumbUrl || (file.originFileObj && URL.createObjectURL(file.originFileObj)); if (src) { const w = window.open(); w.document.write(`<img src="${src}" style="max-width:100%" />`); } }} className="[&_.ant-upload-select]:!h-28 [&_.ant-upload-select]:!w-full sm:[&_.ant-upload-select]:!w-28">
+                            <Upload maxCount={1} beforeUpload={() => false} accept="image/*" listType="picture-card" onPreview={(file) => { const src = file.url || file.thumbUrl || (file.originFileObj && URL.createObjectURL(file.originFileObj)); if (src) { const w = window.open(); w.document.write(`<img src="${src}" style="max-width:100%" />`); } }} className="[&_.ant-upload-select]:h-28! [&_.ant-upload-select]:w-full! sm:[&_.ant-upload-select]:w-28!">
                                 <div className="flex flex-col items-center">
                                     <UploadOutlined className="text-xl text-green-600" />
                                     <div className="mt-1 text-xs text-gray-500">Upload Banner</div>

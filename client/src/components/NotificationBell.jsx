@@ -245,7 +245,7 @@ export default function NotificationBell() {
                     placement="bottom"
                     open={open}
                     onClose={() => onOpenChange(false)}
-                    height={420}
+                    size="default"
                     styles={{
                         header: { paddingInline: 16, paddingBlock: 14 },
                         body: { padding: 0, overflow: "hidden" },

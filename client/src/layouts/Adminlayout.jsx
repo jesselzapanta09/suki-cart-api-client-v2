@@ -177,7 +177,7 @@ export default function AdminLayout() {
     };
 
     return (
-        <div className="flex min-h-screen bg-gray-50">
+        <div className="flex min-h-screen overflow-x-hidden bg-gray-50">
             {/* DESKTOP: fixed sidebar */}
             {isDesktop && (
                 <div className="w-60 shrink-0">

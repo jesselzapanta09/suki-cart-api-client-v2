@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from "react"
-import { Table, Button, Popconfirm, Input, Tag, Tooltip, App, Modal, Spin, Grid, Select } from "antd"
+import { Table, Button, Popconfirm, Input, Tag, Tooltip, App, Modal, Spin, Grid } from "antd"
 import { Plus, Edit, Trash2, Search, Users, User2 } from "lucide-react"
 import UserModal from "./Usermodal"
 import Avatar from "../../../components/Avatar"
@@ -57,6 +57,21 @@ export default function UserIndex() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
+    useEffect(() => {
+        if (!isMobile) return
+
+        const nextSorter = sorter.field === "id" ? { field: "created_at", order: "descend" } : sorter
+        const nextRoleFilter = roleFilter ? null : roleFilter
+        const shouldUpdate = nextSorter.field !== sorter.field || nextSorter.order !== sorter.order || nextRoleFilter !== roleFilter
+
+        if (!shouldUpdate) return
+
+        setSorter(nextSorter)
+        setRoleFilter(nextRoleFilter)
+        setPagination(prev => ({ ...prev, current: 1 }))
+        fetchUsers(1, pagination.pageSize, nextSorter.field, nextSorter.order, search, nextRoleFilter, emailVerifiedFilter)
+    }, [isMobile, sorter, pagination.pageSize, search, roleFilter, emailVerifiedFilter, fetchUsers])
+
     const handleTableChange = (pag, filters, sort) => {
         const newSorter = sort.order ? { field: sort.field, order: sort.order } : sorter
         const newRole = filters.role?.[0] || null
@@ -82,37 +97,6 @@ export default function UserIndex() {
     const reload = () => {
         fetchUsers(pagination.current, pagination.pageSize, sorter.field, sorter.order, search, roleFilter, emailVerifiedFilter)
     }
-
-    const handleMobileRoleChange = (value) => {
-        const nextRole = value || null
-        setRoleFilter(nextRole)
-        setPagination(prev => ({ ...prev, current: 1 }))
-        fetchUsers(1, pagination.pageSize, sorter.field, sorter.order, search, nextRole, emailVerifiedFilter)
-    }
-
-    const handleMobileSortChange = (value) => {
-        const nextSorter = {
-            id_desc: { field: "id", order: "descend" },
-            id_asc: { field: "id", order: "ascend" },
-            firstname_asc: { field: "firstname", order: "ascend" },
-            firstname_desc: { field: "firstname", order: "descend" },
-            created_desc: { field: "created_at", order: "descend" },
-            created_asc: { field: "created_at", order: "ascend" },
-        }[value] || { field: "id", order: "descend" }
-
-        setSorter(nextSorter)
-        setPagination(prev => ({ ...prev, current: 1 }))
-        fetchUsers(1, pagination.pageSize, nextSorter.field, nextSorter.order, search, roleFilter, emailVerifiedFilter)
-    }
-
-    const mobileSortValue = (() => {
-        if (sorter.field === "id" && sorter.order === "descend") return "id_desc"
-        if (sorter.field === "id" && sorter.order === "ascend") return "id_asc"
-        if (sorter.field === "firstname" && sorter.order === "ascend") return "firstname_asc"
-        if (sorter.field === "firstname" && sorter.order === "descend") return "firstname_desc"
-        if (sorter.field === "created_at" && sorter.order === "ascend") return "created_asc"
-        return "created_desc"
-    })()
 
     const openAdd = () => { setModalMode("add"); setEditRecord(null); setModalOpen(true) }
     const openEdit = async (r) => {
@@ -170,10 +154,11 @@ export default function UserIndex() {
     }
 
     const roleColors = { admin: "green", seller: "orange", customer: "cyan" }
+    const mobileColumnWidth = width => (isMobile ? undefined : width)
 
     const columns = [
         {
-            title: "ID", dataIndex: "id", key: "id", width: 64,
+            title: "ID", dataIndex: "id", key: "id", width: mobileColumnWidth(64),
             sorter: true,
             render: id => <span className="bg-green-100 text-green-800 px-2 py-0.5 rounded font-mono text-xs font-semibold">#{id}</span>
         },
@@ -193,19 +178,19 @@ export default function UserIndex() {
             )
         },
         {
-            title: "Role", dataIndex: "role", key: "role", width: 110,
+            title: "Role", dataIndex: "role", key: "role", width: mobileColumnWidth(110),
             sorter: true,
-            filters: [
+            filters: isMobile ? undefined : [
                 { text: "Admin", value: "admin" },
                 { text: "Seller", value: "seller" },
                 { text: "Customer", value: "customer" },
             ],
             filterMultiple: false,
-            filteredValue: roleFilter ? [roleFilter] : null,
+            filteredValue: isMobile ? null : (roleFilter ? [roleFilter] : null),
             render: role => <Tag variant="filled" color={roleColors[role] || "default"}>{role.toUpperCase()}</Tag>
         },
         {
-            title: "Email Verified", dataIndex: "email_verified_at", key: "email_verified_at", width: 150,
+            title: "Email Verified", dataIndex: "email_verified_at", key: "email_verified_at", width: mobileColumnWidth(150),
             sorter: false,
             filters: [
                 { text: "Verified", value: "1" },
@@ -221,12 +206,12 @@ export default function UserIndex() {
             )
         },
         {
-            title: "Joined", dataIndex: "created_at", key: "created_at", width: 130,
+            title: "Joined", dataIndex: "created_at", key: "created_at", width: mobileColumnWidth(130),
             sorter: true,
             render: d => <span className="text-gray-400 text-xs">{new Date(d).toLocaleDateString("en-PH", { year: "numeric", month: "short", day: "numeric" })}</span>
         },
         {
-            title: "Actions", width: isMobile ? 120 : 100,
+            title: "Actions", width: mobileColumnWidth(100),
             render: (_, record) => (
                 <div className="flex gap-2">
                     <Tooltip title="Edit">
@@ -246,7 +231,7 @@ export default function UserIndex() {
                 </div>
             )
         }
-    ]
+    ].filter(column => !(isMobile && column.key === "id"))
 
     return (
         <div className="mx-auto max-w-7xl space-y-4 px-3 pb-6 pt-3 sm:space-y-5 sm:px-4 sm:pb-8 sm:pt-4 lg:px-8">
@@ -283,40 +268,9 @@ export default function UserIndex() {
                             size="large"
                             className="w-full rounded-xl sm:w-64"
                         />
-                        {isMobile && (
-                            <>
-                                <Select
-                                    value={roleFilter}
-                                    onChange={handleMobileRoleChange}
-                                    size="large"
-                                    allowClear
-                                    placeholder="Filter by role"
-                                    className="w-full"
-                                    options={[
-                                        { label: "Admin", value: "admin" },
-                                        { label: "Seller", value: "seller" },
-                                        { label: "Customer", value: "customer" },
-                                    ]}
-                                />
-                                <Select
-                                    value={mobileSortValue}
-                                    onChange={handleMobileSortChange}
-                                    size="large"
-                                    className="w-full"
-                                    options={[
-                                        { label: "Newest first", value: "created_desc" },
-                                        { label: "Oldest first", value: "created_asc" },
-                                        { label: "ID descending", value: "id_desc" },
-                                        { label: "ID ascending", value: "id_asc" },
-                                        { label: "Name A-Z", value: "firstname_asc" },
-                                        { label: "Name Z-A", value: "firstname_desc" },
-                                    ]}
-                                />
-                            </>
-                        )}
                     </div>
                 </div>
-                <div className="overflow-x-auto [&_.ant-table]:min-w-[980px] [&_.ant-table-pagination.ant-pagination]:justify-center [&_.ant-table-wrapper_.ant-pagination]:justify-center">
+                <div className="overflow-x-auto">
                     <Table
                         dataSource={users}
                         columns={columns}
@@ -325,6 +279,7 @@ export default function UserIndex() {
                         onChange={handleTableChange}
                         scroll={{ x: 980 }}
                         size={isMobile ? "middle" : "large"}
+                        className={isMobile ? "[&_.ant-table-pagination]:px-4" : undefined}
                         pagination={{
                             current: pagination.current,
                             pageSize: pagination.pageSize,

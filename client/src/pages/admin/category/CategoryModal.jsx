@@ -98,9 +98,9 @@ export default function CategoryModal({ open, onClose, onSubmit, initialValues, 
                         />
                     </Form.Item>
 
-                    <div className="grid grid-cols-1 gap-3 pt-2 sm:grid-cols-2">
-                        <Button size="large" onClick={onClose} className="h-11 rounded-xl font-semibold">Cancel</Button>
-                        <Button size="large" type="primary" htmlType="submit" loading={loading} className="h-11 rounded-xl font-semibold">
+                    <div className="flex gap-3 pt-2">
+                        <Button size="large" onClick={onClose} className="h-11 min-w-0 flex-1 rounded-xl font-semibold">Cancel</Button>
+                        <Button size="large" type="primary" htmlType="submit" loading={loading} className="h-11 min-w-0 flex-1 rounded-xl font-semibold">
                             {mode === "add" ? "Create" : "Update"}
                         </Button>
                     </div>

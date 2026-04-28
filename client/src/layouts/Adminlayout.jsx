@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
-import { App, Modal, Button } from "antd";
-import { LayoutDashboard, Users, LogOut, Menu, X, LayoutGrid, ShieldCheck, Store, Package, History } from "lucide-react";
+import { App, Modal, Button, Drawer } from "antd";
+import { LayoutDashboard, Users, LogOut, LayoutGrid, ShieldCheck, Store, Package, History, MoreHorizontal } from "lucide-react";
 import NotificationBell from "../components/NotificationBell";
 import { useAuth } from "../context/auth-context";
 import Avatar from "../components/Avatar";
@@ -16,6 +16,19 @@ const NAV = [
     { label: "Seller Verify", to: "/admin/seller-verify", icon: ShieldCheck },
     { label: "Verified Sellers", to: "/admin/sellers", icon: Store },
     { label: "Active products", to: "/admin/products", icon: Package },
+    { label: "Logs", to: "/admin/logs", icon: History },
+];
+
+const MOBILE_PRIMARY_NAV = [
+    { label: "Dashboard", to: "/admin/dashboard", icon: LayoutDashboard },
+    { label: "Users", to: "/admin/users", icon: Users },
+    { label: "Products", to: "/admin/products", icon: Package },
+];
+
+const MOBILE_SECONDARY_NAV = [
+    { label: "Categories", to: "/admin/categories", icon: LayoutGrid },
+    { label: "Seller Verify", to: "/admin/seller-verify", icon: ShieldCheck },
+    { label: "Verified Sellers", to: "/admin/sellers", icon: Store },
     { label: "Logs", to: "/admin/logs", icon: History },
 ];
 
@@ -97,23 +110,56 @@ export default function AdminLayout() {
     const navigate = useNavigate();
     const location = useLocation();
     const isDesktop = useIsDesktop();
-    const [menuOpen, setMenuOpen] = useState(false);
     const [logoutModalOpen, setLogoutModalOpen] = useState(false);
     const [logoutLoading, setLogoutLoading] = useState(false);
+    const [moreOpen, setMoreOpen] = useState(false);
+    const isActive = (to) => location.pathname === to || location.pathname.startsWith(`${to}/`);
+    const moreActive = MOBILE_SECONDARY_NAV.some((n) => isActive(n.to));
+    const getMobileNavClass = (active) =>
+        `flex min-h-13 flex-col items-center justify-center gap-1 rounded-2xl px-2 transition-colors ${active
+            ? "bg-green-50 text-green-700 ring-1 ring-green-100"
+            : "text-gray-500 hover:bg-gray-50 hover:text-gray-700"
+        }`;
 
-    const [prevPathname, setPrevPathname] = useState(location.pathname);
-    if (location.pathname !== prevPathname) {
-        setPrevPathname(location.pathname);
-        setMenuOpen(false);
-    }
+    useEffect(() => {
+        if (!moreOpen) return;
 
-    const [prevIsDesktop, setPrevIsDesktop] = useState(isDesktop);
-    if (isDesktop !== prevIsDesktop) {
-        setPrevIsDesktop(isDesktop);
-        if (isDesktop) setMenuOpen(false);
-    }
+        const bodyStyle = document.body.style;
+        const htmlStyle = document.documentElement.style;
+        const scrollY = window.scrollY;
 
-    const profileActive = location.pathname === "/admin/edit-profile";
+        const prev = {
+            bodyOverflow: bodyStyle.overflow,
+            bodyPosition: bodyStyle.position,
+            bodyTop: bodyStyle.top,
+            bodyLeft: bodyStyle.left,
+            bodyRight: bodyStyle.right,
+            bodyWidth: bodyStyle.width,
+            bodyTouchAction: bodyStyle.touchAction,
+            htmlOverflow: htmlStyle.overflow,
+        };
+
+        bodyStyle.overflow = "hidden";
+        bodyStyle.position = "fixed";
+        bodyStyle.top = `-${scrollY}px`;
+        bodyStyle.left = "0";
+        bodyStyle.right = "0";
+        bodyStyle.width = "100%";
+        bodyStyle.touchAction = "none";
+        htmlStyle.overflow = "hidden";
+
+        return () => {
+            bodyStyle.overflow = prev.bodyOverflow;
+            bodyStyle.position = prev.bodyPosition;
+            bodyStyle.top = prev.bodyTop;
+            bodyStyle.left = prev.bodyLeft;
+            bodyStyle.right = prev.bodyRight;
+            bodyStyle.width = prev.bodyWidth;
+            bodyStyle.touchAction = prev.bodyTouchAction;
+            htmlStyle.overflow = prev.htmlOverflow;
+            window.scrollTo(0, scrollY);
+        };
+    }, [moreOpen]);
 
     const handleLogout = async () => {
         setLogoutLoading(true);
@@ -141,70 +187,30 @@ export default function AdminLayout() {
 
             {/* MOBILE: top navbar */}
             {!isDesktop && (
-                <nav className="fixed top-0 left-0 right-0 z-50 h-15.5 bg-rail-950 flex items-center justify-between px-5 shadow-[0_2px_8px_rgba(0,0,0,0.25)]">
-                    <Link to="/admin/dashboard" className="no-underline flex items-center gap-2.5">
-                        <div className="w-8 h-8 rounded-[9px] bg-white flex items-center justify-center">
-                            <img src="/suki-cart-logo.png" alt="SukiCart Logo" className="w-6 h-6 rounded-xl object-contain" />
+                <nav className="fixed top-0 left-0 right-0 z-50 h-15.5 bg-white border-b border-gray-100 flex items-center justify-between px-4 shadow-sm">
+                    <Link to="/" className="flex shrink-0 items-center gap-2 no-underline">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-2xl">
+                            <img src="/suki-cart-logo-home.png" alt="SukiCart Logo" className="h-full w-full rounded-xl object-contain" />
                         </div>
-                        <div>
-                            <div className="font-display font-bold text-white text-[0.9rem]">SukiCart</div>
-                            <div className="text-[0.6rem] text-[#86efac] font-mono">ADMIN</div>
+                        <div className="min-w-0">
+                            <div className="text-base font-bold leading-tight text-green-900">SukiCart</div>
+                            <div className="text-xs font-medium text-green-700/75">Admin</div>
                         </div>
                     </Link>
                     <div className="flex items-center gap-2.5">
                         <NotificationBell />
-                        <Avatar user={user}/>
-                        <button onClick={() => setMenuOpen(v => !v)} className="bg-white/10 border border-white/20 rounded-lg px-1.5 py-1 text-white cursor-pointer flex items-center">
-                            {menuOpen ? <X size={22} /> : <Menu size={22} />}
-                        </button>
+                        <Link
+                            to="/admin/edit-profile"
+                            className="flex h-12 w-12 items-center justify-center rounded-2xl no-underline"
+                            aria-label="Open profile"
+                        >
+                            <Avatar user={user} />
+                        </Link>
                     </div>
                 </nav>
             )}
 
-            {/* MOBILE: dropdown menu */}
-            {!isDesktop && menuOpen && (
-                <>
-                    <div onClick={() => setMenuOpen(false)} className="fixed inset-0 z-44 bg-black/35" />
-                    <div className="fixed top-15.5 left-0 right-0 z-45 bg-rail-950 border-b border-white/8 shadow-[0_8px_24px_rgba(0,0,0,0.3)] px-4 py-3">
-                        <Link
-                            to="/admin/edit-profile"
-                            className="flex items-center gap-2.5 px-3 py-2.5 rounded-[10px] no-underline mb-3 transition-[background] duration-150"
-                            style={{
-                                background: profileActive ? "rgba(34,197,94,0.25)" : "rgba(255,255,255,0.06)",
-                            }}
-                        >
-                            <Avatar user={user}/>
-                            <div>
-                                <div className="text-white font-body font-semibold text-[0.9rem]">{user?.username}</div>
-                                <div className="text-[#86efac] text-[0.65rem] font-mono">
-                                    {user?.firstname && user?.lastname ? `${user.firstname} ${user.lastname}` : ""}
-                                </div>
-                            </div>
-                        </Link>
-                        {NAV.map((n) => {
-                            const active = location.pathname === n.to || location.pathname.startsWith(`${n.to}/`);
-                            const IconComponent = n.icon;
-                            return (
-                                <Link key={n.to} to={n.to}
-                                    className={`flex items-center gap-2.5 px-3 py-2.75 rounded-[9px] no-underline font-body text-[0.9rem] mb-1 transition-[background] duration-150 ${active ? 'font-semibold' : 'font-normal'}`}
-                                    style={{
-                                        color: active ? "white" : "rgba(255,255,255,0.7)",
-                                        background: active ? "rgba(34,197,94,0.25)" : "transparent",
-                                    }}>
-                                    <IconComponent size={18} className={active ? "text-[#86efac]" : "text-white/40"} />
-                                    {n.label}
-                                </Link>
-                            );
-                        })}
-                        <div className="border-t border-white/8 my-2" />
-                        <button onClick={() => setLogoutModalOpen(true)} className="w-full flex items-center gap-2.5 px-3 py-3 rounded-[9px] border-none bg-transparent text-[rgba(255,120,120,0.85)] font-body font-medium text-[0.9rem] cursor-pointer transition-colors duration-150 hover:bg-[rgba(231,74,74,0.15)]">
-                            <LogOut size={16} /> Logout
-                        </button>
-                    </div>
-                </>
-            )}
-
-            <main className={`flex-1 min-w-0 ${isDesktop ? 'pt-0' : 'pt-15.5'}`}>
+            <main className={`flex-1 min-w-0 ${isDesktop ? 'pt-0' : 'pt-15.5 pb-[calc(env(safe-area-inset-bottom,0px)+5rem)]'}`}>
                 {/* Desktop topbar */}
                 {isDesktop && (
                     <div className="sticky top-0 z-30 h-14 bg-white border-b border-gray-100 shadow-sm flex items-center justify-end px-6 gap-3">
@@ -214,6 +220,100 @@ export default function AdminLayout() {
                 )}
                 <Outlet />
             </main>
+
+            {/* MOBILE/TABLET Bottom Nav */}
+            {!isDesktop && (
+                <nav
+                    className="fixed bottom-0 left-0 right-0 z-50 border-t border-gray-200 bg-white/95 px-3 py-2 shadow-[0_-6px_24px_rgba(15,23,42,0.08)] backdrop-blur"
+                    style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 0.5rem)" }}
+                >
+                    <div className="grid grid-cols-4 gap-2 text-green-600">
+                        {MOBILE_PRIMARY_NAV.map((n) => {
+                            const IconComponent = n.icon;
+                            return (
+                                <Link
+                                    key={n.to}
+                                    to={n.to}
+                                    className={getMobileNavClass(isActive(n.to))}
+                                    aria-current={isActive(n.to) ? "page" : undefined}
+                                >
+                                    <IconComponent size={18} className="text-inherit" />
+                                    <span className="text-[11px] font-semibold whitespace-nowrap">{n.label}</span>
+                                </Link>
+                            );
+                        })}
+
+                        <Button
+                            type="text"
+                            onClick={() => setMoreOpen(true)}
+                            className="h-auto! min-h-13! w-full! p-0! rounded-2xl! border-0!"
+                            aria-expanded={moreOpen}
+                            aria-controls="admin-mobile-more-drawer"
+                        >
+                            <span className={getMobileNavClass(moreActive)}>
+                                <MoreHorizontal size={18} className="text-inherit" />
+                                <span className="text-[11px] font-semibold">More</span>
+                            </span>
+                        </Button>
+                    </div>
+                </nav>
+            )}
+
+            {!isDesktop && (
+                <Drawer
+                    id="admin-mobile-more-drawer"
+                    title="More"
+                    placement="bottom"
+                    open={moreOpen}
+                    onClose={() => setMoreOpen(false)}
+                    height={330}
+                    footer={
+                        <Button
+                            type="text"
+                            danger
+                            onClick={() => {
+                                setMoreOpen(false);
+                                setLogoutModalOpen(true);
+                            }}
+                            className="h-auto! w-full! justify-start! rounded-xl! border-0! bg-red-50! px-3! py-3! text-left! transition-colors hover:bg-red-100/70! hover:text-red-600!"
+                        >
+                            <span className="flex items-center gap-3">
+                                <LogOut size={18} className="text-inherit" />
+                                <span className="text-sm font-semibold">Logout</span>
+                            </span>
+                        </Button>
+                    }
+                    styles={{
+                        body: { overflowY: "auto", paddingBottom: 0 },
+                        footer: {
+                            padding: "12px 16px calc(env(safe-area-inset-bottom, 0px) + 24px)",
+                            borderTop: "none",
+                        },
+                    }}
+                    className="md:hidden"
+                >
+                    <div className="flex flex-col gap-2">
+                        {MOBILE_SECONDARY_NAV.map((n) => {
+                            const IconComponent = n.icon;
+                            const active = isActive(n.to);
+                            return (
+                                <Link
+                                    key={n.to}
+                                    to={n.to}
+                                    onClick={() => setMoreOpen(false)}
+                                    className={`flex items-center gap-3 rounded-xl px-3 py-3 no-underline transition-colors ${active
+                                        ? "bg-green-50 text-green-700"
+                                        : "text-gray-600 hover:bg-gray-50 hover:text-gray-800"
+                                        }`}
+                                >
+                                    <IconComponent size={18} className="text-inherit" />
+                                    <span className="text-sm font-medium">{n.label}</span>
+                                </Link>
+                            );
+                        })}
+                    </div>
+                </Drawer>
+            )}
 
             <Modal
                 title="Logout"

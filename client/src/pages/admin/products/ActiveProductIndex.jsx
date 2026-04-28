@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Table, Button, Input, Tag, Tooltip, App } from "antd";
+import { Table, Button, Input, Tag, Tooltip, App, Grid } from "antd";
 import { useNavigate } from "react-router-dom";
 import { Search, Eye, Package, Store } from "lucide-react";
 import { getCategories as getPublicCategories } from "../../../services/authService";
@@ -13,6 +13,8 @@ function getTotalStock(variants = []) {
 export default function ActiveProductIndex() {
     const { message } = App.useApp();
     const navigate = useNavigate();
+    const screens = Grid.useBreakpoint();
+    const isMobile = !screens.md;
 
     const [products, setProducts] = useState([]);
     const [categories, setCategories] = useState([]);
@@ -181,33 +183,38 @@ export default function ActiveProductIndex() {
     ];
 
     return (
-        <div className="p-6 lg:p-8 max-w-275 mx-auto space-y-5">
-            <div className="flex items-center justify-between rounded-xl px-6 py-5 bg-white ring-1 ring-gray-200 shadow-sm">
-                <div className="flex items-center gap-4">
+        <div className="mx-auto max-w-275 space-y-4 px-3 pb-6 pt-3 sm:space-y-5 sm:px-4 sm:pb-8 sm:pt-4 lg:px-8">
+            <div className="rounded-2xl bg-white px-4 py-4 shadow-sm ring-1 ring-gray-200 sm:px-6 sm:py-5">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex items-start gap-3 sm:items-center sm:gap-4">
                     <div className="w-11 h-11 rounded-lg bg-linear-to-br from-emerald-600 to-green-500 flex items-center justify-center shadow-sm">
                         <Store size={22} className="text-white" />
                     </div>
-                    <div>
-                        <h1 className="font-sora font-bold text-xl text-gray-900">Active Products</h1>
-                        <p className="text-xs text-gray-400 mt-1">Read-only view of products currently marked as active</p>
+                        <div className="min-w-0">
+                            <h1 className="font-sora text-lg font-bold text-gray-900 sm:text-xl">Active Products</h1>
+                            <p className="mt-1 text-xs leading-5 text-gray-500 sm:text-sm">Read-only view of products currently marked as active</p>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <div className="bg-white rounded-2xl border border-gray-200 shadow-sm">
-                <div className="flex flex-wrap justify-between items-center gap-3 px-5 py-4 border-b border-gray-100">
+                <div className="flex flex-col gap-3 border-b border-gray-100 px-4 py-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:px-5">
                     <div className="flex items-center gap-2">
                         <span className="font-sora font-semibold text-sm text-green-900">All Active Products</span>
                         <span className="text-gray-400 text-xs bg-gray-100 rounded-full px-2 py-0.5">{total}</span>
                     </div>
-                    <Input
-                        placeholder="Search product, description, store..."
-                        prefix={<Search size={14} className="text-gray-400" />}
-                        value={search}
-                        onChange={(event) => handleSearch(event.target.value)}
-                        allowClear
-                        className="w-72 rounded-lg"
-                    />
+                    <div className="grid gap-3 sm:flex sm:flex-wrap sm:items-center">
+                        <Input
+                            placeholder="Search product, description, store..."
+                            prefix={<Search size={14} className="text-gray-400" />}
+                            value={search}
+                            onChange={(event) => handleSearch(event.target.value)}
+                            allowClear
+                            size="large"
+                            className="w-full rounded-xl sm:w-72"
+                        />
+                    </div>
                 </div>
 
                 <div className="overflow-x-auto">
@@ -224,6 +231,9 @@ export default function ActiveProductIndex() {
                             showTotal: (count) => <span className="text-gray-400 text-sm">{count} products total</span>,
                         }}
                         onChange={handleTableChange}
+                        size={isMobile ? "middle" : "large"}
+                        scroll={{ x: 900 }}
+                        className={isMobile ? "[&_.ant-table-pagination]:px-4" : undefined}
                         locale={{
                             emptyText: loading ? null : (
                                 <div className="py-8">

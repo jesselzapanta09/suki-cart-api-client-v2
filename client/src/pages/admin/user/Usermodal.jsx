@@ -157,7 +157,7 @@ export default function UserModal({ open, onClose, onSubmit, initialValues, load
     const steps = getSteps(isSeller)
 
     const actionButtons = (backAction, primaryAction, primaryLabel, primaryIcon, primaryLoading = false) => (
-        <Row gutter={[12, 12]} className="mt-6">
+        <Row gutter={[12, 12]} className="mt-6 border-t border-gray-100 pt-4">
             <Col xs={12} sm={12}>
                 <Button
                     size="large"
@@ -192,10 +192,10 @@ export default function UserModal({ open, onClose, onSubmit, initialValues, load
             footer={null}
             width={isMobile ? "calc(100vw - 0.75rem)" : 540}
             centered
-            className="overflow-hidden rounded-xl"
+            className="overflow-hidden rounded-2xl"
             styles={{
                 body: {
-                    padding: isMobile ? "16px" : "24px",
+                    padding: isMobile ? "14px" : "24px",
                     paddingBottom: isMobile ? "calc(env(safe-area-inset-bottom, 0px) + 20px)" : "24px",
                 },
             }}
@@ -218,7 +218,7 @@ export default function UserModal({ open, onClose, onSubmit, initialValues, load
             </div>
 
             <div className="mt-18 sm:mt-19">
-                <div className="mb-5">
+                <div className="mb-5 rounded-2xl border border-gray-100 bg-gray-50/80 px-3 py-3 sm:border-0 sm:bg-transparent sm:px-0 sm:py-0">
                     {isMobile ? (
                         <div className="space-y-3">
                             <div className="flex items-center justify-between text-xs font-medium text-gray-500">
@@ -244,7 +244,7 @@ export default function UserModal({ open, onClose, onSubmit, initialValues, load
                     form={form}
                     requiredMark={false}
                     size="large"
-                    className="[&_.ant-form-item]:mb-4 [&_.ant-input]:min-h-12 [&_.ant-input-affix-wrapper]:min-h-12 [&_.ant-select-selector]:min-h-12 [&_.ant-select-selector]:items-center"
+                    className="[&_.ant-form-item]:mb-4 [&_.ant-form-item-label>label]:text-sm [&_.ant-input]:min-h-12 [&_.ant-input-affix-wrapper]:min-h-12 [&_.ant-input-password]:min-h-12 [&_.ant-select-selector]:min-h-12 [&_.ant-select-selector]:items-center [&_.ant-upload-list-item-container]:w-full!"
                 >
                     <div style={{ display: step === aboutStep ? undefined : "none" }}>
                         <Form.Item label={<span className={labelClass}>Profile Photo <span className="font-normal text-gray-400">(optional)</span></span>}>
@@ -263,7 +263,7 @@ export default function UserModal({ open, onClose, onSubmit, initialValues, load
                                     </div>
                                     <div className="flex flex-col gap-2 sm:items-end">
                                         <Upload beforeUpload={handleAvatarChange} showUploadList={false} accept=".jpg,.jpeg,.png,.webp">
-                                            <Button className="h-11 rounded-xl border border-gray-300 px-4 text-sm font-medium">
+                                            <Button size="large" className="h-11 rounded-xl border border-gray-300 px-4 text-sm font-medium">
                                                 {avatarPreview && !removeAvatar ? "Change photo" : "Upload photo"}
                                             </Button>
                                         </Upload>
@@ -314,11 +314,11 @@ export default function UserModal({ open, onClose, onSubmit, initialValues, load
                         </Form.Item>
 
                         <Form.Item name="store_description" label={<span className={labelClass}>Store Description</span>} rules={[{ required: isSeller, message: "Description is required" }, { max: 500, message: "Max 500 characters" }]}>
-                            <Input.TextArea placeholder="Tell customers about this store..." rows={4} className={inputClass} />
+                            <Input.TextArea placeholder="Tell customers about this store..." rows={isMobile ? 5 : 4} className={inputClass} />
                         </Form.Item>
 
                         <Form.Item name="store_banner" label={<span className={labelClass}>Store Banner <span className="font-normal text-gray-400">(optional)</span></span>} valuePropName="fileList" getValueFromEvent={e => Array.isArray(e) ? e : e?.fileList}>
-                            <Upload maxCount={1} beforeUpload={() => false} accept="image/*" listType="picture-card" onPreview={(file) => { const src = file.url || file.thumbUrl || (file.originFileObj && URL.createObjectURL(file.originFileObj)); if (src) { const w = window.open(); w.document.write(`<img src="${src}" style="max-width:100%" />`); } }} className="[&_.ant-upload-select]:h-28! [&_.ant-upload-select]:w-full! sm:[&_.ant-upload-select]:w-28!">
+                            <Upload maxCount={1} beforeUpload={() => false} accept="image/*" listType="picture-card" onPreview={(file) => { const src = file.url || file.thumbUrl || (file.originFileObj && URL.createObjectURL(file.originFileObj)); if (src) { const w = window.open(); w.document.write(`<img src="${src}" style="max-width:100%" />`); } }} className="[&_.ant-upload-select]:h-32! [&_.ant-upload-select]:w-full! sm:[&_.ant-upload-select]:w-28!">
                                 <div className="flex flex-col items-center">
                                     <UploadOutlined className="text-xl text-green-600" />
                                     <div className="mt-1 text-xs text-gray-500">Upload Banner</div>

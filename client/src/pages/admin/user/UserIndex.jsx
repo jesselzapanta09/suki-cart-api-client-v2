@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from "react"
-import { Table, Button, Popconfirm, Input, Tag, Tooltip, App, Modal, Spin, Grid } from "antd"
+import { Table, Button, Popconfirm, Input, Tag, Tooltip, App, Modal, Spin, Grid, Select } from "antd"
 import { Plus, Edit, Trash2, Search, Users, User2 } from "lucide-react"
 import UserModal from "./Usermodal"
 import Avatar from "../../../components/Avatar"
@@ -82,6 +82,37 @@ export default function UserIndex() {
     const reload = () => {
         fetchUsers(pagination.current, pagination.pageSize, sorter.field, sorter.order, search, roleFilter, emailVerifiedFilter)
     }
+
+    const handleMobileRoleChange = (value) => {
+        const nextRole = value || null
+        setRoleFilter(nextRole)
+        setPagination(prev => ({ ...prev, current: 1 }))
+        fetchUsers(1, pagination.pageSize, sorter.field, sorter.order, search, nextRole, emailVerifiedFilter)
+    }
+
+    const handleMobileSortChange = (value) => {
+        const nextSorter = {
+            id_desc: { field: "id", order: "descend" },
+            id_asc: { field: "id", order: "ascend" },
+            firstname_asc: { field: "firstname", order: "ascend" },
+            firstname_desc: { field: "firstname", order: "descend" },
+            created_desc: { field: "created_at", order: "descend" },
+            created_asc: { field: "created_at", order: "ascend" },
+        }[value] || { field: "id", order: "descend" }
+
+        setSorter(nextSorter)
+        setPagination(prev => ({ ...prev, current: 1 }))
+        fetchUsers(1, pagination.pageSize, nextSorter.field, nextSorter.order, search, roleFilter, emailVerifiedFilter)
+    }
+
+    const mobileSortValue = (() => {
+        if (sorter.field === "id" && sorter.order === "descend") return "id_desc"
+        if (sorter.field === "id" && sorter.order === "ascend") return "id_asc"
+        if (sorter.field === "firstname" && sorter.order === "ascend") return "firstname_asc"
+        if (sorter.field === "firstname" && sorter.order === "descend") return "firstname_desc"
+        if (sorter.field === "created_at" && sorter.order === "ascend") return "created_asc"
+        return "created_desc"
+    })()
 
     const openAdd = () => { setModalMode("add"); setEditRecord(null); setModalOpen(true) }
     const openEdit = async (r) => {
@@ -217,6 +248,62 @@ export default function UserIndex() {
         }
     ]
 
+    const mobileColumns = [
+        {
+            title: "Users",
+            key: "user_card",
+            render: (_, record) => (
+                <div className="space-y-4 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+                    <div className="flex items-start gap-3">
+                        <Avatar user={record} size={44} fontSize="1rem" />
+                        <div className="min-w-0 flex-1">
+                            <button
+                                type="button"
+                                onClick={() => openView(record.id)}
+                                className="block text-left font-semibold text-green-900 text-sm leading-5 hover:underline"
+                            >
+                                {record.firstname} {record.lastname}
+                            </button>
+                            <div className="mt-1 break-all text-xs leading-5 text-gray-500">{record.email}</div>
+                        </div>
+                        <span className="rounded-full bg-green-100 px-2 py-1 font-mono text-[11px] font-semibold text-green-800">#{record.id}</span>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2">
+                        <Tag variant="filled" color={roleColors[record.role] || "default"}>{record.role.toUpperCase()}</Tag>
+                        <Tag color={record.email_verified_at ? "green" : "red"}>{record.email_verified_at ? "Verified" : "Not Verified"}</Tag>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-2 rounded-2xl bg-gray-50 p-3 text-sm text-gray-600">
+                        <div className="flex items-center justify-between gap-3">
+                            <span className="text-gray-500">Joined</span>
+                            <span className="text-right font-medium text-gray-800">
+                                {new Date(record.created_at).toLocaleDateString("en-PH", { year: "numeric", month: "short", day: "numeric" })}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                        <Button
+                            size="large"
+                            type="primary"
+                            onClick={() => openEdit(record)}
+                            icon={<Edit size={15} />}
+                            className="h-11 rounded-xl font-semibold"
+                        >
+                            Edit
+                        </Button>
+                        <Popconfirm title={`Delete ${record.firstname}?`} description="This action cannot be undone." onConfirm={() => handleDelete(record.id)} okText="Delete" cancelText="Cancel" okButtonProps={{ danger: true }}>
+                            <Button size="large" danger icon={<Trash2 size={15} />} className="h-11 w-full rounded-xl font-semibold">
+                                Delete
+                            </Button>
+                        </Popconfirm>
+                    </div>
+                </div>
+            ),
+        },
+    ]
+
     return (
         <div className="mx-auto max-w-7xl space-y-4 px-3 pb-6 pt-3 sm:space-y-5 sm:px-4 sm:pb-8 sm:pt-4 lg:px-8">
             <div className="rounded-2xl bg-white px-4 py-4 shadow-sm ring-1 ring-gray-200 sm:px-6 sm:py-5">
@@ -237,31 +324,65 @@ export default function UserIndex() {
             </div>
 
             <div className="bg-white rounded-2xl border border-gray-200 shadow-sm">
-                <div className="flex flex-col gap-3 px-4 py-4 border-b border-gray-100 sm:flex-row sm:flex-wrap sm:justify-between sm:items-center sm:px-5">
+                <div className="flex flex-col gap-3 border-b border-gray-100 px-4 py-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:px-5">
                     <div className="flex items-center gap-2">
                         <span className="font-sora font-semibold text-sm text-green-900">All Users</span>
                         <span className="text-gray-400 text-xs bg-gray-100 rounded-full px-2 py-0.5">{total}</span>
                     </div>
-                    <Input
-                        placeholder="Search name, email, role..."
-                        prefix={<Search size={14} className="text-gray-400" />}
-                        value={search}
-                        onChange={e => handleSearch(e.target.value)}
-                        allowClear
-                        size="large"
-                        className="w-full rounded-xl sm:w-64"
-                    />
+                    <div className="grid gap-3 sm:flex sm:flex-wrap sm:items-center">
+                        <Input
+                            placeholder="Search name, email, role..."
+                            prefix={<Search size={14} className="text-gray-400" />}
+                            value={search}
+                            onChange={e => handleSearch(e.target.value)}
+                            allowClear
+                            size="large"
+                            className="w-full rounded-xl sm:w-64"
+                        />
+                        {isMobile && (
+                            <>
+                                <Select
+                                    value={roleFilter}
+                                    onChange={handleMobileRoleChange}
+                                    size="large"
+                                    allowClear
+                                    placeholder="Filter by role"
+                                    className="w-full"
+                                    options={[
+                                        { label: "Admin", value: "admin" },
+                                        { label: "Seller", value: "seller" },
+                                        { label: "Customer", value: "customer" },
+                                    ]}
+                                />
+                                <Select
+                                    value={mobileSortValue}
+                                    onChange={handleMobileSortChange}
+                                    size="large"
+                                    className="w-full"
+                                    options={[
+                                        { label: "Newest first", value: "created_desc" },
+                                        { label: "Oldest first", value: "created_asc" },
+                                        { label: "ID descending", value: "id_desc" },
+                                        { label: "ID ascending", value: "id_asc" },
+                                        { label: "Name A-Z", value: "firstname_asc" },
+                                        { label: "Name Z-A", value: "firstname_desc" },
+                                    ]}
+                                />
+                            </>
+                        )}
+                    </div>
                 </div>
                 <div className="overflow-x-auto [&_.ant-table-pagination.ant-pagination]:justify-center [&_.ant-table-wrapper_.ant-pagination]:justify-center">
                     <Table
                         dataSource={users}
-                        columns={columns}
+                        columns={isMobile ? mobileColumns : columns}
                         rowKey="id"
                         loading={loading}
                         onChange={handleTableChange}
-                        scroll={{ x: 900 }}
+                        scroll={isMobile ? undefined : { x: 900 }}
                         size={isMobile ? "middle" : "large"}
-                        className={isMobile ? "[&_.ant-table-pagination]:px-4" : undefined}
+                        showHeader={!isMobile}
+                        className={isMobile ? "[&_.ant-table-tbody>tr>td]:border-0 [&_.ant-table-cell]:px-0! [&_.ant-table-cell]:py-2! [&_.ant-table-pagination]:px-4" : undefined}
                         pagination={{
                             current: pagination.current,
                             pageSize: pagination.pageSize,

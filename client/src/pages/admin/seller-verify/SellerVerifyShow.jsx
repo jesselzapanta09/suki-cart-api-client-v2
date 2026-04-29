@@ -193,7 +193,7 @@ export default function SellerVerifyShow() {
                             {store.banner ? (
                                 <img src={`/${store.banner}`} alt="Store banner" className="w-full h-40 sm:h-48 object-cover" />
                             ) : (
-                                <div className="w-full h-40 sm:h-48 bg-gradient-to-br from-green-600 to-emerald-400 flex items-center justify-center">
+                                <div className="w-full h-40 sm:h-48 bg-linear-to-br from-green-600 to-emerald-400 flex items-center justify-center">
                                     <Store size={44} className="text-white/60" />
                                 </div>
                             )}

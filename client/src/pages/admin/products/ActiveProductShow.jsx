@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { App, Carousel, Spin, Table, Grid } from "antd";
+import { App, Carousel, Spin, Grid } from "antd";
 import { Package, Store, UserRound } from "lucide-react";
 import * as adminProductService from "../../../services/adminProductService";
 import { getStorageUrl } from "../../../utils/storage";
@@ -53,29 +53,6 @@ export default function ActiveProductShow() {
             src: getStorageUrl(image.image_path),
         })) : []
     ), [product?.images]);
-
-    const variantColumns = [
-        {
-            title: "Variant",
-            dataIndex: "name",
-            key: "name",
-            render: (name) => <span className="font-medium text-gray-800">{name}</span>,
-        },
-        {
-            title: "Price",
-            dataIndex: "price",
-            key: "price",
-            width: 140,
-            render: (price) => <span className="font-mono text-sm">{formatCurrency(price)}</span>,
-        },
-        {
-            title: "Stock",
-            dataIndex: "stock",
-            key: "stock",
-            width: 110,
-            render: (stock) => <span className="font-mono text-sm font-semibold">{Number(stock || 0)}</span>,
-        },
-    ];
 
     if (loading) {
         return <div className="flex justify-center items-center min-h-[60vh]"><Spin size="large" /></div>;
@@ -203,19 +180,51 @@ export default function ActiveProductShow() {
                             </div>
                         </div>
 
-                        <div className="overflow-x-auto [&_.ant-table]:min-w-[520px]">
-                        <Table
-                            columns={variantColumns}
-                            dataSource={product.variants || []}
-                            rowKey="id"
-                            pagination={false}
-                            size={isMobile ? "middle" : "large"}
-                            scroll={{ x: 700 }}
-                            locale={{
-                                emptyText: "No variants found.",
-                            }}
-                        />
-                        </div>
+                        {product.variants?.length ? (
+                            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                                {product.variants.map((variant) => (
+                                    <div
+                                        key={variant.id}
+                                        className="rounded-xl border border-gray-200 bg-gray-50 p-4"
+                                    >
+                                        <div className="flex items-start justify-between gap-3">
+                                            <div className="min-w-0">
+                                                <div className="text-xs font-semibold uppercase tracking-wide text-emerald-600">
+                                                    Variant
+                                                </div>
+                                                <div className="mt-1 wrap-break-word font-semibold text-gray-900">
+                                                    {variant.name || "Unnamed variant"}
+                                                </div>
+                                            </div>
+                                            <div className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-gray-500 ring-1 ring-gray-200">
+                                                Stock: {Number(variant.stock || 0)}
+                                            </div>
+                                        </div>
+
+                                        <div className="mt-4 flex items-end justify-between gap-3 rounded-xl bg-white px-4 py-3 ring-1 ring-gray-200">
+                                            <div>
+                                                <div className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                                                    Price
+                                                </div>
+                                                <div className="mt-1 font-mono text-base font-semibold text-gray-900">
+                                                    {formatCurrency(variant.price)}
+                                                </div>
+                                            </div>
+                                            <div className="text-right">
+                                                <div className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                                                    Quantity
+                                                </div>
+                                                <div className="mt-1 font-mono text-base font-semibold text-emerald-700">
+                                                    {Number(variant.stock || 0)}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="text-sm text-gray-400">No variants found.</div>
+                        )}
                     </div>
 
                     <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-6">

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useCallback } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { Button, Tag, Spin, App, Table, Tooltip, Input } from "antd"
 import { ArrowLeft, History, RotateCcw, Search } from "lucide-react"
@@ -23,7 +23,7 @@ export default function SellerVerifyLogs() {
     const [loading, setLoading] = useState(true)
     const [reverting, setReverting] = useState(null)
 
-    const fetchLogs = async () => {
+    const fetchLogs = useCallback(async () => {
         setLoading(true)
         try {
             const data = await storeVerificationService.getStoreLogs(id)
@@ -35,9 +35,9 @@ export default function SellerVerifyLogs() {
         } finally {
             setLoading(false)
         }
-    }
+    }, [id, message, navigate])
 
-    useEffect(() => { fetchLogs() }, [id])
+    useEffect(() => { fetchLogs() }, [fetchLogs])
 
     // The latest log is the first in the array (newest-first from backend)
     const latestLogId = logs[0]?.id ?? null

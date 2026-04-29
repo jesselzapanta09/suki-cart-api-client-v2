@@ -156,7 +156,7 @@ export default function SellerVerifyShow() {
     const status = store.verification?.store_status || "pending"
 
     return (
-        <div className="p-4 sm:p-6 max-w-full mx-auto space-y-4">
+        <div className="mx-auto max-w-7xl space-y-4 px-3 pb-6 pt-3 sm:space-y-5 sm:px-4 sm:pb-8 sm:pt-4 lg:px-8">
             {/* Header */}
             <div className="rounded-xl px-4 sm:px-6 py-4 bg-white ring-1 ring-gray-200 shadow-sm space-y-3">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">

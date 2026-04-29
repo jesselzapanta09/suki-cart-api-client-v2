@@ -95,7 +95,7 @@ export default function ActiveProductShow() {
     const sellerProfilePicture = resolveMediaUrl(product.store?.user?.profile_picture);
 
     return (
-        <div className="mx-auto max-w-full space-y-4 px-4 sm:px-6 pb-6 pt-3 font-body">
+        <div className="mx-auto max-w-7xl space-y-4 px-3 pb-6 pt-3 sm:space-y-5 sm:px-4 sm:pb-8 sm:pt-4 lg:px-8">
             <div className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-gray-200">
                 <div className="bg-linear-to-r from-green-50 via-white to-emerald-50 px-4 py-4 sm:hidden">
                     <div className="mt-4 flex items-start gap-3">

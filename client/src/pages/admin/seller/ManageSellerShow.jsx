@@ -37,7 +37,7 @@ export default function ManageSellerShow() {
     if (!store) return null
 
     return (
-        <div className="p-6 lg:p-8 max-w-275 mx-auto space-y-5">
+        <div className="mx-auto max-w-7xl space-y-4 px-3 pb-6 pt-3 sm:space-y-5 sm:px-4 sm:pb-8 sm:pt-4 lg:px-8">
             {/* Header */}
             <div className="flex items-center gap-4 rounded-xl px-6 py-5 bg-white ring-1 ring-gray-200 shadow-sm">
                 <Button onClick={() => navigate("/admin/sellers")} icon={<ArrowLeft size={16} />} type="text" />

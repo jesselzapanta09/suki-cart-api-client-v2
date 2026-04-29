@@ -39,60 +39,68 @@ export default function ManageSellerShow() {
     return (
         <div className="mx-auto max-w-7xl space-y-4 px-3 pb-6 pt-3 sm:space-y-5 sm:px-4 sm:pb-8 sm:pt-4 lg:px-8">
             {/* Header */}
-            <div className="flex items-center gap-4 rounded-xl px-6 py-5 bg-white ring-1 ring-gray-200 shadow-sm">
-                <Button onClick={() => navigate("/admin/sellers")} icon={<ArrowLeft size={16} />} type="text" />
-                <div className="w-11 h-11 rounded-lg bg-linear-to-br from-orange-500 to-amber-400 flex items-center justify-center shadow-sm">
-                    <Store size={22} className="text-white" />
-                </div>
-                <div>
-                    <h1 className="font-sora font-bold text-xl text-gray-900">Seller Details</h1>
-                    <p className="text-xs text-gray-400 mt-1">Approved seller store information</p>
+            <div className="rounded-2xl bg-white px-4 py-4 shadow-sm ring-1 ring-gray-200 sm:px-6 sm:py-5">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex items-start gap-3 sm:items-center sm:gap-4">
+                        <div className="hidden sm:block">
+                            <Button onClick={() => navigate("/admin/sellers")} icon={<ArrowLeft size={16} />} type="text" />
+                        </div>
+                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-linear-to-br from-orange-500 to-amber-400 shadow-sm sm:h-11 sm:w-11 sm:rounded-lg">
+                            <Store size={22} className="text-white" />
+                        </div>
+                        <div className="min-w-0">
+                            <h1 className="font-sora text-lg font-bold leading-tight text-gray-900 sm:text-xl">Seller Details</h1>
+                            <p className="mt-1 text-sm leading-5 text-gray-500 sm:text-xs">Approved seller store information</p>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-5">
                 {/* Main info */}
-                <div className="lg:col-span-2 space-y-5">
+                <div className="space-y-4 lg:col-span-2 lg:space-y-5">
                     {/* Store banner */}
-                    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+                    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
                         {store.banner ? (
-                            <img src={`/${store.banner}`} alt="Store banner" className="w-full h-48 object-cover" />
+                            <img src={`/${store.banner}`} alt="Store banner" className="h-40 w-full object-cover sm:h-48" />
                         ) : (
-                            <div className="w-full h-48 bg-linear-to-br from-orange-400 to-amber-300 flex items-center justify-center">
+                            <div className="flex h-40 w-full items-center justify-center bg-linear-to-br from-orange-400 to-amber-300 sm:h-48">
                                 <Store size={48} className="text-white/60" />
                             </div>
                         )}
                     </div>
 
                     {/* Store info card */}
-                    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-4">
-                        <div className="flex items-start justify-between">
-                            <div>
-                                <h2 className="font-sora font-bold text-lg text-gray-900">{store.store_name}</h2>
-                                <div className="text-gray-400 text-sm mt-1">{store.category?.name || "No category"}</div>
+                    <div className="space-y-4 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-6">
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                            <div className="min-w-0">
+                                <h2 className="font-sora text-lg font-bold leading-tight text-gray-900">{store.store_name}</h2>
+                                <div className="mt-1 text-sm text-gray-500">{store.category?.name || "No category"}</div>
                             </div>
-                            <Tag color="success">APPROVED</Tag>
+                            <Tag color="success" className="m-0 self-start whitespace-nowrap text-xs">
+                                APPROVED
+                            </Tag>
                         </div>
 
                         {store.description && (
                             <div>
                                 <div className="text-xs font-semibold text-gray-700 mb-1">Description</div>
-                                <div className="text-sm text-gray-500">{store.description}</div>
+                                <div className="text-sm leading-6 text-gray-500">{store.description}</div>
                             </div>
                         )}
 
-                        <div className="text-sm text-gray-500">
+                        <div className="text-sm leading-6 text-gray-500">
                             Registered: {new Date(store.created_at).toLocaleDateString("en-PH", { year: "numeric", month: "long", day: "numeric" })}
                         </div>
                     </div>
 
                     {/* Reviewed by */}
                     {store.verification?.reviewer && (
-                        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+                        <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-6">
                             <div className="text-xs font-semibold text-gray-700 mb-2">Approved By</div>
                             <div className="flex items-center gap-3">
                                 <Avatar user={store.verification.reviewer} size={34} fontSize="0.85rem" />
-                                <div>
+                                <div className="min-w-0">
                                     <div className="text-sm font-medium text-gray-800">
                                         {store.verification.reviewer.firstname} {store.verification.reviewer.lastname}
                                     </div>
@@ -108,21 +116,21 @@ export default function ManageSellerShow() {
                 </div>
 
                 {/* Sidebar — owner info only */}
-                <div className="space-y-5">
+                <div className="space-y-4 lg:space-y-5">
                     {store.user && (
-                        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-4">
+                        <div className="space-y-4 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-6">
                             <div className="text-xs font-semibold text-gray-700">Store Owner</div>
                             <div className="flex items-center gap-3">
                                 <Avatar user={store.user} size={44} fontSize="1rem" />
-                                <div>
+                                <div className="min-w-0">
                                     <div className="font-semibold text-gray-800">{store.user.firstname} {store.user.lastname}</div>
-                                    <div className="text-gray-400 text-sm">{store.user.email}</div>
+                                    <div className="break-all text-sm text-gray-400">{store.user.email}</div>
                                 </div>
                             </div>
                             {store.user.contact_number && (
                                 <div>
                                     <div className="text-xs font-semibold text-gray-700 mb-1">Contact</div>
-                                    <div className="text-sm text-gray-500">{store.user.contact_number}</div>
+                                    <div className="text-sm leading-6 text-gray-500">{store.user.contact_number}</div>
                                 </div>
                             )}
                             {store.user.locations?.length > 0 && (

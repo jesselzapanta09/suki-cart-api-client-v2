@@ -96,7 +96,7 @@ export default function ManageSellerIndex() {
             ) : <span className="text-gray-400 text-xs">—</span>
         },
         {
-            title: "Actions", width: 80, fixed: "right",
+            title: "Actions", width: 80,
             render: (_, record) => (
                 <Tooltip title="View Details">
                     <Button size="small" onClick={() => navigate(`/admin/sellers/${record.uuid}`)} icon={<Eye size={14} />} />
@@ -108,21 +108,21 @@ export default function ManageSellerIndex() {
     return (
         <div className="mx-auto max-w-7xl space-y-4 px-3 pb-6 pt-3 sm:space-y-5 sm:px-4 sm:pb-8 sm:pt-4 lg:px-8">
             {/* Header */}
-            <div className="flex items-center justify-between rounded-xl px-6 py-5 bg-white ring-1 ring-gray-200 shadow-sm">
-                <div className="flex items-center gap-4">
-                    <div className="w-11 h-11 rounded-lg bg-linear-to-br from-orange-500 to-amber-400 flex items-center justify-center shadow-sm">
+            <div className="rounded-2xl bg-white px-4 py-4 shadow-sm ring-1 ring-gray-200 sm:px-6 sm:py-5">
+                <div className="flex items-start gap-3 sm:items-center sm:gap-4">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-linear-to-br from-orange-500 to-amber-400 shadow-sm sm:h-11 sm:w-11 sm:rounded-lg">
                         <Store size={22} className="text-white" />
                     </div>
-                    <div>
-                        <h1 className="font-sora font-bold text-xl text-gray-900">Verified Sellers</h1>
-                        <p className="text-xs text-gray-400 mt-1">All verified and approved seller stores</p>
+                    <div className="min-w-0">
+                        <h1 className="font-sora text-lg font-bold leading-tight text-gray-900 sm:text-xl">Verified Sellers</h1>
+                        <p className="mt-1 max-w-2xl text-sm leading-5 text-gray-500 sm:text-xs">All verified and approved seller stores</p>
                     </div>
                 </div>
             </div>
 
             {/* Table card */}
-            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm">
-                <div className="flex flex-wrap justify-between items-center gap-3 px-5 py-4 border-b border-gray-100">
+            <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+                <div className="flex flex-col gap-3 border-b border-gray-100 px-4 py-4 sm:px-5">
                     <div className="flex items-center gap-2">
                         <span className="font-sora font-semibold text-sm text-green-900">Approved Stores</span>
                         <span className="text-gray-400 text-xs bg-gray-100 rounded-full px-2 py-0.5">{total}</span>
@@ -134,7 +134,7 @@ export default function ManageSellerIndex() {
                         onChange={e => handleSearch(e.target.value)}
                         allowClear
                         size="large"
-                        className="w-64 rounded-lg"
+                        className="w-full rounded-xl sm:w-72"
                     />
                 </div>
                 <div className="overflow-x-auto">
@@ -144,6 +144,8 @@ export default function ManageSellerIndex() {
                         rowKey="id"
                         loading={loading}
                         onChange={handleTableChange}
+                        size="middle"
+                        scroll={{ x: 820 }}
                         pagination={{
                             current: pagination.current,
                             pageSize: pagination.pageSize,

@@ -176,7 +176,9 @@ export default function SellerVerifyAllLogs() {
             {/* Header */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-xl px-4 sm:px-6 py-4 bg-white ring-1 ring-gray-200 shadow-sm gap-3">
                 <div className="flex items-center gap-3">
-                    <Button onClick={() => navigate("/admin/seller-verify")} icon={<ArrowLeft size={16} />} type="text" />
+                    <div className="hidden sm:block">
+                        <Button onClick={() => navigate("/admin/seller-verify")} icon={<ArrowLeft size={16} />} type="text" />
+                    </div>
                     <div className="w-11 h-11 rounded-lg bg-linear-to-br from-indigo-600 to-blue-500 flex items-center justify-center shadow-sm">
                         <History size={22} className="text-white" />
                     </div>
@@ -189,7 +191,7 @@ export default function SellerVerifyAllLogs() {
 
             {/* Table */}
             <div className="bg-white rounded-2xl border border-gray-200 shadow-sm">
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 px-4 sm:px-5 py-3 border-b border-gray-100">
+                <div className="flex flex-col items-start gap-3 px-4 sm:px-5 py-3 border-b border-gray-100">
                     <div className="flex items-center gap-2">
                         <span className="font-sora font-semibold text-sm text-gray-900">Action History</span>
                         <span className="text-gray-400 text-xs bg-gray-100 rounded-full px-2 py-0.5">{total}</span>

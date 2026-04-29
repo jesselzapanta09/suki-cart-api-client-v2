@@ -150,7 +150,7 @@ export default function SellerVerifyIndex() {
 
             {/* Table card */}
             <div className="bg-white rounded-2xl border border-gray-200 shadow-sm">
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 px-4 sm:px-5 py-3 border-b border-gray-100">
+                <div className="flex flex-col items-start gap-3 px-4 sm:px-5 py-3 border-b border-gray-100">
                     <div className="flex items-center gap-2">
                         <span className="font-sora font-semibold text-sm text-green-900">
                             {statusFilter ? statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1) + " Stores" : "All Stores"}

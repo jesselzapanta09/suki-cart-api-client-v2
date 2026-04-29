@@ -158,24 +158,31 @@ export default function SellerVerifyShow() {
     return (
         <div className="p-4 sm:p-6 max-w-full mx-auto space-y-4">
             {/* Header */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-xl px-4 sm:px-6 py-4 bg-white ring-1 ring-gray-200 shadow-sm gap-3">
-                <div className="flex items-center gap-3">
-                    <Button onClick={() => navigate("/admin/seller-verify")} icon={<ArrowLeft size={16} />} type="text" />
-                    <div className="w-11 h-11 rounded-lg bg-linear-to-br from-green-600 to-emerald-500 flex items-center justify-center shadow-sm">
-                        <Store size={22} className="text-white" />
+            <div className="rounded-xl px-4 sm:px-6 py-4 bg-white ring-1 ring-gray-200 shadow-sm space-y-3">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                        <div className="hidden sm:block">
+                            <Button onClick={() => navigate("/admin/seller-verify")} icon={<ArrowLeft size={16} />} type="text" />
+                        </div>
+                        <div className="w-11 h-11 rounded-lg bg-linear-to-br from-green-600 to-emerald-500 flex items-center justify-center shadow-sm">
+                            <Store size={22} className="text-white" />
+                        </div>
+                        <div>
+                            <h1 className="font-sora font-bold text-lg sm:text-xl text-gray-900">Store Details</h1>
+                            <p className="text-xs text-gray-400 mt-1">Review seller store application</p>
+                        </div>
                     </div>
-                    <div>
-                        <h1 className="font-sora font-bold text-lg sm:text-xl text-gray-900">Store Details</h1>
-                        <p className="text-xs text-gray-400 mt-1">Review seller store application</p>
+                    <div className="hidden sm:block">
+                        <Button icon={<History size={15} />} onClick={() => navigate(`/admin/seller-verify/${id}/logs`)} size="large">
+                            <span className="sm:inline">View Logs</span>
+                        </Button>
                     </div>
                 </div>
-                <Button
-                    icon={<History size={15} />}
-                    onClick={() => navigate(`/admin/seller-verify/${id}/logs`)}
-                    size="large"
-                >
-                    <span className="hidden sm:inline">View Logs</span>
-                </Button>
+                <div className="sm:hidden flex justify-end">
+                    <Button icon={<History size={15} />} onClick={() => navigate(`/admin/seller-verify/${id}/logs`)} size="large" className="w-full">
+                        <span>View Logs</span>
+                    </Button>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
@@ -272,23 +279,31 @@ export default function SellerVerifyShow() {
                     )}
 
                     {/* Action buttons */}
-                    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 sm:p-6 space-y-3">
+                    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 sm:p-6">
                         <div className="text-xs font-semibold text-gray-700 mb-1">Actions</div>
-                        {status !== "approved" && (
-                            <Button type="primary" icon={<CheckCircle size={14} />} loading={actionLoading} onClick={handleApprove} block size="large">
-                                Approve Store
-                            </Button>
-                        )}
-                        {status !== "rejected" && (
-                            <Button danger icon={<XCircle size={14} />} onClick={handleReject} block size="large">
-                                Reject Store
-                            </Button>
-                        )}
-                        {status !== "pending" && (
-                            <Button icon={<RotateCcw size={14} />} loading={actionLoading} onClick={handlePending} block size="large">
-                                Back to Pending
-                            </Button>
-                        )}
+                        <div className="flex gap-2 flex-nowrap sm:flex-col sm:gap-3">
+                            {status !== "approved" && (
+                                <div className="flex-1 min-w-0 sm:flex-none">
+                                    <Button type="primary" icon={<CheckCircle size={14} />} loading={actionLoading} onClick={handleApprove} block size="large">
+                                        Approve Store
+                                    </Button>
+                                </div>
+                            )}
+                            {status !== "rejected" && (
+                                <div className="flex-1 min-w-0 sm:flex-none">
+                                    <Button danger icon={<XCircle size={14} />} onClick={handleReject} block size="large">
+                                        Reject Store
+                                    </Button>
+                                </div>
+                            )}
+                            {status !== "pending" && (
+                                <div className="flex-1 min-w-0 sm:flex-none">
+                                    <Button icon={<RotateCcw size={14} />} loading={actionLoading} onClick={handlePending} block size="large">
+                                        Back to Pending
+                                    </Button>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>

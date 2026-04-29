@@ -157,16 +157,16 @@ export default function SellerVerifyLogs() {
     }
 
     return (
-        <div className="p-6 lg:p-8 max-w-275 mx-auto space-y-5">
+        <div className="p-4 sm:p-6 max-w-full mx-auto space-y-4">
             {/* Header */}
-            <div className="flex items-center justify-between rounded-xl px-6 py-5 bg-white ring-1 ring-gray-200 shadow-sm">
-                <div className="flex items-center gap-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-xl px-4 sm:px-6 py-4 bg-white ring-1 ring-gray-200 shadow-sm gap-3">
+                <div className="flex items-center gap-3">
                     <Button onClick={() => navigate(`/admin/seller-verify/${id}`)} icon={<ArrowLeft size={16} />} type="text" />
                     <div className="w-11 h-11 rounded-lg bg-linear-to-br from-indigo-600 to-blue-500 flex items-center justify-center shadow-sm">
                         <History size={22} className="text-white" />
                     </div>
                     <div>
-                        <h1 className="font-sora font-bold text-xl text-gray-900">Verification Logs</h1>
+                        <h1 className="font-sora font-bold text-lg sm:text-xl text-gray-900">Verification Logs</h1>
                         <p className="text-xs text-gray-400 mt-1">
                             {store?.store_name} · Full action history
                         </p>
@@ -184,18 +184,19 @@ export default function SellerVerifyLogs() {
 
             {/* Logs table */}
             <div className="bg-white rounded-2xl border border-gray-200 shadow-sm">
-                <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-4 border-b border-gray-100">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 px-4 sm:px-5 py-3 border-b border-gray-100">
                     <div className="flex items-center gap-2">
                         <span className="font-sora font-semibold text-sm text-gray-900">Action History</span>
                         <span className="text-gray-400 text-xs bg-gray-100 rounded-full px-2 py-0.5">{logs.length}</span>
                     </div>
                     <Input
+                        size="large"
                         placeholder="Search status, performer…"
                         prefix={<Search size={14} className="text-gray-400" />}
                         value={search}
                         onChange={e => setSearch(e.target.value)}
                         allowClear
-                        className="w-60 rounded-lg"
+                        className="w-full sm:w-60 rounded-lg"
                     />
                 </div>
 
@@ -210,6 +211,8 @@ export default function SellerVerifyLogs() {
                             dataSource={filteredLogs}
                             columns={columns}
                             rowKey="id"
+                            size="middle"
+                            scroll={{ x: 900 }}
                             pagination={{ pageSize: 5, showSizeChanger: false, showTotal: t => <span className="text-gray-400 text-sm">{t} entries</span> }}
                         />
                     </div>

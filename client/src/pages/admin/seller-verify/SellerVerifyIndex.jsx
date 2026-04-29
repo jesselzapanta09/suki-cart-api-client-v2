@@ -122,26 +122,35 @@ export default function SellerVerifyIndex() {
     ]
 
     return (
-        <div className="p-6 lg:p-8 max-w-275 mx-auto space-y-5">
+        <div className="p-4 sm:p-6 max-w-full mx-auto space-y-4">
             {/* Header */}
-            <div className="flex items-center justify-between rounded-xl px-6 py-5 bg-white ring-1 ring-gray-200 shadow-sm">
-                <div className="flex items-center gap-4">
-                    <div className="w-11 h-11 rounded-lg bg-linear-to-br from-green-600 to-emerald-500 flex items-center justify-center shadow-sm">
-                        <ShieldCheck size={22} className="text-white" />
+            <div className="rounded-xl px-4 sm:px-6 py-4 bg-white ring-1 ring-gray-200 shadow-sm space-y-3">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                        <div className="w-11 h-11 rounded-lg bg-linear-to-br from-green-600 to-emerald-500 flex items-center justify-center shadow-sm">
+                            <ShieldCheck size={22} className="text-white" />
+                        </div>
+                        <div>
+                            <h1 className="font-sora font-bold text-lg sm:text-xl text-gray-900">Seller Verification</h1>
+                            <p className="text-xs text-gray-400 mt-1">Review and approve seller store applications</p>
+                        </div>
                     </div>
-                    <div>
-                        <h1 className="font-sora font-bold text-xl text-gray-900">Seller Verification</h1>
-                        <p className="text-xs text-gray-400 mt-1">Review and approve seller store applications</p>
+                    <div className="hidden sm:block">
+                        <Button icon={<History size={15} />} onClick={() => navigate("/admin/seller-verify/logs")} size="large">
+                            <span className="sm:inline">All Logs</span>
+                        </Button>
                     </div>
                 </div>
-                <Button icon={<History size={15} />} onClick={() => navigate("/admin/seller-verify/logs")}>
-                    All Logs
-                </Button>
+                <div className="sm:hidden flex justify-end">
+                    <Button icon={<History size={15} />} onClick={() => navigate("/admin/seller-verify/logs")} size="large" className="w-full">
+                        <span>All Logs</span>
+                    </Button>
+                </div>
             </div>
 
             {/* Table card */}
             <div className="bg-white rounded-2xl border border-gray-200 shadow-sm">
-                <div className="flex flex-wrap justify-between items-center gap-3 px-5 py-4 border-b border-gray-100">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 px-4 sm:px-5 py-3 border-b border-gray-100">
                     <div className="flex items-center gap-2">
                         <span className="font-sora font-semibold text-sm text-green-900">
                             {statusFilter ? statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1) + " Stores" : "All Stores"}
@@ -149,12 +158,13 @@ export default function SellerVerifyIndex() {
                         <span className="text-gray-400 text-xs bg-gray-100 rounded-full px-2 py-0.5">{total}</span>
                     </div>
                     <Input
+                        size="large"
                         placeholder="Search store name, owner…"
                         prefix={<Search size={14} className="text-gray-400" />}
                         value={search}
                         onChange={e => handleSearch(e.target.value)}
                         allowClear
-                        className="w-64 rounded-lg"
+                        className="w-full sm:w-64 rounded-lg"
                     />
                 </div>
                 <div className="overflow-x-auto">
@@ -164,6 +174,8 @@ export default function SellerVerifyIndex() {
                         rowKey="id"
                         loading={loading}
                         onChange={handleTableChange}
+                        size="middle"
+                        scroll={{ x: 900 }}
                         pagination={{
                             current: pagination.current,
                             pageSize: pagination.pageSize,

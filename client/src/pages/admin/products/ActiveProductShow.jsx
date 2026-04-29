@@ -95,7 +95,7 @@ export default function ActiveProductShow() {
     const sellerProfilePicture = resolveMediaUrl(product.store?.user?.profile_picture);
 
     return (
-        <div className="mx-auto max-w-7xl space-y-4 px-3 pb-6 pt-3 font-body sm:space-y-5 sm:px-4 sm:pb-8 sm:pt-4 lg:px-8">
+        <div className="mx-auto max-w-full space-y-4 px-4 sm:px-6 pb-6 pt-3 font-body">
             <div className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-gray-200">
                 <div className="bg-linear-to-r from-green-50 via-white to-emerald-50 px-4 py-4 sm:hidden">
                     <div className="mt-4 flex items-start gap-3">
@@ -129,15 +129,15 @@ export default function ActiveProductShow() {
                             <Carousel dots={images.length > 1} className="bg-gray-100">
                                 {images.map((image) => (
                                     <div key={image.id}>
-                                        <div className="flex h-56 items-center justify-center bg-gray-100 sm:h-72 md:h-96">
+                                        <div className="flex h-44 items-center justify-center bg-gray-100 sm:h-72 md:h-96">
                                             <img src={image.src} alt={product.name} className="w-full h-full object-cover" />
                                         </div>
                                     </div>
                                 ))}
                             </Carousel>
                         ) : (
-                            <div className="flex h-56 items-center justify-center bg-linear-to-br from-green-50 to-emerald-100 sm:h-72 md:h-96">
-                                <Package size={64} className="text-green-300" />
+                            <div className="flex h-44 items-center justify-center bg-linear-to-br from-green-50 to-emerald-100 sm:h-72 md:h-96">
+                                <Package size={56} className="text-green-300" />
                             </div>
                         )}
                     </div>
@@ -210,7 +210,7 @@ export default function ActiveProductShow() {
                             rowKey="id"
                             pagination={false}
                             size={isMobile ? "middle" : "large"}
-                            scroll={{ x: 520 }}
+                            scroll={{ x: 700 }}
                             locale={{
                                 emptyText: "No variants found.",
                             }}

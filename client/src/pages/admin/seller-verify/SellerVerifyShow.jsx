@@ -156,24 +156,25 @@ export default function SellerVerifyShow() {
     const status = store.verification?.store_status || "pending"
 
     return (
-        <div className="p-6 lg:p-8 max-w-275 mx-auto space-y-5">
+        <div className="p-4 sm:p-6 max-w-full mx-auto space-y-4">
             {/* Header */}
-            <div className="flex items-center justify-between rounded-xl px-6 py-5 bg-white ring-1 ring-gray-200 shadow-sm">
-                <div className="flex items-center gap-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-xl px-4 sm:px-6 py-4 bg-white ring-1 ring-gray-200 shadow-sm gap-3">
+                <div className="flex items-center gap-3">
                     <Button onClick={() => navigate("/admin/seller-verify")} icon={<ArrowLeft size={16} />} type="text" />
                     <div className="w-11 h-11 rounded-lg bg-linear-to-br from-green-600 to-emerald-500 flex items-center justify-center shadow-sm">
                         <Store size={22} className="text-white" />
                     </div>
                     <div>
-                        <h1 className="font-sora font-bold text-xl text-gray-900">Store Details</h1>
+                        <h1 className="font-sora font-bold text-lg sm:text-xl text-gray-900">Store Details</h1>
                         <p className="text-xs text-gray-400 mt-1">Review seller store application</p>
                     </div>
                 </div>
                 <Button
                     icon={<History size={15} />}
                     onClick={() => navigate(`/admin/seller-verify/${id}/logs`)}
+                    size="large"
                 >
-                    View Logs
+                    <span className="hidden sm:inline">View Logs</span>
                 </Button>
             </div>
 
@@ -181,18 +182,18 @@ export default function SellerVerifyShow() {
                 {/* Main info */}
                 <div className="lg:col-span-2 space-y-5">
                     {/* Store banner */}
-                    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-                        {store.banner ? (
-                            <img src={`/${store.banner}`} alt="Store banner" className="w-full h-48 object-cover" />
-                        ) : (
-                            <div className="w-full h-48 bg-gradient-to-br from-green-600 to-emerald-400 flex items-center justify-center">
-                                <Store size={48} className="text-white/60" />
-                            </div>
-                        )}
-                    </div>
+                        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+                            {store.banner ? (
+                                <img src={`/${store.banner}`} alt="Store banner" className="w-full h-40 sm:h-48 object-cover" />
+                            ) : (
+                                <div className="w-full h-40 sm:h-48 bg-gradient-to-br from-green-600 to-emerald-400 flex items-center justify-center">
+                                    <Store size={44} className="text-white/60" />
+                                </div>
+                            )}
+                        </div>
 
                     {/* Store info card */}
-                    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-4">
+                    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 sm:p-6 space-y-4">
                         <div className="flex items-start justify-between">
                             <div>
                                 <h2 className="font-sora font-bold text-lg text-gray-900">{store.store_name}</h2>
@@ -215,7 +216,7 @@ export default function SellerVerifyShow() {
 
                     {/* Rejection reason */}
                     {store.verification?.store_status === "rejected" && store.verification?.rejection_reason && (
-                        <div className="bg-red-50 rounded-2xl p-5 ring-1 ring-red-200">
+                        <div className="bg-red-50 rounded-2xl p-4 sm:p-5 ring-1 ring-red-200">
                             <div className="flex items-center justify-between mb-1">
                                 <div className="text-sm font-semibold text-red-700">Rejection Reason</div>
                                 <Button type="text" size="small" icon={<Pencil size={13} />} onClick={handleEditRejection} className="text-red-600 hover:text-red-800">Edit</Button>
@@ -226,7 +227,7 @@ export default function SellerVerifyShow() {
 
                     {/* Reviewed by */}
                     {store.verification?.reviewer && (
-                        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+                        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 sm:p-6">
                             <div className="text-xs font-semibold text-gray-700 mb-2">Reviewed By</div>
                             <div className="flex items-center gap-3">
                                 <Avatar user={store.verification.reviewer} size={34} fontSize="0.85rem" />
@@ -244,10 +245,10 @@ export default function SellerVerifyShow() {
                 </div>
 
                 {/* Sidebar */}
-                <div className="space-y-5">
+                <div className="space-y-4">
                     {/* Owner card */}
                     {store.user && (
-                        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-4">
+                        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 sm:p-6 space-y-4">
                             <div className="text-xs font-semibold text-gray-700">Store Owner</div>
                             <div className="flex items-center gap-3">
                                 <Avatar user={store.user} size={44} fontSize="1rem" />
@@ -271,7 +272,7 @@ export default function SellerVerifyShow() {
                     )}
 
                     {/* Action buttons */}
-                    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-3">
+                    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 sm:p-6 space-y-3">
                         <div className="text-xs font-semibold text-gray-700 mb-1">Actions</div>
                         {status !== "approved" && (
                             <Button type="primary" icon={<CheckCircle size={14} />} loading={actionLoading} onClick={handleApprove} block size="large">

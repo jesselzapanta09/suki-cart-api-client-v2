@@ -266,7 +266,7 @@ export default function AdminLayout() {
                     placement="bottom"
                     open={moreOpen}
                     onClose={() => setMoreOpen(false)}
-                    height={330}
+                    height="auto"
                     footer={
                         <Button
                             type="text"
@@ -284,7 +284,8 @@ export default function AdminLayout() {
                         </Button>
                     }
                     styles={{
-                        body: { overflowY: "auto", paddingBottom: 0 },
+                        body: { overflow: "hidden", paddingBottom: 0 },
+                        content: { maxHeight: "calc(100dvh - 5rem)" },
                         footer: {
                             padding: "12px 16px calc(env(safe-area-inset-bottom, 0px) + 24px)",
                             borderTop: "none",

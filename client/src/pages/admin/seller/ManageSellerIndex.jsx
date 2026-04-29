@@ -133,6 +133,7 @@ export default function ManageSellerIndex() {
                         value={search}
                         onChange={e => handleSearch(e.target.value)}
                         allowClear
+                        size="large"
                         className="w-64 rounded-lg"
                     />
                 </div>

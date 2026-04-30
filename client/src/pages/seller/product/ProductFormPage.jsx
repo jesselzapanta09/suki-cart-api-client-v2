@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react"
 import { useNavigate, useParams, Link } from "react-router-dom"
-import { App, Button, Form, Input, InputNumber, Select, Spin, Tag, Upload } from "antd"
+import { App, Button, Form, Input, InputNumber, Select, Spin, Tag, Upload, Grid as AntGrid } from "antd"
 import { ArrowLeft, Grid, ImagePlus, Layers, Package, RotateCcw, Save, Sliders, Trash2 } from "lucide-react"
 import { UploadOutlined } from "@ant-design/icons"
 import { getCategories as getPublicCategories } from "../../../services/authService"
@@ -71,6 +71,8 @@ export default function ProductFormPage({ mode }) {
   const navigate = useNavigate()
   const { message } = App.useApp()
   const [form] = Form.useForm()
+  const screens = AntGrid.useBreakpoint()
+  const isMobile = !screens.md
 
   const isEdit = mode === "edit"
   const [categories, setCategories] = useState([])
@@ -276,23 +278,36 @@ export default function ProductFormPage({ mode }) {
   }
 
   return (
-    <div className="p-6 lg:p-8 max-w-275 mx-auto space-y-5">
-      <div className="flex items-center justify-between rounded-xl px-6 py-5 bg-white ring-1 ring-gray-200 shadow-sm">
-        <div className="flex items-center gap-4">
-          <Button onClick={() => navigate("/seller/products")} icon={<ArrowLeft size={16} />} type="text" />
-          <div className="w-11 h-11 rounded-lg bg-linear-to-br from-green-600 to-emerald-500 flex items-center justify-center shadow-sm">
+    <div className="mx-auto max-w-7xl space-y-4 px-3 pb-8 pt-3 sm:space-y-5 sm:px-4 sm:pb-8 sm:pt-4 lg:px-8">
+      <div className="rounded-2xl bg-white px-4 py-4 shadow-sm ring-1 ring-gray-200 sm:px-6 sm:py-5">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-3 sm:items-center sm:gap-4">
+            {!isMobile && (
+              <Button
+                onClick={() => navigate("/seller/products")}
+                icon={<ArrowLeft size={16} />}
+                type="text"
+                className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl sm:mt-0"
+              />
+            )}
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-linear-to-br from-green-600 to-emerald-500 shadow-sm">
             <Layers size={22} className="text-white" />
           </div>
-          <div>
-            <h1 className="font-sora font-bold text-xl text-gray-900">
+            <div className="min-w-0">
+              <h1 className="font-sora text-lg font-bold text-gray-900 sm:text-xl">
               {isEdit ? "Edit Product" : "Add Product"}
-            </h1>
-            <p className="text-xs text-gray-400 mt-1">
+              </h1>
+              <p className="mt-1 text-xs leading-5 text-gray-500 sm:text-sm">
               {isEdit ? "Update your product details and images" : "Create a new product for your store"}
-            </p>
+              </p>
+            </div>
           </div>
+          {!isMobile && (
+            <div className="self-start sm:self-auto">
+              {isEdit && product ? getStatusTag(product.status) : <Tag color="green">New</Tag>}
+            </div>
+          )}
         </div>
-        {isEdit && product ? getStatusTag(product.status) : <Tag color="green">New</Tag>}
       </div>
 
       <Form
@@ -310,7 +325,7 @@ export default function ProductFormPage({ mode }) {
         ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
           <div className="lg:col-span-2 space-y-5">
-            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-5">
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 space-y-5 sm:p-6">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-green-50 ring-1 ring-green-100 flex items-center justify-center">
                   <Package size={20} className="text-green-700" />
@@ -325,9 +340,9 @@ export default function ProductFormPage({ mode }) {
                 name="name"
                 label="Product Name"
                 rules={[{ required: true, message: "Product name is required" }]}
-              >
-                <Input placeholder="e.g. Lucky Me Noodles" />
-              </Form.Item>
+                >
+                  <Input placeholder="e.g. Lucky Me Noodles" className="rounded-xl" />
+                </Form.Item>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Form.Item
@@ -346,6 +361,7 @@ export default function ProductFormPage({ mode }) {
                     type="number"
                     step="0.001"
                     min="0.001"
+                    className="rounded-xl"
                   />
                 </Form.Item>
 
@@ -354,7 +370,7 @@ export default function ProductFormPage({ mode }) {
                   label="Dimension"
                   rules={[{ required: true, message: "Dimension is required" }]}
                 >
-                  <Input placeholder="e.g. 10x10x10cm" />
+                  <Input placeholder="e.g. 10x10x10cm" className="rounded-xl" />
                 </Form.Item>
               </div>
 
@@ -368,6 +384,7 @@ export default function ProductFormPage({ mode }) {
                     placeholder="Select category"
                     options={categoryOptions}
                     notFoundContent="No categories found"
+                    className="rounded-xl"
                   />
                 </Form.Item>
 
@@ -397,6 +414,7 @@ export default function ProductFormPage({ mode }) {
                       { label: "Draft", value: "draft" },
                       { label: "Out of Stock", value: "out_of_stock" },
                     ]}
+                    className="rounded-xl"
                   />
                 </Form.Item>
               </div>
@@ -406,11 +424,11 @@ export default function ProductFormPage({ mode }) {
                 label="Description"
                 rules={[{ required: true, message: "Description is required" }]}
               >
-                <Input.TextArea rows={6} placeholder="Describe the product..." />
+                <Input.TextArea rows={6} placeholder="Describe the product..." className="rounded-xl" />
               </Form.Item>
             </div>
 
-            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-5">
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 space-y-5 sm:p-6">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-purple-50 ring-1 ring-purple-100 flex items-center justify-center">
                   <Grid size={20} className="text-purple-700" />
@@ -427,7 +445,7 @@ export default function ProductFormPage({ mode }) {
                     Manage variants on a dedicated page.
                   </div>
                   <Link to={`/seller/products/${uuid}/variants`}>
-                    <Button type="primary" size="large" block>
+                    <Button type="primary" size="large" block className="h-11 rounded-xl">
                       Update Variants
                     </Button>
                   </Link>
@@ -454,7 +472,7 @@ export default function ProductFormPage({ mode }) {
                   {(fields, { add, remove, }) => (
                     <div className="space-y-3">
                       {fields.map(({ key, name, ...restField }) => (
-                        <div key={key} className="flex flex-col gap-2 p-4 rounded-lg bg-gray-50 border border-gray-200">
+                        <div key={key} className="flex flex-col gap-3 rounded-xl border border-gray-200 bg-gray-50 p-4">
                           <Form.Item
                             {...restField}
                             name={[name, 'name']}
@@ -462,9 +480,9 @@ export default function ProductFormPage({ mode }) {
                             rules={[{ required: true, message: 'Name required' }]}
                             className="w-full mb-0"
                           >
-                            <Input placeholder="e.g. Size M, Color Red" />
+                            <Input placeholder="e.g. Size M, Color Red" className="rounded-xl" />
                           </Form.Item>
-                          <div className="flex gap-3">
+                          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                             <Form.Item
                               {...restField}
                               name={[name, 'price']}
@@ -479,6 +497,7 @@ export default function ProductFormPage({ mode }) {
                                 style={{ width: '100%' }}
                                 placeholder="0.00"
                                 prefix="PHP"
+                                className="rounded-xl"
                               />
                             </Form.Item>
                             <Form.Item
@@ -494,6 +513,7 @@ export default function ProductFormPage({ mode }) {
                                 style={{ width: '100%' }}
                                 placeholder="0"
                                 onChange={() => form.validateFields(["status"]).catch(() => {})}
+                                className="rounded-xl"
                               />
                             </Form.Item>
                           </div>
@@ -503,7 +523,7 @@ export default function ProductFormPage({ mode }) {
                                 form.setFieldValue(["variants", name], { name: "", price: null, stock: 0 })
                               }}
                               icon={<RotateCcw size={16} />}
-                              className="shrink-0"
+                              className="h-10 rounded-xl"
                             />
                             <Button
                               danger
@@ -516,13 +536,13 @@ export default function ProductFormPage({ mode }) {
                                 }
                               }}
                               icon={<Trash2 size={16} />}
-                              className="shrink-0"
+                              className="h-10 rounded-xl"
                               title={fields.length === 1 ? "Cannot remove the last variant" : ""}
                             />
                           </div>
                         </div>
                       ))}
-                      <Button type="dashed" onClick={() => add()} className="w-full">
+                      <Button type="dashed" onClick={() => add()} className="h-11 w-full rounded-xl">
                         + Add Variant
                       </Button>
                     </div>
@@ -531,7 +551,7 @@ export default function ProductFormPage({ mode }) {
               )}
             </div>
 
-            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-5">
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 space-y-5 sm:p-6">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-blue-50 ring-1 ring-blue-100 flex items-center justify-center">
                   <Sliders size={20} className="text-blue-700" />
@@ -565,8 +585,8 @@ export default function ProductFormPage({ mode }) {
                 {(fields, { add, remove }) => (
                   <div className="space-y-3">
                     {fields.map(({ key, name, ...restField }) => (
-                      <div key={key} className="flex flex-col gap-2 p-4 rounded-lg bg-gray-50 border border-gray-200">
-                        <div className="flex gap-2">
+                      <div key={key} className="flex flex-col gap-3 rounded-xl border border-gray-200 bg-gray-50 p-4">
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                           <Form.Item
                             {...restField}
                             name={[name, 'key']}
@@ -574,7 +594,7 @@ export default function ProductFormPage({ mode }) {
                             rules={[{ required: true, message: 'Specifications name required' }]}
                             className="flex-1 mb-0"
                           >
-                            <Input placeholder="e.g. Color, Size, Material" />
+                            <Input placeholder="e.g. Color, Size, Material" className="rounded-xl" />
                           </Form.Item>
                           <Form.Item
                             {...restField}
@@ -583,7 +603,7 @@ export default function ProductFormPage({ mode }) {
                             rules={[{ required: true, message: 'Spec value required' }]}
                             className="flex-1 mb-0"
                           >
-                            <Input placeholder="e.g. Red, Large, Cotton" />
+                            <Input placeholder="e.g. Red, Large, Cotton" className="rounded-xl" />
                           </Form.Item>
                         </div>
                         <div className="flex justify-end gap-2">
@@ -592,7 +612,7 @@ export default function ProductFormPage({ mode }) {
                               form.setFieldValue(["specs", name], { key: "", value: "" })
                             }}
                             icon={<RotateCcw size={16} />}
-                            className="shrink-0"
+                            className="h-10 rounded-xl"
                           />
                           <Button
                             danger
@@ -603,15 +623,15 @@ export default function ProductFormPage({ mode }) {
                               } else {
                                 remove(name)
                               }
-                            }}
-                            icon={<Trash2 size={16} />}
-                            className="shrink-0"
-                            title={fields.length === 1 ? "Cannot remove the last specification" : ""}
-                          />
+                              }}
+                              icon={<Trash2 size={16} />}
+                              className="h-10 rounded-xl"
+                              title={fields.length === 1 ? "Cannot remove the last specification" : ""}
+                            />
                         </div>
                       </div>
                     ))}
-                    <Button type="dashed" onClick={() => add()} className="w-full">
+                    <Button type="dashed" onClick={() => add()} className="h-11 w-full rounded-xl">
                       + Add Specification
                     </Button>
                   </div>
@@ -619,7 +639,7 @@ export default function ProductFormPage({ mode }) {
               </Form.List>
             </div>
             
-            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-5">
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 space-y-5 sm:p-6">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-orange-50 ring-1 ring-orange-100 flex items-center justify-center">
                   <ImagePlus size={20} className="text-orange-700" />
@@ -633,7 +653,7 @@ export default function ProductFormPage({ mode }) {
               {isEdit && existingImages.length > 0 && (
                 <div>
                   <div className="text-xs font-semibold text-gray-700 mb-3">Current Images</div>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
                     {existingImages.map((image) => (
                       <div key={image.id} className="relative rounded-xl overflow-hidden ring-1 ring-gray-200 bg-gray-50 aspect-square">
                         <img src={getStorageUrl(image.image_path)} alt="Product" className="w-full h-full object-cover" />
@@ -644,7 +664,7 @@ export default function ProductFormPage({ mode }) {
                             type="primary"
                             icon={<Trash2 size={14} />}
                             onClick={() => handleRemoveExistingImage(image.id)}
-                            className="rounded-lg!"
+                            className="h-8 rounded-lg!"
                           />
                         </div>
                       </div>
@@ -696,9 +716,18 @@ export default function ProductFormPage({ mode }) {
                 </div>
               )}
             </div>
+
+            <div className="grid grid-cols-2 gap-3 lg:hidden">
+              <Button block size="large" onClick={() => navigate("/seller/products")} className="h-11 rounded-xl">
+                Cancel
+              </Button>
+              <Button type="primary" htmlType="submit" loading={submitLoading} disabled={submitLoading} icon={<Save size={16} />} block size="large" className="h-11 rounded-xl">
+                {isEdit ? "Update Product" : "Save Product"}
+              </Button>
+            </div>
           </div>
 
-          <div className="space-y-5">
+          <div className="hidden space-y-5 lg:block">
             <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-4">
               <div className="text-xs font-semibold text-gray-700">Product</div>
               <div className="text-sm text-gray-500">
@@ -714,7 +743,7 @@ export default function ProductFormPage({ mode }) {
 
             <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-3">
               <div className="text-xs font-semibold text-gray-700">Actions</div>
-              <Button type="primary" htmlType="submit" loading={submitLoading} icon={<Save size={16} />} block size="large">
+              <Button type="primary" htmlType="submit" loading={submitLoading} disabled={submitLoading} icon={<Save size={16} />} block size="large">
                 {isEdit ? "Update Product" : "Save Product"}
               </Button>
               <Button block size="large" onClick={() => navigate("/seller/products")}>
@@ -722,6 +751,7 @@ export default function ProductFormPage({ mode }) {
               </Button>
             </div>
           </div>
+
         </div>
         )}
       </Form>

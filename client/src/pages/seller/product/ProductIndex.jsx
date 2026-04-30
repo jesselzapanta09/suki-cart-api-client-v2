@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef } from "react"
-import { Table, Button, Popconfirm, Input, Tag, Tooltip, App } from "antd"
+import { Table, Button, Popconfirm, Input, Tag, Tooltip, App, Grid } from "antd"
 import { useNavigate } from "react-router-dom"
 import { Plus, Edit, Trash2, Search, Package, Layers } from "lucide-react"
 import { getCategories as getPublicCategories } from "../../../services/authService"
@@ -9,6 +9,8 @@ import { getStorageUrl } from "../../../utils/storage"
 export default function ProductIndex() {
   const { message } = App.useApp()
   const navigate = useNavigate()
+  const screens = Grid.useBreakpoint()
+  const isMobile = !screens.md
 
   const [products, setProducts] = useState([])
   const [categories, setCategories] = useState([])
@@ -189,18 +191,20 @@ export default function ProductIndex() {
         <div className="flex gap-2">
           <Tooltip title="Manage Variants">
             <Button
-              size="small"
+              size={isMobile ? "middle" : "small"}
               type="default"
               onClick={() => navigate(`/seller/products/${record.uuid}/variants`)}
               icon={<Layers size={14} />}
+              className={isMobile ? "h-9 w-9 rounded-lg" : undefined}
             />
           </Tooltip>
           <Tooltip title="Edit">
             <Button
-              size="small"
+              size={isMobile ? "middle" : "small"}
               type="primary"
               onClick={() => navigate(`/seller/products/${record.uuid}/edit`)}
               icon={<Edit size={14} />}
+              className={isMobile ? "h-9 w-9 rounded-lg" : undefined}
             />
           </Tooltip>
           <Tooltip title="Delete">
@@ -212,7 +216,12 @@ export default function ProductIndex() {
               cancelText="Cancel"
               okButtonProps={{ danger: true }}
             >
-              <Button size="small" danger className="rounded-md" icon={<Trash2 size={14} />} />
+              <Button
+                size={isMobile ? "middle" : "small"}
+                danger
+                className={isMobile ? "h-9 w-9 rounded-lg" : "rounded-md"}
+                icon={<Trash2 size={14} />}
+              />
             </Popconfirm>
           </Tooltip>
         </div>
@@ -221,36 +230,47 @@ export default function ProductIndex() {
   ]
 
   return (
-    <div className="p-6 lg:p-8 max-w-275 mx-auto space-y-5">
-      {/* Header */}
-      <div className="flex items-center justify-between rounded-xl px-6 py-5 bg-white ring-1 ring-gray-200 shadow-sm">
-        <div className="flex items-center gap-4">
-          <div className="w-11 h-11 rounded-lg bg-linear-to-br from-green-600 to-emerald-500 flex items-center justify-center shadow-sm">
+    <div className="mx-auto max-w-7xl space-y-4 px-3 pb-6 pt-3 sm:space-y-5 sm:px-4 sm:pb-8 sm:pt-4 lg:px-8">
+      <div className="rounded-2xl bg-white px-4 py-4 shadow-sm ring-1 ring-gray-200 sm:px-6 sm:py-5">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-3 sm:items-center sm:gap-4">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-linear-to-br from-green-600 to-emerald-500 shadow-sm">
             <Layers size={22} className="text-white" />
           </div>
-          <div>
-            <h1 className="font-sora font-bold text-xl text-gray-900">Product Management</h1>
-            <p className="text-xs text-gray-400 mt-1">Manage your store&apos;s products</p>
+            <div className="min-w-0">
+              <h1 className="font-sora text-lg font-bold text-gray-900 sm:text-xl">Product Management</h1>
+              <p className="mt-1 text-xs leading-5 text-gray-500 sm:text-sm">Manage your store&apos;s products</p>
+            </div>
           </div>
+          <Button
+            onClick={() => navigate("/seller/products/create")}
+            type="primary"
+            icon={<Plus size={16} />}
+            size="large"
+            className="h-11 w-full rounded-xl sm:w-auto"
+          >
+            Add Product
+          </Button>
         </div>
-        <Button onClick={() => navigate("/seller/products/create")} type="primary" icon={<Plus size={14} />} size="large">Add Product</Button>
       </div>
 
-      {/* Table card */}
       <div className="bg-white rounded-2xl border border-gray-200 shadow-sm">
-        <div className="flex flex-wrap justify-between items-center gap-3 px-5 py-4 border-b border-gray-100">
+        <div className="flex flex-col items-start gap-3 border-b border-gray-100 px-4 py-4 sm:px-5">
           <div className="flex items-center gap-2">
             <span className="font-sora font-semibold text-sm text-green-900">All Products</span>
             <span className="text-gray-400 text-xs bg-gray-100 rounded-full px-2 py-0.5">{total}</span>
           </div>
-          <Input
-            placeholder="Search name, description..."
-            prefix={<Search size={14} className="text-gray-400" />}
-            value={search}
-            onChange={(event) => handleSearch(event.target.value)}
-            allowClear
-            className="w-64 rounded-lg"
-          />
+          <div className="w-full sm:w-auto">
+            <Input
+              placeholder="Search name, description..."
+              prefix={<Search size={14} className="text-gray-400" />}
+              value={search}
+              onChange={(event) => handleSearch(event.target.value)}
+              allowClear
+              size="large"
+              className="w-full rounded-xl sm:w-72"
+            />
+          </div>
         </div>
         <div className="overflow-x-auto">
           <Table
@@ -266,6 +286,9 @@ export default function ProductIndex() {
               showTotal: (count) => <span className="text-gray-400 text-sm">{count} products total</span>,
             }}
             onChange={handleTableChange}
+            size={isMobile ? "middle" : "large"}
+            scroll={{ x: 900 }}
+            className={isMobile ? "[&_.ant-table-pagination]:px-4 [&_.ant-table-cell]:align-top" : "[&_.ant-table-cell]:align-top"}
             locale={{
               emptyText: loading ? null : (
                 <div className="py-8">

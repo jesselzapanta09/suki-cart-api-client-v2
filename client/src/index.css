@@ -46,3 +46,36 @@ body {
 
 /* Utility override for text-white */
 .text-white { color: #fff !important; }
+
+@media (max-width: 640px) {
+  .profile-edit-tabs > .ant-tabs-nav .ant-tabs-nav-wrap {
+    overflow: visible !important;
+  }
+
+  .profile-edit-tabs > .ant-tabs-nav .ant-tabs-nav-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    transform: none !important;
+    width: 100%;
+  }
+
+  .profile-edit-tabs > .ant-tabs-nav .ant-tabs-tab {
+    align-items: center;
+    display: flex;
+    flex: 1 1 calc(50% - 0.25rem);
+    justify-content: center;
+    margin: 0 !important;
+    text-align: center;
+    white-space: normal;
+  }
+
+  .profile-edit-tabs > .ant-tabs-nav .ant-tabs-tab-btn {
+    width: 100%;
+  }
+
+  .profile-edit-tabs > .ant-tabs-nav .ant-tabs-ink-bar,
+  .profile-edit-tabs > .ant-tabs-nav .ant-tabs-nav-operations {
+    display: none !important;
+  }
+}

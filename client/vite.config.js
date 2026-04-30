@@ -37,11 +37,11 @@ export default defineConfig(() => ({
     port: 3000,
     proxy: {
       '/api': {
-        target: 'http://192.168.123.3:8000',
+        target: 'http://192.168.123.2:8000',
         changeOrigin: true,
       },
       '/storage': {
-        target: 'http://192.168.123.3:8000',
+        target: 'http://192.168.123.2:8000',
         changeOrigin: true,
       },
     },

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useCallback } from "react"
 import { Form, Input, Button, App, Tabs, Upload, Spin, Select } from "antd"
 import { useNavigate } from "react-router-dom"
 import { useAuth } from "../../context/auth-context"
@@ -42,14 +42,13 @@ export default function EditProfile() {
             .catch(() => {})
     }, [])
 
-    const populateForms = (u) => {
+    const populateForms = useCallback((u) => {
         infoForm.setFieldsValue({
             firstname: u.firstname,
             lastname: u.lastname,
             contact_number: u.contact_number,
         })
 
-        const loc = u.locations?.[0]
         if (u.store) {
             storeForm.setFieldsValue({
                 store_name: u.store.store_name,
@@ -57,7 +56,7 @@ export default function EditProfile() {
                 store_description: u.store.description,
             })
         }
-    }
+    }, [infoForm, storeForm])
 
     const syncUser = (updated) => {
         setProfile(updated)
@@ -84,7 +83,7 @@ export default function EditProfile() {
         if (!loading && profile) {
             populateForms(profile)
         }
-    }, [loading, profile, infoForm, addressForm, storeForm])
+    }, [loading, profile, populateForms])
 
     // --- Avatar handlers ---
     const handleAvatarChange = (file) => {

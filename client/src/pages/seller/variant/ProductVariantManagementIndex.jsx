@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback, useRef } from "react"
-import { Button, Table, Popconfirm, App, Spin, Tooltip, Input } from "antd"
+import { Button, Table, Popconfirm, App, Tooltip, Input, Grid } from "antd"
 import { useParams, useNavigate } from "react-router-dom"
-import { Plus, Trash2, ArrowLeft, Package, Layers, Edit, Search } from "lucide-react"
+import { Plus, Trash2, ArrowLeft, Layers, Edit, Search } from "lucide-react"
 import ProductVariantModal from "./ProductVariantModal"
 import * as productService from "../../../services/productService"
 
@@ -9,6 +9,8 @@ export default function ProductVariantManagementIndex() {
   const { uuid: productUuid } = useParams()
   const navigate = useNavigate()
   const { message } = App.useApp()
+  const screens = Grid.useBreakpoint()
+  const isMobile = !screens.md
 
   const [product, setProduct] = useState(null)
   const [variants, setVariants] = useState([])
@@ -20,6 +22,7 @@ export default function ProductVariantManagementIndex() {
   const [modalOpen, setModalOpen] = useState(false)
   const [modalMode, setModalMode] = useState("add")
   const [editRecord, setEditRecord] = useState(null)
+  const [mobileAddTapCount, setMobileAddTapCount] = useState(0)
 
   const searchTimer = useRef(null)
 
@@ -53,6 +56,12 @@ export default function ProductVariantManagementIndex() {
     fetchProductAndVariants()
   }, [fetchProductAndVariants])
 
+  useEffect(() => {
+    if (!modalOpen) {
+      setMobileAddTapCount(0)
+    }
+  }, [modalOpen])
+
   const filterVariants = (variantsList, searchValue) => {
     if (!searchValue.trim()) {
       setFilteredVariants(variantsList)
@@ -78,6 +87,12 @@ export default function ProductVariantManagementIndex() {
     setModalMode("add")
     setEditRecord(null)
     setModalOpen(true)
+  }
+
+  const handleMobileOpenAdd = () => {
+    if (submitLoading || mobileAddTapCount >= 2) return
+    setMobileAddTapCount((count) => count + 1)
+    openAdd()
   }
 
   const openEdit = async (record) => {
@@ -186,41 +201,57 @@ export default function ProductVariantManagementIndex() {
   ]
 
   return (
-    <div className="p-6 lg:p-8 max-w-275 mx-auto space-y-5">
-      {/* Back Button */}
-      <Button onClick={() => navigate("/seller/products")} icon={<ArrowLeft size={14} />} size="large">Back</Button>
-
-      {/* Header */}
-      <div className="flex items-center justify-between rounded-xl px-6 py-5 bg-white ring-1 ring-gray-200 shadow-sm">
-        <div className="flex items-center gap-4">
-          <div className="w-11 h-11 rounded-lg bg-linear-to-br from-green-600 to-emerald-500 flex items-center justify-center shadow-sm">
+    <div className="mx-auto max-w-7xl space-y-4 px-3 pb-24 pt-3 sm:space-y-5 sm:px-4 sm:pb-8 sm:pt-4 lg:px-8">
+      <div className="rounded-2xl bg-white px-4 py-4 shadow-sm ring-1 ring-gray-200 sm:px-6 sm:py-5">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-3 sm:items-center sm:gap-4">
+            {!isMobile && (
+              <Button
+                onClick={() => navigate("/seller/products")}
+                icon={<ArrowLeft size={16} />}
+                type="text"
+                className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl sm:mt-0"
+              />
+            )}
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-linear-to-br from-green-600 to-emerald-500 shadow-sm">
             <Layers size={22} className="text-white" />
           </div>
-          <div>
-            <h1 className="font-sora font-bold text-xl text-gray-900">{product?.name || "Product variants"}</h1>
-            <p className="text-xs text-gray-400 mt-1">Variant Management</p>
+            <div className="min-w-0">
+              <h1 className="font-sora text-lg font-bold text-gray-900 sm:text-xl">{product?.name || "Product variants"}</h1>
+              <p className="mt-1 text-xs leading-5 text-gray-500 sm:text-sm">Variant management for this product</p>
+            </div>
           </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button onClick={openAdd} type="primary" icon={<Plus size={14} />} size="large">Add Variant</Button>
+          <div className="w-full sm:w-auto">
+            <Button
+              onClick={openAdd}
+              type="primary"
+              icon={<Plus size={16} />}
+              size="large"
+              className="h-11 w-full rounded-xl sm:w-auto"
+            >
+              Add Variant
+            </Button>
+          </div>
         </div>
       </div>
 
-      {/* Table card */}
       <div className="bg-white rounded-2xl border border-gray-200 shadow-sm">
-        <div className="flex flex-wrap justify-between items-center gap-3 px-5 py-4 border-b border-gray-100">
+        <div className="flex flex-col items-start gap-3 border-b border-gray-100 px-4 py-4 sm:px-5">
           <div className="flex items-center gap-2">
             <span className="font-sora font-semibold text-sm text-green-900">All Variants</span>
             <span className="text-gray-400 text-xs bg-gray-100 rounded-full px-2 py-0.5">{filteredVariants.length}</span>
           </div>
-          <Input
-            placeholder="Search variant name..."
-            prefix={<Search size={14} className="text-gray-400" />}
-            value={search}
-            onChange={(event) => handleSearch(event.target.value)}
-            allowClear
-            className="w-64 rounded-lg"
-          />
+          <div className="w-full sm:w-auto">
+            <Input
+              placeholder="Search variant name..."
+              prefix={<Search size={14} className="text-gray-400" />}
+              value={search}
+              onChange={(event) => handleSearch(event.target.value)}
+              allowClear
+              size="large"
+              className="w-full rounded-xl sm:w-72"
+            />
+          </div>
         </div>
         <div className="overflow-x-auto">
           <Table
@@ -228,6 +259,9 @@ export default function ProductVariantManagementIndex() {
             dataSource={filteredVariants}
             loading={loading || submitLoading}
             rowKey="id"
+            size={isMobile ? "middle" : "large"}
+            scroll={{ x: 620 }}
+            className={isMobile ? "[&_.ant-table-pagination]:px-4 [&_.ant-table-cell]:align-top" : "[&_.ant-table-cell]:align-top"}
             pagination={{
               pageSize: 10,
               showSizeChanger: false,
@@ -251,6 +285,7 @@ export default function ProductVariantManagementIndex() {
 
       {/* Modal */}
       <ProductVariantModal
+        key={`${modalMode}-${editRecord?.id ?? "new"}-${modalOpen ? "open" : "closed"}`}
         open={modalOpen}
         onClose={() => setModalOpen(false)}
         onSubmit={handleSubmit}
@@ -258,7 +293,34 @@ export default function ProductVariantManagementIndex() {
         loading={submitLoading}
         mode={modalMode}
       />
-
+      {isMobile && (
+        <>
+          <div
+            className="fixed bottom-0 left-0 right-0 z-40 border-t border-gray-200 bg-white/95 px-3 py-3 shadow-[0_-6px_24px_rgba(15,23,42,0.08)] backdrop-blur md:hidden"
+            style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 0.75rem)" }}
+          >
+            <div className="flex flex-nowrap gap-3">
+              <Button
+                size="large"
+                onClick={() => navigate("/seller/products")}
+                className="h-12 min-w-0 flex-1 rounded-2xl"
+              >
+                Back
+              </Button>
+              <Button
+                size="large"
+                type="primary"
+                onClick={handleMobileOpenAdd}
+                icon={<Plus size={16} />}
+                disabled={submitLoading || mobileAddTapCount >= 2}
+                className="h-12 min-w-0 flex-1 rounded-2xl"
+              >
+                Add Variant
+              </Button>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   )
 }

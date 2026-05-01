@@ -39,11 +39,11 @@ export default function ProductReviewsSection({
     };
 
     return (
-        <div className="bg-white rounded-2xl p-8 shadow-sm mb-8">
+        <div className="mb-8 rounded-2xl bg-white p-4 shadow-sm sm:p-8">
             <div className="mb-8">
                 <h2 className="text-2xl font-bold text-gray-800 mb-6">Customer Reviews</h2>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8 pb-8 border-b border-gray-200">
+                <div className="mb-8 grid grid-cols-1 gap-6 border-b border-gray-200 pb-8 md:grid-cols-3 md:gap-8">
                     <div className="flex flex-col items-center justify-center">
                         <div className="text-5xl font-bold text-gray-800 mb-2">{averageRating.toFixed(1)}</div>
                         <div className="flex gap-1 mb-2">
@@ -73,24 +73,26 @@ export default function ProductReviewsSection({
                     </div>
                 </div>
 
-                <div className="flex flex-wrap gap-2">
-                    <Button
-                        type={selectedRating === "all" ? "primary" : "default"}
-                        disabled={loading}
-                        onClick={() => onFilterChange?.("all")}
-                    >
-                        All
-                    </Button>
-                    {[5, 4, 3, 2, 1].map((rating) => (
+                <div className="-mx-1 overflow-x-auto px-1 pb-2 sm:mx-0 sm:px-0 sm:pb-0">
+                    <div className="flex w-max gap-2">
                         <Button
-                            key={rating}
-                            type={selectedRating === rating ? "primary" : "default"}
+                            type={selectedRating === "all" ? "primary" : "default"}
                             disabled={loading}
-                            onClick={() => onFilterChange?.(rating)}
+                            onClick={() => onFilterChange?.("all")}
                         >
-                            {rating} Star
+                            All
                         </Button>
-                    ))}
+                        {[5, 4, 3, 2, 1].map((rating) => (
+                            <Button
+                                key={rating}
+                                type={selectedRating === rating ? "primary" : "default"}
+                                disabled={loading}
+                                onClick={() => onFilterChange?.(rating)}
+                            >
+                                {rating} Star
+                            </Button>
+                        ))}
+                    </div>
                 </div>
             </div>
 

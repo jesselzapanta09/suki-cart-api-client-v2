@@ -282,19 +282,9 @@ export default function ProductDetailPage() {
 
     return (
         <div className="bg-gray-50 min-h-screen">
-            <div className="max-w-7xl mx-auto px-4 py-4 flex items-center gap-4">
-                <Button
-                    onClick={() => navigate(-1)}
-                    icon={<ArrowLeft size={20} />}
-                    size="large"
-                >
-                    Back
-                </Button>
-            </div>
-
-            <div className="max-w-7xl mx-auto px-4">
+            <div className="max-w-7xl mx-auto mt-3 px-4 ">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 bg-white rounded-2xl p-8 shadow-sm mb-8">
-                    <div className="flex flex-col gap-4">
+                    <div className="mt-3 flex flex-col gap-4 sm:mt-4">
                         <div className="flex items-center justify-center bg-linear-to-br from-green-50 to-emerald-100 rounded-xl w-full h-auto aspect-square relative group">
                             {currentImage ? (
                                 <>
@@ -464,9 +454,9 @@ export default function ProductDetailPage() {
                 </div>
 
                 {product.store && (
-                    <div className="bg-white rounded-2xl p-6 shadow-sm mb-8 border border-gray-100">
-                        <div className="flex items-center gap-6">
-                            <div className="h-24 w-24 rounded-full overflow-hidden shrink-0 bg-gray-100 border-2 border-green-600">
+                    <div className="mb-8 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm sm:p-6">
+                        <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:gap-6">
+                            <div className="h-20 w-20 shrink-0 overflow-hidden rounded-full border-2 border-green-600 bg-gray-100 sm:h-24 sm:w-24">
                                 {product.store.banner ? (
                                     <img
                                         src={`/${product.store.banner}`}
@@ -480,23 +470,24 @@ export default function ProductDetailPage() {
                                 )}
                             </div>
 
-                            <div className="flex-1">
+                            <div className="min-w-0 w-full flex-1">
                                 <div className="mb-3">
                                     <span className="inline-block px-2 py-1 bg-green-100 text-green-700 text-xs font-bold rounded mb-2">Official Store</span>
-                                    <h3 className="text-lg font-bold text-gray-800">{product.store.store_name || product.store.name}</h3>
+                                    <h3 className="break-words text-base font-bold text-gray-800 sm:text-lg">{product.store.store_name || product.store.name}</h3>
                                 </div>
 
-                                <div className="flex items-center gap-3">
+                                <div className="flex flex-col items-start gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
                                     <div className="flex items-center gap-1">
                                         <div className="flex items-center gap-0.5">
                                             {renderStars(storeRating)}
                                         </div>
                                         <span className="text-sm font-semibold text-gray-700">{storeRating.toFixed(1)}</span>
                                     </div>
-                                    <span className="text-gray-400">•</span>
-                                    <span className="text-sm text-gray-600">{storeReviewCount} store review{storeReviewCount !== 1 ? "s" : ""}</span>
-                                    <span className="text-gray-400">•</span>
-                                    <span className="text-sm text-gray-600">Trusted Seller</span>
+                                    <div className="flex flex-wrap items-center gap-2 text-sm text-gray-600">
+                                        <span>{storeReviewCount} store review{storeReviewCount !== 1 ? "s" : ""}</span>
+                                        <span className="hidden text-gray-400 sm:inline">&middot;</span>
+                                        <span>Trusted Seller</span>
+                                    </div>
                                 </div>
                             </div>
 
@@ -504,7 +495,7 @@ export default function ProductDetailPage() {
                                 type="default"
                                 size="large"
                                 onClick={() => navigate(`/stores/${product.store.id}`)}
-                                className="whitespace-nowrap"
+                                className="w-full whitespace-nowrap sm:w-auto"
                                 icon={<Store size={20} />}
                             >
                                 View Store

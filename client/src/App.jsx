@@ -37,7 +37,7 @@ import UserIndex from "./pages/admin/user/UserIndex.jsx";
 import CategoryIndex from "./pages/admin/category/CategoryIndex.jsx";
 import ActiveProductIndex from "./pages/admin/products/ActiveProductIndex.jsx";
 import ActiveProductShow from "./pages/admin/products/ActiveProductShow.jsx";
-import AdminLogsIndex from "./pages/admin/logs/AdminLogsIndex.jsx";
+import AdminLogsIndex from "./pages/admin/sys-logs/AdminLogsIndex.jsx";
 import SellerVerifyIndex from "./pages/admin/seller-verify/SellerVerifyIndex.jsx";
 import SellerVerifyShow from "./pages/admin/seller-verify/SellerVerifyShow.jsx";
 import SellerVerifyLogs from "./pages/admin/seller-verify/SellerVerifyLogs.jsx";

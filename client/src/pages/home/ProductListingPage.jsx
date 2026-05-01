@@ -3,6 +3,7 @@ import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { App, Button, Pagination, Spin } from "antd";
 import { Package, Search, ShoppingBasket, Store } from "lucide-react";
 import { useAuth } from "../../context/auth-context";
+import { useCart } from "../../context/CartContext";
 import ProductCard from "../../components/home/ProductCard";
 import ProductFiltersCard from "../../components/home/ProductFiltersCard";
 import { getHomeCategories } from "../../services/categoryService";
@@ -15,6 +16,7 @@ export default function ProductListingPage() {
     const navigate = useNavigate();
     const { message } = App.useApp();
     const { isCustomer } = useAuth();
+    const { addItem } = useCart();
     const customerActionMessage = "To perform this action, log in as a customer.";
 
     const isCategoryMode = Boolean(categoryId);
@@ -240,15 +242,37 @@ export default function ProductListingPage() {
             </>
         );
 
-    const handleAddToCart = (product) => {
+    const handleAddToCart = async (product) => {
         if (!isCustomer) {
             message.warning(customerActionMessage);
             return;
         }
 
-        navigate(`/products/${product.uuid}`, {
-            state: { searchKeyword: isCategoryMode || isStoreMode ? pageTitle : query },
-        });
+        const variant = product.variants?.find((item) => Number(item.stock || 0) > 0);
+
+        if (!variant) {
+            message.warning("This product has no available variants.");
+            navigate(`/products/${product.uuid}`, {
+                state: { searchKeyword: isCategoryMode || isStoreMode ? pageTitle : query },
+            });
+            return;
+        }
+
+        try {
+            await addItem({
+                ...product,
+                rating: product.rating || 0,
+                sold: product.sold || 0,
+                category: product.category?.name || product.category || "Unknown",
+                price: variant.price,
+                stock: variant.stock,
+                variant_id: variant.id,
+                variant,
+            }, 1);
+            message.success(`${product.name} added to cart!`);
+        } catch (error) {
+            message.error(error?.data?.error || error?.message || "Failed to add item to cart.");
+        }
     };
 
     const handlePaginationChange = (page) => {

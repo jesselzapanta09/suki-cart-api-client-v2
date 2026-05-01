@@ -306,7 +306,7 @@ export default function ProductListingPage() {
                 </div>
             </div>
 
-            <div className="mx-auto max-w-7xl px-4 py-8">
+            <div className="mx-auto max-w-7xl px-4 pt-4 pb-8 md:py-8">
                 <div className="flex gap-6">
                     <ProductFiltersCard
                         sortBy={sortBy}

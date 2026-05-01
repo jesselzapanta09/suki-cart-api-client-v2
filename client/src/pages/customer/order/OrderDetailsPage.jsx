@@ -300,7 +300,7 @@ export default function OrderDetailsPage() {
                                         {(group.items || []).map((item) => (
                                             <div key={item.id} className="p-3 sm:p-4 md:p-5">
                                                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-[70px_1fr] md:grid-cols-[80px_1fr]">
-                                                    <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-gray-100 sm:h-[4.375rem] sm:w-[4.375rem] md:h-20 md:w-20">
+                                                    <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-gray-100 sm:h-17.5 sm:w-17.5 md:h-20 md:w-20">
                                                         {item.product?.images?.length ? (
                                                             <img
                                                                 src={item.product.images[0].full_url || item.product.images[0].image_path}

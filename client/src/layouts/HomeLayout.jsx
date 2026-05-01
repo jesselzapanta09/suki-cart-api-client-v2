@@ -6,6 +6,8 @@ import { Badge, App, Spin } from "antd";
 import { ShoppingBag, ShoppingCart, Package, LogIn, Rocket, LayoutDashboard } from "lucide-react";
 import { searchPublicProducts } from "../services/productService";
 import SearchBar from "../components/SearchBar";
+import { sukiCartLogoHome } from "../utils/logos";
+import { getStorageUrl } from "../utils/storage";
 
 export default function HomeLayout() {
     const { isAuthenticated, isCustomer } = useAuth();
@@ -72,7 +74,10 @@ export default function HomeLayout() {
 
     const btnGradient = "inline-flex min-h-12 items-center justify-center rounded-2xl px-5 py-3 text-sm font-semibold text-white shadow transition-all bg-linear-to-br from-green-700 to-green-500 hover:opacity-90 hover:-translate-y-0.5";
     const btnSecondary = "inline-flex min-h-12 items-center justify-center rounded-2xl border border-gray-200 px-4 py-3 text-sm font-semibold text-green-700 transition hover:bg-green-50";
-    const getProductImageUrl = (product) => product?.images?.[0]?.full_url || product?.images?.[0]?.image_path || null;
+    const getProductImageUrl = (product) => {
+        const imagePath = product?.images?.[0]?.full_url || product?.images?.[0]?.image_path;
+        return imagePath ? getStorageUrl(imagePath) : null;
+    };
 
     const mobileBottomNav = (
         <nav
@@ -121,7 +126,7 @@ export default function HomeLayout() {
                     {/* Column 1: Logo */}
                     <Link to="/" className="no-underline flex items-center gap-1 shrink-0">
                         <div className="flex h-10 w-10 items-center justify-center rounded-2xl">
-                            <img src="/suki-cart-logo-home.png" alt="SukiCart Logo" className="h-full w-full rounded-xl object-contain" />
+                            <img src={sukiCartLogoHome} alt="SukiCart Logo" className="h-full w-full rounded-xl object-contain" />
                         </div>
                         <div className="hidden sm:block">
                             <div className="font-display font-bold text-green-900 text-sm sm:text-base">SukiCart</div>
@@ -234,7 +239,7 @@ export default function HomeLayout() {
                     <div className="flex items-center gap-3">
                         <Link to="/" className="flex min-w-0 flex-1 items-center gap-3 no-underline">
                             <div className="flex h-10 w-10 items-center justify-center rounded-2xl">
-                                <img src="/suki-cart-logo-home.png" alt="SukiCart Logo" className="h-full w-full rounded-xl object-contain" />
+                                <img src={sukiCartLogoHome} alt="SukiCart Logo" className="h-full w-full rounded-xl object-contain" />
                             </div>
                             <div className="min-w-0">
                                 <div className="font-display text-base font-bold leading-tight text-green-900">SukiCart</div>
@@ -331,7 +336,7 @@ export default function HomeLayout() {
                         <div className="mx-auto max-w-sm md:mx-0">
                             <div className="mb-3 flex items-center justify-center gap-3 md:justify-start">
                                 <div className="flex h-10 w-10 items-center justify-center rounded-2xl">
-                                    <img src="/suki-cart-logo-home.png" alt="SukiCart Logo" className="h-full w-full rounded-xl object-contain" />
+                                    <img src={sukiCartLogoHome} alt="SukiCart Logo" className="h-full w-full rounded-xl object-contain" />
                                 </div>
                                 <div>
                                     <span className="font-display text-lg font-bold text-white">SukiCart</span>

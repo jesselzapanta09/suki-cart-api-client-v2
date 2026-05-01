@@ -5,6 +5,7 @@ import { useNavigate, useParams } from "react-router-dom"
 import * as orderService from "../../../services/orderService"
 import LocationAddress from "../../../components/LocationAddress"
 import ReviewProductModal from "./ReviewProductModal"
+import { getStorageUrl } from "../../../utils/storage"
 
 const statusConfig = {
     pending: { color: "orange", icon: Clock, label: "Order placed" },
@@ -303,7 +304,7 @@ export default function OrderDetailsPage() {
                                                     <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-gray-100 sm:h-17.5 sm:w-17.5 md:h-20 md:w-20">
                                                         {item.product?.images?.length ? (
                                                             <img
-                                                                src={item.product.images[0].full_url || item.product.images[0].image_path}
+                                                                src={getStorageUrl(item.product.images[0].full_url || item.product.images[0].image_path)}
                                                                 alt={item.product.name}
                                                                 className="h-full w-full object-cover"
                                                             />

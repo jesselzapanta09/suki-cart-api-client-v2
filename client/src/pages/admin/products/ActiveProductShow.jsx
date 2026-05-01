@@ -15,9 +15,7 @@ function getTotalStock(variants = []) {
 
 function resolveMediaUrl(path) {
     if (!path) return "";
-    if (/^https?:\/\//i.test(path)) return path;
-    if (String(path).startsWith("storage/")) return getStorageUrl(path);
-    return `/${String(path).replace(/^\/+/, "")}`;
+    return getStorageUrl(path);
 }
 
 export default function ActiveProductShow() {

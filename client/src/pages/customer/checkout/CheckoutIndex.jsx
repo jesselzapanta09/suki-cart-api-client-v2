@@ -6,6 +6,7 @@ import { useCart } from "../../../context/CartContext";
 import { useAuth } from "../../../context/auth-context";
 import * as orderService from "../../../services/orderService";
 import addressService from "../../../services/addressService";
+import { getStorageUrl } from "../../../utils/storage";
 
 export default function CheckoutIndex() {
     const navigate = useNavigate();
@@ -298,7 +299,7 @@ export default function CheckoutIndex() {
                                                 <div className="w-full md:w-40 h-40 rounded-xl bg-gray-100 overflow-hidden shrink-0">
                                                     {item.images && item.images.length > 0 ? (
                                                         <img
-                                                            src={item.images[0].full_url || item.images[0].image_path}
+                                                            src={getStorageUrl(item.images[0].full_url || item.images[0].image_path)}
                                                             alt={item.name}
                                                             className="w-full h-full object-cover"
                                                         />

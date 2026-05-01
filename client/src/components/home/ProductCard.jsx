@@ -2,6 +2,7 @@ import { App } from "antd";
 import { ShoppingCart, Package } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/auth-context";
+import { getStorageUrl } from "../../utils/storage";
 
 export default function ProductCard({ product, onAdd }) {
     const navigate = useNavigate();
@@ -27,7 +28,8 @@ export default function ProductCard({ product, onAdd }) {
         ? variants.reduce((sum, variant) => sum + Number(variant.stock || 0), 0)
         : Number(product.stock || 0);
 
-    const imageUrl = primaryImage?.full_url || primaryImage?.image_path || null;
+    const imagePath = primaryImage?.full_url || primaryImage?.image_path || null;
+    const imageUrl = imagePath ? getStorageUrl(imagePath) : null;
 
     const rawPrice = primaryVariant?.price;
     const priceValue =

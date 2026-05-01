@@ -5,6 +5,7 @@ import { UploadOutlined, ArrowRightOutlined } from "@ant-design/icons";
 import { ShoppingBag, Truck, TrendingUp, ArrowLeft, Loader2, Mail, CheckCircle } from "lucide-react";
 import AddressSelect from "../../components/AddressSelect";
 import { registerSeller, resendVerification, getCategories } from "../../services/authService";
+import { sukiCartLogoHome } from "../../utils/logos";
 
 const STEPS = [
     { title: "" },
@@ -23,7 +24,7 @@ const BrandPanel = () => (
         <div className="relative z-10 flex flex-col h-full justify-center">
             {/* Logo & Branding */}
             <Link to="/" className="flex items-center gap-3 mb-3 no-underline">
-                <img src="/suki-cart-logo-home.png" alt="SukiCart Logo" className="w-12 h-12 rounded-2xl shadow-lg object-contain bg-white p-1" />
+                <img src={sukiCartLogoHome} alt="SukiCart Logo" className="w-12 h-12 rounded-2xl shadow-lg object-contain bg-white p-1" />
                 <div>
                     <span className="text-2xl font-bold text-white block leading-tight">SukiCart</span>
                     <span className="text-emerald-300 text-sm font-medium">Your Neighborhood Store</span>
@@ -170,7 +171,7 @@ export default function RegisterSeller() {
                 <div className="w-full max-w-md">
                     {/* Mobile logo */}
                     <Link to="/" className="lg:hidden flex items-center gap-2 mb-8 justify-center no-underline">
-                        <img src="/suki-cart-logo-home.png" alt="SukiCart Logo" className="w-9 h-9 rounded-xl object-contain" />
+                        <img src={sukiCartLogoHome} alt="SukiCart Logo" className="w-9 h-9 rounded-xl object-contain" />
                         <span className="text-xl font-bold text-green-900">SukiCart</span>
                     </Link>
 

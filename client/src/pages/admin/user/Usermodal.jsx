@@ -4,6 +4,7 @@ import { User2, UserPlus, ArrowLeft } from "lucide-react"
 import { ArrowRightOutlined, UploadOutlined } from "@ant-design/icons"
 import Avatar from "../../../components/Avatar"
 import AddressSelect from "../../../components/AddressSelect"
+import { getStorageUrl } from "../../../utils/storage"
 
 const STORE_CATEGORIES = [
     { label: "Convenience Store / Sari-Sari", value: "convenience" },
@@ -55,7 +56,7 @@ export default function UserModal({ open, onClose, onSubmit, initialValues, load
         setRemoveAvatar(false)
         setAddressInitial(null)
         if (initialValues) {
-            setAvatarPreview(initialValues.profile_picture ? `/${initialValues.profile_picture}` : null)
+            setAvatarPreview(initialValues.profile_picture ? getStorageUrl(initialValues.profile_picture) : null)
             setPreviewUser(initialValues)
             const loc = initialValues.locations?.[0]
             if (loc) {
@@ -93,7 +94,7 @@ export default function UserModal({ open, onClose, onSubmit, initialValues, load
                     city: loc?.city_municipality ?? undefined,
                     barangay: loc?.barangay ?? undefined,
                     store_banner: initialValues.store?.banner
-                        ? [{ uid: "-1", name: "banner", status: "done", url: `/${initialValues.store.banner}` }]
+                        ? [{ uid: "-1", name: "banner", status: "done", url: getStorageUrl(initialValues.store.banner) }]
                         : [],
                 })
             } else {

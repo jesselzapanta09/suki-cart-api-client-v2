@@ -28,10 +28,15 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig(() => ({
+  base: './',
   plugins: [
     react(),
     tailwindcss(),
   ],
+  build: {
+    outDir: '../cordova/www',
+    emptyOutDir: true,
+  },
   server: {
     host: '0.0.0.0',
     port: 3000,
@@ -46,5 +51,4 @@ export default defineConfig(() => ({
       },
     },
   },
-  // base: '/suki-cart/',
 }))

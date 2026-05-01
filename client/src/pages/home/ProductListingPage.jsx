@@ -9,6 +9,7 @@ import ProductFiltersCard from "../../components/home/ProductFiltersCard";
 import { getHomeCategories } from "../../services/categoryService";
 import { searchPublicProducts } from "../../services/productService";
 import { getPublicStore } from "../../services/storeService";
+import { getStorageUrl } from "../../utils/storage";
 
 export default function ProductListingPage() {
     const { categoryId, storeId } = useParams();
@@ -310,7 +311,7 @@ export default function ProductListingPage() {
                         <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-lg bg-linear-to-br from-green-600 to-emerald-500 shadow-sm">
                             {isStoreMode && store?.banner ? (
                                 <img
-                                    src={`/${store.banner}`}
+                                    src={getStorageUrl(store.banner)}
                                     alt={store.store_name || "Store"}
                                     className="h-full w-full object-cover"
                                 />

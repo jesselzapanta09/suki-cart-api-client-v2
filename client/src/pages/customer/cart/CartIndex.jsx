@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { ShoppingCart, Trash2, Package, ShoppingBag, Store } from "lucide-react";
 import { useCart } from "../../../context/CartContext";
 import * as cartService from "../../../services/cartService";
+import { getStorageUrl } from "../../../utils/storage";
 
 const PAGE_SIZE = 10;
 
@@ -368,7 +369,7 @@ export default function CartIndex() {
                                                             </div>
                                                             <div className="w-20 h-20 rounded-xl bg-gray-100 flex items-center justify-center shrink-0 overflow-hidden">
                                                                 {item.images && item.images.length > 0 ? (
-                                                                    <img src={item.images[0].full_url || item.images[0].image_path} alt={item.name} className="w-full h-full object-cover" />
+                                                                    <img src={getStorageUrl(item.images[0].full_url || item.images[0].image_path)} alt={item.name} className="w-full h-full object-cover" />
                                                                 ) : (
                                                                     <Package size={28} className="text-gray-400" />
                                                                 )}

@@ -5,6 +5,7 @@ import { ArrowLeft, Store } from "lucide-react"
 import * as storeVerificationService from "../../../services/storeVerificationService"
 import Avatar from "../../../components/Avatar"
 import LocationAddress from "../../../components/LocationAddress"
+import { getStorageUrl } from "../../../utils/storage"
 
 export default function ManageSellerShow() {
     const { id } = useParams()
@@ -62,7 +63,7 @@ export default function ManageSellerShow() {
                     {/* Store banner */}
                     <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
                         {store.banner ? (
-                            <img src={`/${store.banner}`} alt="Store banner" className="h-40 w-full object-cover sm:h-48" />
+                            <img src={getStorageUrl(store.banner)} alt="Store banner" className="h-40 w-full object-cover sm:h-48" />
                         ) : (
                             <div className="flex h-40 w-full items-center justify-center bg-linear-to-br from-orange-400 to-amber-300 sm:h-48">
                                 <Store size={48} className="text-white/60" />

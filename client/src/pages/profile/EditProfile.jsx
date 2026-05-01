@@ -6,6 +6,8 @@ import Avatar from "../../components/Avatar"
 import AddressSelect from "../../components/AddressSelect"
 import { Upload as UploadIcon } from "lucide-react"
 import * as profileService from "../../services/profileService"
+import { getHomeCategories } from "../../services/categoryService"
+import { getStorageUrl } from "../../utils/storage"
 
 export default function EditProfile() {
     const { message } = App.useApp()
@@ -36,8 +38,7 @@ export default function EditProfile() {
     const [categories, setCategories] = useState([])
 
     useEffect(() => {
-        fetch('/api/categories')
-            .then(r => r.json())
+        getHomeCategories()
             .then(data => setCategories(data.map(c => ({ label: c.name, value: c.name }))))
             .catch(() => {})
     }, [])
@@ -201,13 +202,13 @@ export default function EditProfile() {
     const currentPicture = avatarPreview && !removeAvatar
         ? avatarPreview
         : (!removeAvatar && profile?.profile_picture)
-            ? `/${profile.profile_picture}`
+            ? getStorageUrl(profile.profile_picture)
             : null
 
     const currentBanner = bannerPreview && !removeBanner
         ? bannerPreview
         : (!removeBanner && profile?.store?.banner)
-            ? `/${profile.store.banner}`
+            ? getStorageUrl(profile.store.banner)
             : null
 
     const tabs = [

@@ -23,6 +23,16 @@ use App\Http\Controllers\Customer\CustomerProductReviewController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+// Debug endpoint to test connectivity
+Route::get('/health', function () {
+    return response()->json([
+        'status' => 'ok',
+        'message' => 'API is reachable',
+        'timestamp' => now(),
+        'headers' => request()->headers->all()
+    ]);
+});
+
 // Public routes
 Route::post('/register/customer', [AuthController::class, 'registerCustomer']);
 Route::post('/register/seller',   [AuthController::class, 'registerSeller']);

@@ -3,6 +3,7 @@ import { App, Empty, Input, Pagination, Spin, Tag, Button } from "antd"
 import { useNavigate } from "react-router-dom"
 import { CheckCircle, ChevronRight, Clock, Package, Search, ShoppingBag, Truck, User, X } from "lucide-react"
 import { getSellerOrders } from "../../../services/sellerService"
+import { getStorageUrl } from "../../../utils/storage"
 
 const statusConfig = {
     pending: { color: "orange", icon: Clock, label: "Order placed" },
@@ -187,7 +188,7 @@ export default function OrderIndex() {
                                             <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-green-100 bg-green-100">
                                                 {order.customer?.profile_picture ? (
                                                     <img
-                                                        src={`/${order.customer.profile_picture}`}
+                                                        src={getStorageUrl(order.customer.profile_picture)}
                                                         alt={customerName(order.customer)}
                                                         className="w-full h-full object-cover"
                                                     />
@@ -216,7 +217,7 @@ export default function OrderIndex() {
                                             <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-gray-100 sm:h-18 sm:w-18">
                                                 {item?.product?.images?.length ? (
                                                     <img
-                                                        src={item.product.images[0].full_url || item.product.images[0].image_path}
+                                                        src={getStorageUrl(item.product.images[0].full_url || item.product.images[0].image_path)}
                                                         alt={item.product.name}
                                                         className="w-full h-full object-cover"
                                                     />

@@ -8,6 +8,7 @@ import {
     updateSellerOrderStatus,
 } from "../../../services/sellerService"
 import LocationAddress from "../../../components/LocationAddress"
+import { getStorageUrl } from "../../../utils/storage"
 
 const statusConfig = {
     pending: { color: "orange", icon: Clock, label: "Order placed" },
@@ -306,7 +307,7 @@ export default function OrderDetailsPage() {
                                             <div className="h-24 w-24 rounded-xl bg-gray-100 flex items-center justify-center overflow-hidden shrink-0 sm:h-17.5 sm:w-17.5 md:h-20 md:w-20">
                                                 {item.product?.images?.length ? (
                                                     <img
-                                                        src={item.product.images[0].full_url || item.product.images[0].image_path}
+                                                        src={getStorageUrl(item.product.images[0].full_url || item.product.images[0].image_path)}
                                                         alt={item.product.name}
                                                         className="w-full h-full object-cover"
                                                     />

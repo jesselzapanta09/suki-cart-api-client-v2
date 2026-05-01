@@ -7,6 +7,7 @@ import { useCart } from "../../context/CartContext";
 import { useAuth } from "../../context/auth-context";
 import SimilarProducts from "../../components/home/SimilarProducts";
 import ProductReviewsSection from "../../components/home/ProductReviewsSection";
+import { getStorageUrl } from "../../utils/storage";
 
 export default function ProductDetailPage() {
     const { uuid } = useParams();
@@ -263,7 +264,8 @@ export default function ProductDetailPage() {
     }
 
     const images = product.images && product.images.length > 0 ? product.images : [];
-    const currentImage = images.length > 0 ? images[currentImageIndex]?.full_url : null;
+    const currentImagePath = images.length > 0 ? (images[currentImageIndex]?.full_url || images[currentImageIndex]?.image_path) : null;
+    const currentImage = currentImagePath ? getStorageUrl(currentImagePath) : null;
     const reviewSummary = product.review_summary || { average_rating: 0, review_count: 0, distribution: [] };
     const reviewFilters = product.review_filters || { selected_rating: "all" };
     const reviewPagination = product.review_pagination || { current_page: 1, per_page: 5, total: 0, last_page: 1 };
@@ -331,7 +333,7 @@ export default function ProductDetailPage() {
                                         }`}
                                     >
                                         <img
-                                            src={img.full_url}
+                                            src={getStorageUrl(img.full_url || img.image_path)}
                                             alt={`${product.name} ${idx + 1}`}
                                             className="w-full h-full object-cover"
                                         />
@@ -459,7 +461,7 @@ export default function ProductDetailPage() {
                             <div className="h-20 w-20 shrink-0 overflow-hidden rounded-full border-2 border-green-600 bg-gray-100 sm:h-24 sm:w-24">
                                 {product.store.banner ? (
                                     <img
-                                        src={`/${product.store.banner}`}
+                                        src={getStorageUrl(product.store.banner)}
                                         alt={product.store.store_name || product.store.name}
                                         className="w-full h-full object-cover"
                                     />

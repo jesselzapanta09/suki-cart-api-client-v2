@@ -5,6 +5,7 @@ import { ArrowLeft, Store, CheckCircle, XCircle, RotateCcw, Pencil, History } fr
 import * as storeVerificationService from "../../../services/storeVerificationService"
 import Avatar from "../../../components/Avatar"
 import LocationAddress from "../../../components/LocationAddress"
+import { getStorageUrl } from "../../../utils/storage"
 
 export default function SellerVerifyShow() {
     const { id } = useParams()
@@ -191,7 +192,7 @@ export default function SellerVerifyShow() {
                     {/* Store banner */}
                         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
                             {store.banner ? (
-                                <img src={`/${store.banner}`} alt="Store banner" className="w-full h-40 sm:h-48 object-cover" />
+                                <img src={getStorageUrl(store.banner)} alt="Store banner" className="w-full h-40 sm:h-48 object-cover" />
                             ) : (
                                 <div className="w-full h-40 sm:h-48 bg-linear-to-br from-green-600 to-emerald-400 flex items-center justify-center">
                                     <Store size={44} className="text-white/60" />

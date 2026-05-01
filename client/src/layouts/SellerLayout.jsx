@@ -6,6 +6,7 @@ import NotificationBell from "../components/NotificationBell";
 import { useAuth } from "../context/auth-context";
 import Avatar from "../components/Avatar";
 import { getStoreStatus } from "../services/sellerService";
+import { sukiCartLogo, sukiCartLogoHome } from "../utils/logos";
 
 const BREAKPOINT = 1024;
 const STORE_VERIFICATION_CACHE_KEY = "seller_store_verification";
@@ -56,7 +57,7 @@ function SidebarContent({ user, location, handleLogout, storeVerified }) {
             <div className="px-5 py-6 border-b border-white/8">
                 <Link to="/" className="no-underline flex items-center gap-2.5">
                     <div className="w-8.5 h-8.5 rounded-[9px] bg-white flex items-center justify-center">
-                        <img src="/suki-cart-logo.png" alt="SukiCart Logo" className="w-7 h-7 rounded-xl object-contain" />
+                        <img src={sukiCartLogo} alt="SukiCart Logo" className="w-7 h-7 rounded-xl object-contain" />
                     </div>
                     <div>
                         <div className="font-display font-bold text-white text-[0.95rem]">SukiCart</div>
@@ -274,7 +275,7 @@ export default function SellerLayout() {
                 <nav className="fixed top-0 left-0 right-0 z-50 h-15.5 bg-white border-b border-gray-100 flex items-center justify-between px-4 shadow-sm">
                     <Link to="/" className="flex shrink-0 items-center gap-2 no-underline">
                         <div className="flex h-10 w-10 items-center justify-center rounded-2xl">
-                            <img src="/suki-cart-logo-home.png" alt="SukiCart Logo" className="h-full w-full rounded-xl object-contain" />
+                            <img src={sukiCartLogoHome} alt="SukiCart Logo" className="h-full w-full rounded-xl object-contain" />
                         </div>
                         <div className="min-w-0">
                             <div className="text-base font-bold leading-tight text-green-900">SukiCart</div>

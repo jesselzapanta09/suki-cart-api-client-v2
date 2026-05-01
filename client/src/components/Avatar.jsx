@@ -1,11 +1,13 @@
 import React from "react"
+import { getStorageUrl } from "../utils/storage"
 
 /**
  * Avatar — shows username initial (image support ready for API reintegration)
  * Props: user, size (px), fontSize
  */
 export default function Avatar({ user, size = 40, fontSize = "1rem", style = {} }) {
-    const src = user?.profile_picture ? `/${user.profile_picture}` : null
+    const imagePath = user?.profile_picture || user?.profilePicture || user?.avatar || user?.avatar_url || null
+    const src = imagePath ? getStorageUrl(imagePath) : null
 
     // Tailwind classes for avatar
     const baseClass = `rounded-full border-1 border-green-500 flex-shrink-0 object-cover`;

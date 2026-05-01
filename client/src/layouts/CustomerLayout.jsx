@@ -6,6 +6,7 @@ import { useAuth } from "../context/auth-context";
 import { useCart } from "../context/CartContext";
 import Avatar from "../components/Avatar";
 import NotificationBell from "../components/NotificationBell";
+import { sukiCartLogoHome } from "../utils/logos";
 
 const NAV = [
     { label: "Dashboard", to: "/customer/dashboard", icon: LayoutDashboard },
@@ -115,7 +116,7 @@ export default function CustomerLayout() {
                     {/* Column 1: Logo */}
                     <Link to="/" className="no-underline flex items-center gap-1 shrink-0">
                         <div className="flex h-10 w-10 items-center justify-center rounded-2xl">
-                            <img src="/suki-cart-logo-home.png" alt="SukiCart Logo" className="h-full w-full rounded-xl object-contain" />
+                            <img src={sukiCartLogoHome} alt="SukiCart Logo" className="h-full w-full rounded-xl object-contain" />
                         </div>
                         <div className="hidden sm:block">
                             <div className="font-display font-bold text-green-900 text-sm sm:text-base">SukiCart</div>
@@ -165,7 +166,7 @@ export default function CustomerLayout() {
                 <div className="flex items-center justify-between px-4 py-3 md:hidden">
                     <Link to="/" className="flex shrink-0 items-center gap-2 no-underline">
                         <div className="flex h-10 w-10 items-center justify-center rounded-2xl">
-                            <img src="/suki-cart-logo-home.png" alt="SukiCart Logo" className="h-full w-full rounded-xl object-contain" />
+                            <img src={sukiCartLogoHome} alt="SukiCart Logo" className="h-full w-full rounded-xl object-contain" />
                         </div>
                         <div className="min-w-0">
                             <div className="text-base font-bold leading-tight text-green-900">SukiCart</div>

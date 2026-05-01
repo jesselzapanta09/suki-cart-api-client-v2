@@ -137,7 +137,7 @@
         <div class="body">
             <p class="greeting">Hi {{ $user->firstname }},</p>
             <p class="intro">
-                Welcome to SukiCart � your neighborhood's online palengke!
+                Welcome to SukiCart � your trusted online shop!
                 Click the button below to verify your email and unlock your account.
                 Fresh deals from local sellers are waiting for you.
             </p>
@@ -162,7 +162,7 @@
 
         <div class="footer">
             <p>
-                &copy; {{ date('Y') }} SukiCart � Your Neighborhood Online Store<br>
+                &copy; {{ date('Y') }} SukiCart � Your trusted online shop<br>
                 If you didn't create this account, you can safely ignore this email.
             </p>
         </div>

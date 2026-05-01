@@ -76,11 +76,11 @@ export default function Login() {
         }
     };
 
-    const demoAccounts = [
-        { label: "Admin", email: "admin@sukicart.ph", color: "bg-purple-100 text-purple-700" },
-        { label: "Customer", email: "juan@example.com", color: "bg-green-100 text-green-700" },
-        { label: "Seller", email: "pedro@example.com", color: "bg-blue-100 text-blue-700" },
-    ];
+    // const demoAccounts = [
+    //     { label: "Admin", email: "admin@sukicart.com", color: "bg-purple-100 text-purple-700" },
+    //     { label: "Customer", email: "juan@example.com", color: "bg-green-100 text-green-700" },
+    //     { label: "Seller", email: "miguel@example.com", color: "bg-blue-100 text-blue-700" },
+    // ];
 
     const features = [
         {
@@ -200,7 +200,7 @@ export default function Login() {
                     </div>
 
                     {/* Demo accounts */}
-                    <div className="mt-5 bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+                    {/* <div className="mt-5 bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
                         <p className="text-xs text-gray-500 font-semibold mb-3">Demo accounts <span className="text-gray-400 font-normal">(tap to fill · password: password)</span></p>
                         <div className="space-y-2">
                             {demoAccounts.map(acc => (
@@ -211,7 +211,7 @@ export default function Login() {
                                 </button>
                             ))}
                         </div>
-                    </div>
+                    </div> */}
 
                     <div className="mt-6 pt-5 border-t border-gray-200">
                         <p className="text-center text-gray-500 text-sm mb-3">Don't have an account?</p>

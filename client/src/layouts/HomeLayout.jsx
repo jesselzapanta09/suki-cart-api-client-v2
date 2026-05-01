@@ -243,7 +243,7 @@ export default function HomeLayout() {
                             </div>
                             <div className="min-w-0">
                                 <div className="font-display text-base font-bold leading-tight text-green-900">SukiCart</div>
-                                <div className="truncate text-xs font-medium text-green-700/75">Your trusted online palengke</div>
+                                <div className="truncate text-xs font-medium text-green-700/75">Your trusted online shop</div>
                             </div>
                         </Link>
                     </div>
@@ -344,11 +344,10 @@ export default function HomeLayout() {
                                 </div>
                             </div>
                             <p className="text-sm leading-6 text-green-200 sm:text-[15px]">
-                                Your trusted online palengke for household essentials. Practical items for everyday living, delivered to your door.
+                                Your trusted online shop for household essentials. Practical items for everyday living, delivered to your door.
                             </p>
                         </div>
                         <div className="mx-auto md:mx-0">
-                            <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-green-300">Shop</p>
                             <div className="flex flex-col items-center gap-3 md:items-start">
                                 {[["Home", "/"], ["Sign In", "/login"], ["Register as Customer", "/register/customer"], ["Register as Seller", "/register/seller"]].map(([label, to]) => (
                                     <Link key={label} to={to} className="text-sm text-green-200 transition hover:text-white">{label}</Link>

@@ -18,9 +18,6 @@ return new class extends Migration
             $table->decimal('price', 10, 2);
             $table->integer('stock'); 
             $table->timestamps();
-
-            // Ensure each combination of product and attributes is unique
-            $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
         });
     }
 

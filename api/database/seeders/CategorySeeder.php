@@ -10,25 +10,24 @@ class CategorySeeder extends Seeder
     public function run(): void
     {
         $categories = [
-            ['name' => 'Convenience Store / Sari-Sari', 'description' => 'Neighborhood convenience stores and sari-sari shops', 'status' => 1],
-            ['name' => 'Grocery',                        'description' => 'Grocery stores and supermarkets', 'status' => 1],
-            ['name' => 'Bakery / Panaderya',             'description' => 'Bakeries and bread shops', 'status' => 1],
-            ['name' => 'Butcher / Palengke',             'description' => 'Meat shops and wet market vendors', 'status' => 1],
-            ['name' => 'Pharmacy / Botika',              'description' => 'Pharmacies and drugstores', 'status' => 1],
-            ['name' => 'Restaurant / Carinderia',        'description' => 'Restaurants, carinderias, and food stalls', 'status' => 1],
-            ['name' => 'Clothing & Apparel',             'description' => 'Clothing, accessories, and fashion stores', 'status' => 1],
-            ['name' => 'Electronics & Gadgets',          'description' => 'Electronics, gadgets, and accessories shops', 'status' => 1],
-            ['name' => 'Hardware',                       'description' => 'Hardware and construction supply stores', 'status' => 1],
-            ['name' => 'Beauty & Wellness',              'description' => 'Beauty products, cosmetics, and wellness shops', 'status' => 1],
-            ['name' => 'Fruits & Vegetables',            'description' => 'Fresh fruits and vegetable vendors', 'status' => 1],
-            ['name' => 'Pet Supplies',                   'description' => 'Pet food, accessories, and care products', 'status' => 1],
-            ['name' => 'School & Office Supplies',       'description' => 'Stationery, school, and office supply stores', 'status' => 1],
-            ['name' => 'Auto Parts & Accessories',       'description' => 'Automotive parts, accessories, and repair shops', 'status' => 1],
-            ['name' => 'Other',                          'description' => 'Other types of stores', 'status' => 1],
+            ['name' => 'Groceries & Essentials',     'description' => 'Daily needs and household basics', 'status' => 1],
+            ['name' => 'Food & Beverages',           'description' => 'Snacks, drinks, and ready-to-eat food items', 'status' => 1],
+            ['name' => 'Health & Personal Care',     'description' => 'Medicines, vitamins, and personal hygiene products', 'status' => 1],
+            ['name' => 'Beauty & Skincare',          'description' => 'Cosmetics, skincare, and grooming essentials', 'status' => 1],
+            ['name' => 'Home & Living',              'description' => 'Home essentials, cleaning supplies, and utilities', 'status' => 1],
+            ['name' => 'Clothing & Accessories',     'description' => 'Apparel, footwear, and fashion accessories', 'status' => 1],
+            ['name' => 'Electronics & Gadgets',      'description' => 'Mobile devices, accessories, and electronics', 'status' => 1],
+            ['name' => 'School & Office Supplies',   'description' => 'Stationery, books, and office essentials', 'status' => 1],
+            ['name' => 'Baby & Kids',                'description' => 'Baby care, toys, and children essentials', 'status' => 1],
+            ['name' => 'Pet Care',                   'description' => 'Pet food, grooming, and care supplies', 'status' => 1],
+            ['name' => 'Automotive',                 'description' => 'Auto parts, tools, and accessories', 'status' => 1],
+            ['name' => 'Hardware & Tools',           'description' => 'Tools, construction, and repair supplies', 'status' => 1],
+            ['name' => 'Sports & Outdoor',           'description' => 'Fitness, sports gear, and outdoor items', 'status' => 1],
+            ['name' => 'Others',                     'description' => 'Miscellaneous items and uncategorized products', 'status' => 1],
         ];
 
         foreach ($categories as $category) {
-            Category::firstOrCreate(
+            Category::updateOrCreate(
                 ['name' => $category['name']],
                 $category,
             );

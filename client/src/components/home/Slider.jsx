@@ -5,25 +5,39 @@ const AUTO_PLAY_DELAY = 5000;
 
 const HERO_SLIDES = [
     {
-        tag: "EVERYDAY ESSENTIALS",
-        title: "Daily Needs",
-        accent: "Made Simple",
-        subtitle: "Shop practical home and office essentials in one easy, budget-friendly stop.",
+        tag: "TRUSTED EVERYDAY ESSENTIALS",
+        title: "SukiCart Picks",
+        accent: "Made Easy",
+        subtitle: "Your trusted online shop app for daily essentials, simple checkout, and smooth delivery.",
         bg: "from-green-950 via-green-900 to-green-700",
     },
     {
-        tag: "LOCAL & PRACTICAL",
-        title: "Everyday Picks",
-        accent: "Close By",
-        subtitle: "Find household, school, and office must-haves without the usual shopping hassle.",
+        tag: "SMART AND SIMPLE SHOPPING",
+        title: "Daily Finds",
+        accent: "Shop Better",
+        subtitle: "Browse home, school, and office needs in one place without the usual shopping hassle.",
         bg: "from-emerald-950 via-emerald-900 to-teal-700",
     },
     {
-        tag: "SMART SAVINGS",
-        title: "Better Value",
-        accent: "Every Day",
-        subtitle: "Choose dependable daily essentials at fair prices that make restocking easier.",
+        tag: "FAST AND EASY ORDERS",
+        title: "Quick Checkout",
+        accent: "No Delays",
+        subtitle: "Order your essentials in minutes with a clean, fast, and reliable shopping experience.",
         bg: "from-green-900 via-green-800 to-lime-700",
+    },
+    {
+        tag: "RELIABLE DOORSTEP DELIVERY",
+        title: "Fast Delivery",
+        accent: "Right Away",
+        subtitle: "Get your items delivered straight to your door quickly, safely, and without delays.",
+        bg: "from-lime-900 via-green-800 to-emerald-600",
+    },
+    {
+        tag: "BETTER VALUE EVERY DAY",
+        title: "Save More",
+        accent: "Every Time",
+        subtitle: "Enjoy fair prices on quality essentials and make everyday shopping more convenient.",
+        bg: "from-teal-950 via-green-900 to-lime-600",
     },
 ];
 

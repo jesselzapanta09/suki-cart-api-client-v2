@@ -11,6 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('carts')) {
+            Schema::table('carts', function (Blueprint $table) {
+                $table->foreign('product_variant_id')->references('id')->on('product_variants')->cascadeOnDelete();
+                $table->unique(['user_id', 'product_id', 'product_variant_id']);
+            });
+
+            return;
+        }
+
         Schema::create('carts', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();

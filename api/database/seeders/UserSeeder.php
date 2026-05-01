@@ -19,15 +19,15 @@ class UserSeeder extends Seeder
         $reviewedAt = Carbon::now();
         // ── Admins (2) ──────────────────────────────────────
         foreach ([
-            ['firstname' => 'Admin',   'lastname' => 'SukiCart',  'contact_number' => '09170000001', 'email' => 'admin@sukicart.ph'],
-            ['firstname' => 'Rosa',    'lastname' => 'Reyes',     'contact_number' => '09170000002', 'email' => 'rosa.admin@sukicart.ph'],
+            ['firstname' => 'Admin',   'lastname' => 'SukiCart',  'contact_number' => '09170000001', 'email' => 'admin@sukicart.com'],
+            ['firstname' => 'Jessel',    'lastname' => 'Zapanta',     'contact_number' => '09170000002', 'email' => 'jessel.zapanta@nmsc.edu.ph'],
         ] as $admin) {
             $this->upsertUser(array_merge($admin, [
                 'role' => 'admin',
             ]));
         }
 
-        $reviewer = User::where('email', 'admin@sukicart.ph')->first();
+        $reviewer = User::where('email', 'admin@sukicart.com')->first();
 
         // ── Customers (10) ──────────────────────────────────
         $customers = [
@@ -61,16 +61,22 @@ class UserSeeder extends Seeder
             ]);
         }
 
-        // ── Sellers (8) ─────────────────────────────────────
+        // ── Sellers (14) ────────────────────────────────────
         $sellers = [
-            ['firstname' => 'Pedro',   'lastname' => 'Santos',     'contact_number' => '09170000013', 'email' => 'pedro@example.com',    'store_name' => 'Pedro\'s Palengke',       'category' => 'Butcher / Palengke',             'description' => 'Fresh produce and groceries from the neighborhood.',    'region' => 'NCR',          'province' => 'Metro Manila',   'city' => 'Manila',        'barangay' => 'Barangay Ermita'],
-            ['firstname' => 'Lorna',   'lastname' => 'Cruz',       'contact_number' => '09170000014', 'email' => 'lorna@example.com',    'store_name' => 'Lorna\'s Sari-Sari',     'category' => 'Convenience Store / Sari-Sari',  'description' => 'Your neighborhood sari-sari store with everyday needs.', 'region' => 'NCR',          'province' => 'Metro Manila',   'city' => 'Quezon City',   'barangay' => 'Barangay Tandang Sora'],
-            ['firstname' => 'Ricardo', 'lastname' => 'Dimaculangan','contact_number' => '09170000015', 'email' => 'ricardo@example.com',  'store_name' => 'Rick\'s Hardware',        'category' => 'Hardware',                       'description' => 'Construction supplies, tools, and building materials.',  'region' => 'Region IV-A',  'province' => 'Cavite',         'city' => 'Imus',          'barangay' => 'Barangay Poblacion'],
-            ['firstname' => 'Gemma',   'lastname' => 'Navarro',    'contact_number' => '09170000016', 'email' => 'gemma@example.com',    'store_name' => 'Gemma\'s Bakeshop',      'category' => 'Bakery / Panaderya',             'description' => 'Freshly baked pandesal, cakes, and pastries daily.',     'region' => 'NCR',          'province' => 'Metro Manila',   'city' => 'Makati',        'barangay' => 'Barangay San Antonio'],
-            ['firstname' => 'Dennis',  'lastname' => 'Reyes',      'contact_number' => '09170000017', 'email' => 'dennis@example.com',   'store_name' => 'TechZone PH',             'category' => 'Electronics & Gadgets',          'description' => 'Gadgets, accessories, and phone repair services.',       'region' => 'NCR',          'province' => 'Metro Manila',   'city' => 'Pasig',         'barangay' => 'Barangay Rosario'],
-            ['firstname' => 'Arlene',  'lastname' => 'Manalo',     'contact_number' => '09170000018', 'email' => 'arlene@example.com',   'store_name' => 'Arlene\'s Beauty Hub',   'category' => 'Beauty & Wellness',              'description' => 'Skincare, cosmetics, and wellness products.',            'region' => 'Region III',   'province' => 'Bulacan',        'city' => 'Malolos',       'barangay' => 'Barangay Mojon'],
-            ['firstname' => 'Edwin',   'lastname' => 'Tolentino',  'contact_number' => '09170000019', 'email' => 'edwin@example.com',    'store_name' => 'Kuya Ed\'s Carinderia',  'category' => 'Restaurant / Carinderia',        'description' => 'Home-cooked Filipino meals at affordable prices.',       'region' => 'NCR',          'province' => 'Metro Manila',   'city' => 'Taguig',        'barangay' => 'Barangay Western Bicutan'],
-            ['firstname' => 'Cherry',  'lastname' => 'Pascual',    'contact_number' => '09170000020', 'email' => 'cherry@example.com',   'store_name' => 'FreshPick Fruits',        'category' => 'Fruits & Vegetables',            'description' => 'Farm-fresh fruits and vegetables delivered daily.',      'region' => 'Region IV-A',  'province' => 'Laguna',         'city' => 'Santa Rosa',    'barangay' => 'Barangay Balibago'],
+            ['firstname' => 'Miguel',   'lastname' => 'Santos',     'contact_number' => '09170000013', 'email' => 'miguel@example.com',    'store_name' => 'Smart Mart',               'category' => 'Groceries & Essentials',     'description' => 'One-stop shop for daily groceries and household essentials.', 'region' => 'NCR',          'province' => 'Metro Manila',   'city' => 'Manila',        'barangay' => 'Barangay Ermita'],
+            ['firstname' => 'Rosa',     'lastname' => 'Chua',       'contact_number' => '09170000014', 'email' => 'rosa.chua@example.com', 'store_name' => 'Food Corner',              'category' => 'Food & Beverages',           'description' => 'Quality snacks, beverages, and ready-to-eat food items.',    'region' => 'NCR',          'province' => 'Metro Manila',   'city' => 'Quezon City',   'barangay' => 'Barangay Tandang Sora'],
+            ['firstname' => 'Dr. Rafael', 'lastname' => 'Medina',   'contact_number' => '09170000015', 'email' => 'rafael.med@example.com', 'store_name' => 'Wellness Hub',             'category' => 'Health & Personal Care',    'description' => 'Premium medicines, vitamins, and personal care products.',  'region' => 'Region IV-A',  'province' => 'Cavite',         'city' => 'Imus',          'barangay' => 'Barangay Poblacion'],
+            ['firstname' => 'Grace',    'lastname' => 'De La Cruz', 'contact_number' => '09170000016', 'email' => 'grace.dlc@example.com', 'store_name' => 'Glam Beauty',              'category' => 'Beauty & Skincare',          'description' => 'Premium cosmetics and professional skincare solutions.',     'region' => 'NCR',          'province' => 'Metro Manila',   'city' => 'Makati',        'barangay' => 'Barangay San Antonio'],
+            ['firstname' => 'Mark',     'lastname' => 'Castillo',   'contact_number' => '09170000017', 'email' => 'mark.cast@example.com', 'store_name' => 'Home & Heart',             'category' => 'Home & Living',              'description' => 'Everything you need for a comfortable and clean home.',     'region' => 'NCR',          'province' => 'Metro Manila',   'city' => 'Pasig',         'barangay' => 'Barangay Rosario'],
+            ['firstname' => 'Maria',    'lastname' => 'Reyes',      'contact_number' => '09170000018', 'email' => 'maria.reyes@example.com', 'store_name' => 'Fashion Hub',              'category' => 'Clothing & Accessories',     'description' => 'Trendy fashion apparel and stylish accessories for all.',    'region' => 'Region III',   'province' => 'Bulacan',        'city' => 'Malolos',       'barangay' => 'Barangay Mojon'],
+            ['firstname' => 'Carlos',   'lastname' => 'Morales',    'contact_number' => '09170000019', 'email' => 'carlos.mor@example.com', 'store_name' => 'Tech World',               'category' => 'Electronics & Gadgets',      'description' => 'Latest gadgets, electronics, and tech accessories.',         'region' => 'NCR',          'province' => 'Metro Manila',   'city' => 'Taguig',        'barangay' => 'Barangay Western Bicutan'],
+            ['firstname' => 'Anna',     'lastname' => 'Tutor',      'contact_number' => '09170000020', 'email' => 'anna.tutor@example.com', 'store_name' => 'Scholar\'s Place',         'category' => 'School & Office Supplies',   'description' => 'Complete selection of stationery and academic materials.',   'region' => 'Region IV-A',  'province' => 'Laguna',         'city' => 'Santa Rosa',    'barangay' => 'Barangay Balibago'],
+            ['firstname' => 'Stephanie', 'lastname' => 'Aquino',    'contact_number' => '09170000021', 'email' => 'stephanie.aq@example.com', 'store_name' => 'Little Stars',             'category' => 'Baby & Kids',                'description' => 'Quality baby care products and safe toys for children.',      'region' => 'NCR',          'province' => 'Metro Manila',   'city' => 'Manila',        'barangay' => 'Barangay Sampaloc'],
+            ['firstname' => 'Vincent',  'lastname' => 'Torres',     'contact_number' => '09170000022', 'email' => 'vincent.tor@example.com', 'store_name' => 'Pet Paradise',             'category' => 'Pet Care',                   'description' => 'Comprehensive pet care supplies and premium pet food.',       'region' => 'NCR',          'province' => 'Metro Manila',   'city' => 'Makati',        'barangay' => 'Barangay Poblacion'],
+            ['firstname' => 'Ramon',    'lastname' => 'Garcia',     'contact_number' => '09170000023', 'email' => 'ramon.garcia@example.com', 'store_name' => 'Auto Supplies',            'category' => 'Automotive',                 'description' => 'Professional auto parts and accessories for vehicle care.',   'region' => 'Region IV-A',  'province' => 'Rizal',          'city' => 'Antipolo',      'barangay' => 'Barangay Dela Paz'],
+            ['firstname' => 'Leo',      'lastname' => 'Bautista',   'contact_number' => '09170000024', 'email' => 'leo.baut@example.com',  'store_name' => 'Build Pro',                'category' => 'Hardware & Tools',            'description' => 'Complete range of tools and construction materials.',        'region' => 'NCR',          'province' => 'Metro Manila',   'city' => 'Pasig',         'barangay' => 'Barangay Kapitolyo'],
+            ['firstname' => 'James',    'lastname' => 'Santos',     'contact_number' => '09170000025', 'email' => 'james.santo@example.com', 'store_name' => 'Sport Zone',               'category' => 'Sports & Outdoor',            'description' => 'Premium sports equipment and outdoor adventure gear.',       'region' => 'Region III',   'province' => 'Pampanga',       'city' => 'San Fernando',  'barangay' => 'Barangay Dolores'],
+            ['firstname' => 'Elena',    'lastname' => 'Ramos',      'contact_number' => '09170000026', 'email' => 'elena.ramos@example.com', 'store_name' => 'General Store',            'category' => 'Others',                     'description' => 'Miscellaneous items and specialty products for everyone.',   'region' => 'Region IV-A',  'province' => 'Laguna',         'city' => 'San Pedro',     'barangay' => 'Barangay Landayan'],
         ];
 
         foreach ($sellers as $s) {
@@ -83,6 +89,11 @@ class UserSeeder extends Seeder
             ]);
 
             $category = Category::where('name', $s['category'])->first();
+
+            if (!$category) {
+                $this->command?->warn("Skipping seller store for missing category: {$s['category']}");
+                continue;
+            }
 
             $store = $this->upsertStore($user->id, [
                 'store_name'  => $s['store_name'],

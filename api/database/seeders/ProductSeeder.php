@@ -11,31 +11,133 @@ use Illuminate\Support\Str;
 class ProductSeeder extends Seeder
 {
     /**
-     * Convert weight string to decimal kg value
-     * Supports formats like '1kg', '1.2kg', '500g', '330g'
+     * Convert weight string to decimal kg value.
+     * Supports formats like '1kg', '1.2kg', '500g', '330g'.
      */
-    private function parseWeight($weightString): ?float
+    private function parseWeight(string $weightString): float
     {
-        if (!$weightString) {
-            return null;
-        }
-
         $weightString = trim(strtolower($weightString));
-        
-        // Extract numeric value and unit
+
         if (preg_match('/^([\d.]+)\s*(kg|g|gram|kilogram)?$/', $weightString, $matches)) {
             $value = (float) $matches[1];
             $unit = $matches[2] ?? 'kg';
 
-            // Convert to kg
             if (in_array($unit, ['g', 'gram'])) {
                 $value = $value / 1000;
             }
 
-            return round($value, 2);
+            return round($value, 4);
         }
 
-        return null;
+        return 1.0000;
+    }
+
+    /**
+     * @return array<string, array<int, array{name: string, description: string, weight: string, dimension: string, specs: array<string, mixed>}>>
+     */
+    private function catalog(): array
+    {
+        return [
+            'Smart Mart' => [
+                ['name' => 'Premium Jasmine Rice 5kg', 'description' => 'Soft and fragrant jasmine rice for daily meals.', 'weight' => '5kg', 'dimension' => '35x25x8cm', 'specs' => ['category' => 'rice', 'pack' => '5kg']],
+                ['name' => 'Cane Sugar 1kg', 'description' => 'Fine cane sugar for cooking and beverages.', 'weight' => '1kg', 'dimension' => '20x12x5cm', 'specs' => ['category' => 'baking', 'pack' => '1kg']],
+                ['name' => 'Laundry Detergent Powder 1kg', 'description' => 'Fresh-scent detergent powder for everyday laundry.', 'weight' => '1kg', 'dimension' => '24x18x6cm', 'specs' => ['category' => 'cleaning', 'scent' => 'fresh']],
+                ['name' => 'Dishwashing Liquid 500ml', 'description' => 'Grease-cutting dishwashing liquid for kitchen use.', 'weight' => '550g', 'dimension' => '8x6x20cm', 'specs' => ['category' => 'cleaning', 'volume' => '500ml']],
+                ['name' => 'Toilet Tissue 12 Rolls', 'description' => 'Soft two-ply bathroom tissue for household use.', 'weight' => '900g', 'dimension' => '35x25x18cm', 'specs' => ['category' => 'paper goods', 'rolls' => 12]],
+            ],
+            'Food Corner' => [
+                ['name' => 'Classic Potato Chips', 'description' => 'Crispy salted potato chips for snacking.', 'weight' => '160g', 'dimension' => '24x18x6cm', 'specs' => ['flavor' => 'classic salted', 'type' => 'snack']],
+                ['name' => 'Chocolate Wafer Pack', 'description' => 'Layered chocolate wafers in a shareable pack.', 'weight' => '220g', 'dimension' => '22x14x5cm', 'specs' => ['flavor' => 'chocolate', 'type' => 'wafer']],
+                ['name' => 'Iced Tea Bottles 6 Pack', 'description' => 'Refreshing ready-to-drink iced tea bottles.', 'weight' => '2kg', 'dimension' => '24x16x18cm', 'specs' => ['flavor' => 'lemon', 'count' => 6]],
+                ['name' => 'Instant Noodle Bowl', 'description' => 'Convenient noodle bowl with savory seasoning.', 'weight' => '90g', 'dimension' => '12x12x9cm', 'specs' => ['type' => 'instant noodles', 'serving' => 'single']],
+                ['name' => 'Ground Coffee 250g', 'description' => 'Aromatic medium-roast ground coffee.', 'weight' => '250g', 'dimension' => '18x10x6cm', 'specs' => ['roast' => 'medium', 'pack' => '250g']],
+            ],
+            'Wellness Hub' => [
+                ['name' => 'Vitamin C Tablets', 'description' => 'Daily vitamin C supplement tablets.', 'weight' => '120g', 'dimension' => '8x8x10cm', 'specs' => ['count' => 100, 'strength' => '500mg']],
+                ['name' => 'Alcohol Sanitizer 500ml', 'description' => 'Ethyl alcohol sanitizer for hand and surface use.', 'weight' => '520g', 'dimension' => '8x6x20cm', 'specs' => ['volume' => '500ml', 'type' => 'sanitizer']],
+                ['name' => 'Digital Thermometer', 'description' => 'Fast-read digital thermometer for home health checks.', 'weight' => '60g', 'dimension' => '16x5x3cm', 'specs' => ['type' => 'digital', 'use' => 'oral/underarm']],
+                ['name' => 'Adult Face Masks 50 Pack', 'description' => 'Disposable face masks with comfortable ear loops.', 'weight' => '250g', 'dimension' => '20x12x10cm', 'specs' => ['count' => 50, 'layers' => 3]],
+                ['name' => 'Gentle Body Wash 400ml', 'description' => 'Mild body wash for daily personal care.', 'weight' => '430g', 'dimension' => '9x6x22cm', 'specs' => ['volume' => '400ml', 'skin_type' => 'all']],
+            ],
+            'Glam Beauty' => [
+                ['name' => 'Hydrating Facial Wash', 'description' => 'Gentle hydrating facial wash for all skin types.', 'weight' => '130g', 'dimension' => '8x6x12cm', 'specs' => ['volume' => '120ml', 'type' => 'cleanser']],
+                ['name' => 'Volumizing Hair Shampoo', 'description' => 'Volumizing shampoo for fuller hair.', 'weight' => '270g', 'dimension' => '8x6x15cm', 'specs' => ['volume' => '250ml', 'type' => 'shampoo']],
+                ['name' => 'Matte Lip Tint', 'description' => 'Lightweight matte lip tint with rich color.', 'weight' => '30g', 'dimension' => '10x2x2cm', 'specs' => ['finish' => 'matte', 'type' => 'lip tint']],
+                ['name' => 'Daily Sunscreen SPF50', 'description' => 'Lightweight sunscreen for daily face protection.', 'weight' => '80g', 'dimension' => '12x5x3cm', 'specs' => ['spf' => 50, 'type' => 'sunscreen']],
+                ['name' => 'Micellar Cleansing Water', 'description' => 'No-rinse makeup remover and facial cleanser.', 'weight' => '320g', 'dimension' => '7x5x18cm', 'specs' => ['volume' => '300ml', 'type' => 'cleanser']],
+            ],
+            'Home & Heart' => [
+                ['name' => 'Microfiber Towel Set', 'description' => 'Absorbent microfiber towels for home cleaning.', 'weight' => '350g', 'dimension' => '28x18x8cm', 'specs' => ['count' => 6, 'material' => 'microfiber']],
+                ['name' => 'LED Desk Lamp', 'description' => 'Adjustable LED desk lamp for study or work.', 'weight' => '700g', 'dimension' => '30x14x14cm', 'specs' => ['type' => 'LED', 'power' => 'USB']],
+                ['name' => 'Storage Basket', 'description' => 'Durable woven basket for organizing household items.', 'weight' => '600g', 'dimension' => '32x24x18cm', 'specs' => ['material' => 'plastic weave', 'use' => 'storage']],
+                ['name' => 'Nonstick Frying Pan', 'description' => 'Everyday nonstick frying pan for easy cooking.', 'weight' => '900g', 'dimension' => '42x26x8cm', 'specs' => ['diameter' => '26cm', 'coating' => 'nonstick']],
+                ['name' => 'Scented Candle Jar', 'description' => 'Long-burning candle for cozy home fragrance.', 'weight' => '400g', 'dimension' => '9x9x11cm', 'specs' => ['scent' => 'vanilla', 'burn_time' => '30 hours']],
+            ],
+            'Fashion Hub' => [
+                ['name' => 'Cotton Crew Neck Shirt', 'description' => 'Soft cotton shirt for casual everyday wear.', 'weight' => '220g', 'dimension' => '28x22x3cm', 'specs' => ['material' => 'cotton', 'fit' => 'regular']],
+                ['name' => 'Slim Denim Jeans', 'description' => 'Classic slim-fit denim jeans.', 'weight' => '650g', 'dimension' => '35x28x5cm', 'specs' => ['material' => 'denim', 'fit' => 'slim']],
+                ['name' => 'Canvas Tote Bag', 'description' => 'Reusable canvas tote bag with roomy storage.', 'weight' => '250g', 'dimension' => '38x34x2cm', 'specs' => ['material' => 'canvas', 'type' => 'tote']],
+                ['name' => 'Everyday Sneakers', 'description' => 'Comfortable sneakers for daily walking.', 'weight' => '800g', 'dimension' => '32x22x12cm', 'specs' => ['type' => 'sneakers', 'upper' => 'mesh']],
+                ['name' => 'Leather Belt', 'description' => 'Adjustable leather belt with metal buckle.', 'weight' => '180g', 'dimension' => '18x12x4cm', 'specs' => ['material' => 'leather', 'buckle' => 'metal']],
+            ],
+            'Tech World' => [
+                ['name' => 'Fast Charging USB-C Cable', 'description' => 'Durable USB-C cable for fast charging.', 'weight' => '50g', 'dimension' => '15x8x2cm', 'specs' => ['length' => '1m', 'type' => 'USB-C']],
+                ['name' => '20W Wall Charger', 'description' => 'Fast wall charger for smartphones.', 'weight' => '100g', 'dimension' => '8x8x3cm', 'specs' => ['wattage' => '20W', 'port' => 'USB-C']],
+                ['name' => 'Wireless Earbuds', 'description' => 'Wireless earbuds with compact charging case.', 'weight' => '50g', 'dimension' => '10x8x6cm', 'specs' => ['connectivity' => 'Bluetooth', 'battery' => '8 hours']],
+                ['name' => 'Phone Tripod Stand', 'description' => 'Adjustable tripod stand for phones and content capture.', 'weight' => '450g', 'dimension' => '32x8x8cm', 'specs' => ['height' => 'adjustable', 'mount' => 'phone']],
+                ['name' => 'Bluetooth Speaker', 'description' => 'Portable speaker with clear wireless audio.', 'weight' => '520g', 'dimension' => '18x8x8cm', 'specs' => ['connectivity' => 'Bluetooth', 'battery' => '10 hours']],
+            ],
+            'Scholar\'s Place' => [
+                ['name' => 'A4 Bond Paper Ream', 'description' => 'Smooth white A4 paper for printing and copying.', 'weight' => '2.4kg', 'dimension' => '30x22x5cm', 'specs' => ['size' => 'A4', 'sheets' => 500]],
+                ['name' => 'Ballpoint Pens 12 Pack', 'description' => 'Reliable ballpoint pens for school and office use.', 'weight' => '180g', 'dimension' => '16x8x3cm', 'specs' => ['count' => 12, 'ink' => 'blue']],
+                ['name' => 'Spiral Notebook Set', 'description' => 'Lined spiral notebooks for class notes.', 'weight' => '900g', 'dimension' => '25x18x6cm', 'specs' => ['count' => 3, 'pages' => 80]],
+                ['name' => 'Desk Organizer', 'description' => 'Compact organizer for pens, clips, and notes.', 'weight' => '380g', 'dimension' => '20x12x10cm', 'specs' => ['material' => 'plastic', 'compartments' => 5]],
+                ['name' => 'Highlighter Set', 'description' => 'Bright highlighters for reviewing notes.', 'weight' => '120g', 'dimension' => '14x8x2cm', 'specs' => ['count' => 6, 'type' => 'chisel tip']],
+            ],
+            'Little Stars' => [
+                ['name' => 'Baby Diapers Pack', 'description' => 'Soft disposable diapers with leak protection.', 'weight' => '1.2kg', 'dimension' => '34x24x14cm', 'specs' => ['count' => 36, 'type' => 'diaper']],
+                ['name' => 'Baby Wipes 3 Pack', 'description' => 'Gentle unscented baby wipes for daily care.', 'weight' => '900g', 'dimension' => '24x14x12cm', 'specs' => ['count' => 240, 'type' => 'wipes']],
+                ['name' => 'Feeding Bottle 250ml', 'description' => 'BPA-free feeding bottle with soft nipple.', 'weight' => '120g', 'dimension' => '7x7x18cm', 'specs' => ['volume' => '250ml', 'material' => 'BPA-free plastic']],
+                ['name' => 'Soft Plush Toy', 'description' => 'Cuddly plush toy for toddlers.', 'weight' => '280g', 'dimension' => '24x18x12cm', 'specs' => ['material' => 'plush', 'age' => '1+']],
+                ['name' => 'Kids Coloring Book', 'description' => 'Fun coloring book for young children.', 'weight' => '220g', 'dimension' => '28x22x1cm', 'specs' => ['pages' => 48, 'age' => '3+']],
+            ],
+            'Pet Paradise' => [
+                ['name' => 'Adult Dog Food 2kg', 'description' => 'Balanced dry food for adult dogs.', 'weight' => '2kg', 'dimension' => '34x22x9cm', 'specs' => ['pet' => 'dog', 'type' => 'dry food']],
+                ['name' => 'Cat Litter 5L', 'description' => 'Absorbent cat litter for odor control.', 'weight' => '3kg', 'dimension' => '30x22x10cm', 'specs' => ['pet' => 'cat', 'volume' => '5L']],
+                ['name' => 'Pet Shampoo 300ml', 'description' => 'Gentle shampoo for clean and fresh coats.', 'weight' => '330g', 'dimension' => '8x5x18cm', 'specs' => ['volume' => '300ml', 'use' => 'coat care']],
+                ['name' => 'Chew Toy Bone', 'description' => 'Durable chew toy for dogs.', 'weight' => '180g', 'dimension' => '16x6x5cm', 'specs' => ['pet' => 'dog', 'material' => 'rubber']],
+                ['name' => 'Pet Feeding Bowl', 'description' => 'Non-slip feeding bowl for cats and dogs.', 'weight' => '260g', 'dimension' => '18x18x6cm', 'specs' => ['material' => 'stainless steel', 'base' => 'non-slip']],
+            ],
+            'Auto Supplies' => [
+                ['name' => 'Microfiber Car Cloths', 'description' => 'Soft cloths for car cleaning and detailing.', 'weight' => '300g', 'dimension' => '26x18x6cm', 'specs' => ['count' => 6, 'material' => 'microfiber']],
+                ['name' => 'Car Shampoo 1L', 'description' => 'Foaming shampoo for exterior car washing.', 'weight' => '1.1kg', 'dimension' => '10x8x24cm', 'specs' => ['volume' => '1L', 'use' => 'car wash']],
+                ['name' => 'Windshield Wiper Pair', 'description' => 'Replacement windshield wipers for clear visibility.', 'weight' => '450g', 'dimension' => '60x8x4cm', 'specs' => ['count' => 2, 'type' => 'wiper']],
+                ['name' => 'Tire Pressure Gauge', 'description' => 'Compact gauge for checking tire pressure.', 'weight' => '160g', 'dimension' => '14x6x3cm', 'specs' => ['unit' => 'PSI', 'type' => 'analog']],
+                ['name' => 'Dashboard Phone Holder', 'description' => 'Secure phone mount for dashboard use.', 'weight' => '220g', 'dimension' => '12x10x8cm', 'specs' => ['mount' => 'dashboard', 'rotation' => '360 degree']],
+            ],
+            'Build Pro' => [
+                ['name' => 'Steel Claw Hammer', 'description' => 'Durable hammer for repairs and construction.', 'weight' => '800g', 'dimension' => '32x12x4cm', 'specs' => ['material' => 'steel', 'type' => 'claw hammer']],
+                ['name' => 'Screwdriver Set', 'description' => 'Multi-size screwdriver set for home repairs.', 'weight' => '600g', 'dimension' => '24x16x4cm', 'specs' => ['pieces' => 8, 'type' => 'screwdriver']],
+                ['name' => 'Measuring Tape 5m', 'description' => 'Locking measuring tape for accurate measurements.', 'weight' => '250g', 'dimension' => '8x8x4cm', 'specs' => ['length' => '5m', 'lock' => true]],
+                ['name' => 'Work Gloves Pair', 'description' => 'Protective work gloves with textured grip.', 'weight' => '180g', 'dimension' => '24x12x3cm', 'specs' => ['count' => 2, 'grip' => 'textured']],
+                ['name' => 'Utility Knife', 'description' => 'Retractable utility knife for cutting tasks.', 'weight' => '150g', 'dimension' => '16x5x2cm', 'specs' => ['blade' => 'retractable', 'use' => 'cutting']],
+            ],
+            'Sport Zone' => [
+                ['name' => 'Yoga Mat', 'description' => 'Non-slip mat for yoga and floor workouts.', 'weight' => '900g', 'dimension' => '60x12x12cm', 'specs' => ['thickness' => '6mm', 'surface' => 'non-slip']],
+                ['name' => 'Insulated Water Bottle', 'description' => 'Reusable bottle that keeps drinks cold or hot.', 'weight' => '420g', 'dimension' => '8x8x26cm', 'specs' => ['volume' => '750ml', 'type' => 'insulated']],
+                ['name' => 'Resistance Band Set', 'description' => 'Exercise bands for strength and mobility training.', 'weight' => '300g', 'dimension' => '20x14x5cm', 'specs' => ['count' => 5, 'type' => 'resistance bands']],
+                ['name' => 'Basketball', 'description' => 'Durable basketball for indoor and outdoor play.', 'weight' => '650g', 'dimension' => '24x24x24cm', 'specs' => ['size' => 7, 'use' => 'indoor/outdoor']],
+                ['name' => 'Camping Flashlight', 'description' => 'Bright portable flashlight for outdoor trips.', 'weight' => '280g', 'dimension' => '16x5x5cm', 'specs' => ['mode' => 'multi-mode', 'power' => 'battery']],
+            ],
+            'General Store' => [
+                ['name' => 'Reusable Shopping Bag', 'description' => 'Foldable shopping bag for daily errands.', 'weight' => '90g', 'dimension' => '18x12x2cm', 'specs' => ['material' => 'polyester', 'type' => 'foldable']],
+                ['name' => 'Umbrella', 'description' => 'Compact umbrella for sun and rain protection.', 'weight' => '350g', 'dimension' => '28x6x6cm', 'specs' => ['type' => 'compact', 'canopy' => 'water resistant']],
+                ['name' => 'Basic Sewing Kit', 'description' => 'Portable sewing kit for quick clothing fixes.', 'weight' => '120g', 'dimension' => '14x10x3cm', 'specs' => ['type' => 'sewing kit', 'use' => 'repairs']],
+                ['name' => 'AA Batteries 8 Pack', 'description' => 'Reliable AA batteries for household devices.', 'weight' => '200g', 'dimension' => '12x8x2cm', 'specs' => ['count' => 8, 'size' => 'AA']],
+                ['name' => 'Travel Organizer Pouch', 'description' => 'Compact pouch for cables, toiletries, or small items.', 'weight' => '180g', 'dimension' => '22x14x5cm', 'specs' => ['material' => 'nylon', 'use' => 'travel']],
+            ],
+        ];
+
     }
 
     public function run(): void
@@ -43,298 +145,7 @@ class ProductSeeder extends Seeder
         $storesByName = Store::query()->get()->keyBy('store_name');
         $categoriesByName = Category::query()->get()->keyBy('name');
 
-        $catalog = [
-            "Pedro's Palengke" => [
-                [
-                    'name' => 'Fresh Pork Liempo',
-                    'description' => 'Locally sourced pork belly, freshly cut and ideal for grilling or adobo.',
-                    'weight' => '1kg',
-                    'dimension' => '30x20x5cm',
-                    'specs' => ['cut' => 'belly', 'weight' => '1kg', 'origin' => 'local'],
-                    'status' => 'active',
-                ],
-                [
-                    'name' => 'Dressed Chicken Whole',
-                    'description' => 'Cleaned whole chicken, ready for roasting, frying, or soup dishes.',
-                    'weight' => '1.2kg',
-                    'dimension' => '25x20x10cm',
-                    'specs' => ['type' => 'whole', 'weight' => '1.2kg', 'source' => 'fresh'],
-                    'status' => 'active',
-                ],
-                [
-                    'name' => 'Brown Eggs Tray',
-                    'description' => 'Thirty medium brown eggs packed in a tray for daily household use.',
-                    'weight' => '1.8kg',
-                    'dimension' => '30x10x8cm',
-                    'specs' => ['count' => '30', 'size' => 'medium', 'type' => 'brown'],
-                    'status' => 'active',
-                ],
-                [
-                    'name' => 'Tilapia Cleaned',
-                    'description' => 'Fresh tilapia cleaned and scaled, perfect for frying or sinigang.',
-                    'weight' => '1kg',
-                    'dimension' => '25x8x5cm',
-                    'specs' => ['type' => 'cleaned', 'weight' => '1kg', 'freshness' => 'fresh'],
-                    'status' => 'out_of_stock',
-                ],
-            ],
-            "Lorna's Sari-Sari" => [
-                [
-                    'name' => 'Instant Noodles Family Pack',
-                    'description' => 'Value pack of classic instant noodles for quick merienda or midnight snacks.',
-                    'weight' => '330g',
-                    'dimension' => '20x15x10cm',
-                    'specs' => ['pack' => '6 pieces', 'flavor' => 'chicken', 'quantity' => '55g each'],
-                    'status' => 'active',
-                ],
-                [
-                    'name' => '3-in-1 Coffee Mix',
-                    'description' => 'Convenient sachet coffee mix with creamy taste for busy mornings.',
-                    'weight' => '360g',
-                    'dimension' => '18x12x8cm',
-                    'specs' => ['type' => '3-in-1', 'sachets' => '20', 'weight' => '18g per sachet'],
-                    'status' => 'active',
-                ],
-                [
-                    'name' => 'Assorted Biscuit Pack',
-                    'description' => 'Mixed snack biscuits packed for sari-sari counter display and impulse buys.',
-                    'weight' => '250g',
-                    'dimension' => '22x16x6cm',
-                    'specs' => ['packs' => '10', 'variety' => 'assorted', 'weight' => '25g per pack'],
-                    'status' => 'draft',
-                ],
-                [
-                    'name' => 'Canned Sardines Bundle',
-                    'description' => 'Bundle of tomato sauce sardines, a pantry staple for quick meals.',
-                    'weight' => '620g',
-                    'dimension' => '15x10x12cm',
-                    'specs' => ['cans' => '4', 'flavor' => 'tomato sauce', 'weight' => '155g each'],
-                    'status' => 'active',
-                ],
-            ],
-            "Rick's Hardware" => [
-                [
-                    'name' => 'Steel Nails Assorted',
-                    'description' => 'Durable assorted steel nails for woodwork, repairs, and general construction.',
-                    'weight' => '1kg',
-                    'dimension' => '12x10x8cm',
-                    'specs' => ['material' => 'steel', 'types' => 'assorted', 'weight' => '1kg'],
-                    'status' => 'active',
-                ],
-                [
-                    'name' => 'Measuring Tape 5m',
-                    'description' => 'Compact 5-meter measuring tape with lock feature for home and site use.',
-                    'weight' => '200g',
-                    'dimension' => '10x10x4cm',
-                    'specs' => ['length' => '5m', 'feature' => 'lock function', 'material' => 'metal'],
-                    'status' => 'active',
-                ],
-                [
-                    'name' => 'Latex Wall Paint White',
-                    'description' => 'Interior latex paint with smooth finish and reliable wall coverage.',
-                    'weight' => '6kg',
-                    'dimension' => '15x15x20cm',
-                    'specs' => ['color' => 'white', 'type' => 'latex', 'volume' => '4L'],
-                    'status' => 'active',
-                ],
-                [
-                    'name' => 'PVC Electrical Tape',
-                    'description' => 'Insulating tape for cable management, minor repairs, and electrical projects.',
-                    'weight' => '150g',
-                    'dimension' => '8x8x3cm',
-                    'specs' => ['material' => 'PVC', 'type' => 'electrical', 'width' => 'standard'],
-                    'status' => 'out_of_stock',
-                ],
-            ],
-            "Gemma's Bakeshop" => [
-                [
-                    'name' => 'Classic Pandesal Pack',
-                    'description' => 'Freshly baked soft pandesal, perfect for breakfast and merienda.',
-                    'weight' => '250g',
-                    'dimension' => '20x15x8cm',
-                    'specs' => ['pieces' => '10', 'texture' => 'soft', 'freshness' => 'baked daily'],
-                    'status' => 'active',
-                ],
-                [
-                    'name' => 'Cheese Ensaymada Box',
-                    'description' => 'Soft ensaymada topped with butter, sugar, and grated cheese.',
-                    'weight' => '300g',
-                    'dimension' => '22x18x10cm',
-                    'specs' => ['pieces' => '6', 'topping' => 'cheese', 'style' => 'butter sugar'],
-                    'status' => 'active',
-                ],
-                [
-                    'name' => 'Loaf Bread',
-                    'description' => 'Daily baked loaf bread for sandwiches, toast, and family breakfasts.',
-                    'weight' => '600g',
-                    'dimension' => '25x12x10cm',
-                    'specs' => ['weight' => '600g', 'type' => 'white loaf', 'freshness' => 'daily bake'],
-                    'status' => 'active',
-                ],
-                [
-                    'name' => 'Chocolate Cake Slice',
-                    'description' => 'Rich chocolate cake slice for dessert counters and cafe-style servings.',
-                    'weight' => '120g',
-                    'dimension' => '12x12x8cm',
-                    'specs' => ['flavor' => 'chocolate', 'type' => 'slice', 'size' => 'single serving'],
-                    'status' => 'draft',
-                ],
-            ],
-            'TechZone PH' => [
-                [
-                    'name' => 'Fast Charging USB-C Cable',
-                    'description' => 'Durable USB-C cable with fast charging support for modern smartphones.',
-                    'weight' => '50g',
-                    'dimension' => '15x8x2cm',
-                    'specs' => ['connector' => 'USB-C', 'length' => '1m', 'speed' => 'fast charge'],
-                    'status' => 'active',
-                ],
-                [
-                    'name' => '20W Wall Charger',
-                    'description' => 'Compact wall charger designed for efficient charging at home or travel.',
-                    'weight' => '100g',
-                    'dimension' => '8x8x3cm',
-                    'specs' => ['wattage' => '20W', 'type' => 'wall charger', 'ports' => 'USB-C'],
-                    'status' => 'active',
-                ],
-                [
-                    'name' => 'Wireless Earbuds',
-                    'description' => 'Portable wireless earbuds with charging case for music and calls.',
-                    'weight' => '60g',
-                    'dimension' => '10x6x5cm',
-                    'specs' => ['connectivity' => 'wireless', 'case' => 'charging', 'battery' => '8 hours'],
-                    'status' => 'active',
-                ],
-                [
-                    'name' => '10000mAh Power Bank',
-                    'description' => 'Slim emergency power bank for on-the-go charging during long days out.',
-                    'weight' => '200g',
-                    'dimension' => '12x6x2cm',
-                    'specs' => ['capacity' => '10000mAh', 'type' => 'slim', 'ports' => 'USB-C + USB-A'],
-                    'status' => 'out_of_stock',
-                ],
-            ],
-            "Arlene's Beauty Hub" => [
-                [
-                    'name' => 'Hydrating Facial Wash',
-                    'description' => 'Gentle facial cleanser for daily use with a refreshing, non-drying finish.',
-                    'weight' => '120g',
-                    'dimension' => '8x6x12cm',
-                    'specs' => ['volume' => '100ml', 'type' => 'facial wash', 'benefit' => 'hydrating'],
-                    'status' => 'active',
-                ],
-                [
-                    'name' => 'Color Protective Hair Conditioner',
-                    'description' => 'Rich conditioner formula to maintain color vibrancy and hair smoothness.',
-                    'weight' => '280g',
-                    'dimension' => '8x8x15cm',
-                    'specs' => ['volume' => '250ml', 'for' => 'color-treated hair', 'type' => 'conditioner'],
-                    'status' => 'active',
-                ],
-                [
-                    'name' => 'Volumizing Hair Shampoo',
-                    'description' => 'Lightweight shampoo formula to boost volume and add body to fine hair.',
-                    'weight' => '420g',
-                    'dimension' => '8x8x18cm',
-                    'specs' => ['volume' => '400ml', 'benefit' => 'volumizing', 'for' => 'fine hair'],
-                    'status' => 'active',
-                ],
-                [
-                    'name' => 'Brightening Body Lotion',
-                    'description' => 'Moisturizing body lotion formulated for smooth and nourished skin.',
-                    'weight' => '280g',
-                    'dimension' => '8x8x15cm',
-                    'specs' => ['volume' => '250ml', 'type' => 'body lotion', 'benefit' => 'brightening'],
-                    'status' => 'active',
-                ],
-                [
-                    'name' => 'Keratin Repair Shampoo',
-                    'description' => 'Salon-inspired shampoo that helps smooth and strengthen dry hair.',
-                    'weight' => '420g',
-                    'dimension' => '8x8x18cm',
-                    'specs' => ['volume' => '400ml', 'benefit' => 'repair', 'for' => 'dry hair'],
-                    'status' => 'active',
-                ],
-                [
-                    'name' => 'Tinted Lip Balm',
-                    'description' => 'Pocket-friendly lip balm with soft tint and moisturizing formula.',
-                    'weight' => '10g',
-                    'dimension' => '4x4x4cm',
-                    'specs' => ['weight' => '4g', 'type' => 'lip balm', 'feature' => 'tinted moisturizing'],
-                    'status' => 'draft',
-                ],
-            ],
-            "Kuya Ed's Carinderia" => [
-                [
-                    'name' => 'Chicken Adobo Meal Pack',
-                    'description' => 'Ready-to-serve chicken adobo meal with rice, good for one person.',
-                    'weight' => '400g',
-                    'dimension' => '20x20x8cm',
-                    'specs' => ['servings' => '1', 'includes' => 'rice', 'freshness' => 'hot & fresh'],
-                    'status' => 'active',
-                ],
-                [
-                    'name' => 'Pork Menudo Tray',
-                    'description' => 'Hearty pork menudo packed in a tray for lunch orders and takeout.',
-                    'weight' => '800g',
-                    'dimension' => '25x25x10cm',
-                    'specs' => ['servings' => '2', 'type' => 'pork menudo', 'freshness' => 'cooked daily'],
-                    'status' => 'active',
-                ],
-                [
-                    'name' => 'Lumpiang Shanghai Pack',
-                    'description' => 'Crispy lumpiang shanghai rolls bundled for parties and family meals.',
-                    'weight' => '350g',
-                    'dimension' => '22x15x8cm',
-                    'specs' => ['pieces' => '12', 'type' => 'spring rolls', 'style' => 'shanghai'],
-                    'status' => 'active',
-                ],
-                [
-                    'name' => 'Pancit Canton Bilao Mini',
-                    'description' => 'Small bilao of pancit canton for office snacks and simple gatherings.',
-                    'weight' => '600g',
-                    'dimension' => '20x20x10cm',
-                    'specs' => ['size' => 'mini bilao', 'type' => 'pancit canton', 'servings' => '8-10'],
-                    'status' => 'out_of_stock',
-                ],
-            ],
-            'FreshPick Fruits' => [
-                [
-                    'name' => 'Sweet Mangoes',
-                    'description' => 'Ripe sweet mangoes selected daily from trusted farm suppliers.',
-                    'weight' => '1kg',
-                    'dimension' => '25x20x12cm',
-                    'specs' => ['weight' => '1kg', 'ripeness' => 'ripe', 'type' => 'sweet'],
-                    'status' => 'active',
-                ],
-                [
-                    'name' => 'Lakatan Bananas',
-                    'description' => 'Naturally sweet lakatan bananas ideal for snacks and smoothies.',
-                    'weight' => '1kg',
-                    'dimension' => '30x12x8cm',
-                    'specs' => ['weight' => '1kg', 'variety' => 'lakatan', 'sweetness' => 'naturally sweet'],
-                    'status' => 'active',
-                ],
-                [
-                    'name' => 'Red Tomatoes',
-                    'description' => 'Fresh red tomatoes for salads, stews, and everyday cooking.',
-                    'weight' => '1kg',
-                    'dimension' => '22x18x10cm',
-                    'specs' => ['weight' => '1kg', 'color' => 'red', 'use' => 'cooking & salads'],
-                    'status' => 'active',
-                ],
-                [
-                    'name' => 'White Onions',
-                    'description' => 'Kitchen staple white onions with firm bulbs and strong flavor.',
-                    'weight' => '1kg',
-                    'dimension' => '20x18x10cm',
-                    'specs' => ['weight' => '1kg', 'color' => 'white', 'firmness' => 'firm bulbs'],
-                    'status' => 'out_of_stock',
-                ],
-            ],
-        ];
-
-        foreach ($catalog as $storeName => $products) {
+        foreach ($this->catalog() as $storeName => $products) {
             $store = $storesByName->get($storeName);
 
             if (!$store) {
@@ -350,23 +161,23 @@ class ProductSeeder extends Seeder
             }
 
             foreach ($products as $productData) {
-                Product::updateOrCreate(
-                    [
-                        'store_id' => $store->id,
-                        'name' => $productData['name'],
-                    ],
-                    [
-                        'uuid' => Str::uuid(),
-                        'store_id' => $store->id,
-                        'category_id' => $category->id,
-                        'name' => $productData['name'],
-                        'description' => $productData['description'],
-                        'weight' => $this->parseWeight($productData['weight'] ?? null),
-                        'dimension' => $productData['dimension'] ?? null,
-                        'specs' => $productData['specs'],
-                        'status' => $productData['status'],
-                    ]
-                );
+                $product = Product::firstOrNew([
+                    'store_id' => $store->id,
+                    'name' => $productData['name'],
+                ]);
+
+                $product->fill([
+                    'uuid' => $product->uuid ?: Str::uuid(),
+                    'store_id' => $store->id,
+                    'category_id' => $category->id,
+                    'name' => $productData['name'],
+                    'description' => $productData['description'],
+                    'weight' => $this->parseWeight($productData['weight']),
+                    'dimension' => $productData['dimension'],
+                    'specs' => $productData['specs'],
+                    'status' => 'active',
+                ]);
+                $product->save();
             }
         }
     }

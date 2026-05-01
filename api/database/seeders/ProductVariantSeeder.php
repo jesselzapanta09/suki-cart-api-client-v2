@@ -10,94 +10,83 @@ class ProductVariantSeeder extends Seeder
 {
     public function run(): void
     {
-        // Get products by name
-        $products = Product::query()->get()->keyBy('name');
+        $products = Product::query()
+            ->with('store')
+            ->orderBy('store_id')
+            ->orderBy('name')
+            ->get();
 
-        $variants = [
-            'Fast Charging USB-C Cable' => [
-                ['name' => '1m White', 'price' => 199.00, 'stock' => 15],
-                ['name' => '2m White', 'price' => 249.00, 'stock' => 12],
-                ['name' => '1m Black', 'price' => 199.00, 'stock' => 18],
-                ['name' => '2m Black', 'price' => 249.00, 'stock' => 10],
-            ],
-            '20W Wall Charger' => [
-                ['name' => 'White', 'price' => 349.00, 'stock' => 10],
-                ['name' => 'Black', 'price' => 349.00, 'stock' => 8],
-                ['name' => 'Blue', 'price' => 349.00, 'stock' => 5],
-            ],
-            'Wireless Earbuds' => [
-                ['name' => 'Black Standard', 'price' => 899.00, 'stock' => 5],
-                ['name' => 'White Standard', 'price' => 899.00, 'stock' => 4],
-            ],
-            'Hydrating Facial Wash' => [
-                ['name' => '100ml', 'price' => 245.00, 'stock' => 12],
-                ['name' => '200ml Refill', 'price' => 420.00, 'stock' => 8],
-            ],
-            'Volumizing Hair Shampoo' => [
-                ['name' => '400ml', 'price' => 305.00, 'stock' => 10],
-                ['name' => '1L Family Pack', 'price' => 650.00, 'stock' => 6],
-            ],
-            'Color Protective Hair Conditioner' => [
-                ['name' => '250ml', 'price' => 320.00, 'stock' => 10],
-                ['name' => '500ml Refill', 'price' => 580.00, 'stock' => 6],
-            ],
-            'Instant Noodles Family Pack' => [
-                ['name' => 'Chicken', 'price' => 89.00, 'stock' => 20],
-                ['name' => 'Shrimp', 'price' => 92.00, 'stock' => 15],
-                ['name' => 'Beef', 'price' => 92.00, 'stock' => 12],
-            ],
-            'Brown Eggs Tray' => [
-                ['name' => 'Large (30pc)', 'price' => 245.00, 'stock' => 15],
-                ['name' => 'Medium (30pc)', 'price' => 220.00, 'stock' => 18],
-            ],
-            'Brightening Body Lotion' => [
-                ['name' => '250ml', 'price' => 189.00, 'stock' => 10],
-                ['name' => '500ml Refill', 'price' => 340.00, 'stock' => 7],
-            ],
-        ];
+        foreach ($products as $index => $product) {
+            /** @var Product $product */
+            $variantCount = ($index % 3) + 1;
+            $basePrice = $this->basePriceFor($product->name, $index);
+            $variantNames = array_slice($this->variantNamesFor($product->name), 0, $variantCount);
 
-        foreach ($variants as $productName => $variantList) {
-            $product = $products->get($productName);
-
-            if (!$product) {
-                $this->command?->warn("Skipping variants for missing product: {$productName}");
-                continue;
-            }
-
-            foreach ($variantList as $variantData) {
+            foreach ($variantNames as $variantIndex => $variantName) {
                 ProductVariant::updateOrCreate(
                     [
                         'product_id' => $product->id,
-                        'name' => $variantData['name'],
+                        'name' => $variantName,
                     ],
                     [
                         'product_id' => $product->id,
-                        'name' => $variantData['name'],
-                        'price' => $variantData['price'],
-                        'stock' => $variantData['stock'],
+                        'name' => $variantName,
+                        'price' => $basePrice + ($variantIndex * 35),
+                        'stock' => 12 + (($index + $variantIndex) % 9),
                     ]
                 );
             }
+
+            ProductVariant::query()
+                ->where('product_id', $product->id)
+                ->whereNotIn('name', $variantNames)
+                ->delete();
+
+            Product::query()
+                ->whereKey($product->id)
+                ->update(['status' => 'active']);
+        }
+    }
+
+    private function basePriceFor(string $productName, int $index): float
+    {
+        $seed = crc32($productName) % 10;
+
+        return (float) (99 + ($seed * 25) + (($index % 7) * 20));
+    }
+
+    private function variantNamesFor(string $productName): array
+    {
+        $lowerName = strtolower($productName);
+
+        if (str_contains($lowerName, 'shirt') || str_contains($lowerName, 'jeans') || str_contains($lowerName, 'gloves')) {
+            return ['Small', 'Medium', 'Large'];
         }
 
-        // Create default variants for products without explicit variants
-        $productsWithVariants = array_keys($variants);
-        $allProducts = $products->filter(fn ($product) => !in_array($product->name, $productsWithVariants));
-
-        foreach ($allProducts as $product) {
-            // Create a "Default" variant with default values
-            ProductVariant::updateOrCreate(
-                [
-                    'product_id' => $product->id,
-                    'name' => 'Default',
-                ],
-                [
-                    'product_id' => $product->id,
-                    'name' => 'Default',
-                    'price' => 0,
-                    'stock' => 0,
-                ]
-            );
+        if (str_contains($lowerName, 'sneakers')) {
+            return ['Size 7', 'Size 8', 'Size 9'];
         }
+
+        if (str_contains($lowerName, 'lip') || str_contains($lowerName, 'belt') || str_contains($lowerName, 'bag')) {
+            return ['Classic', 'Neutral', 'Bold'];
+        }
+
+        if (str_contains($lowerName, 'cable')) {
+            return ['1m White', '1m Black', '2m Black'];
+        }
+
+        if (str_contains($lowerName, 'charger') || str_contains($lowerName, 'earbuds') || str_contains($lowerName, 'speaker')) {
+            return ['White', 'Black', 'Blue'];
+        }
+
+        if (str_contains($lowerName, 'diaper') || str_contains($lowerName, 'mask')) {
+            return ['Small Pack', 'Medium Pack', 'Large Pack'];
+        }
+
+        if (str_contains($lowerName, 'rice') || str_contains($lowerName, 'food') || str_contains($lowerName, 'litter')) {
+            return ['Regular', 'Family Pack', 'Value Bundle'];
+        }
+
+        return ['Regular', 'Twin Pack', 'Value Pack'];
     }
 }

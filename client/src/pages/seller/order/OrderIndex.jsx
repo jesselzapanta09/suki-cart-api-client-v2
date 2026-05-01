@@ -227,7 +227,7 @@ export default function OrderIndex() {
 
                                     <div className="space-y-3 p-4 md:p-5">
                                         <div className="flex items-start gap-3 rounded-xl border border-gray-100 bg-gray-50 p-3">
-                                            <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-gray-100 sm:h-[72px] sm:w-[72px]">
+                                            <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-gray-100 sm:h-18 sm:w-18">
                                                 {item?.product?.images?.length ? (
                                                     <img
                                                         src={item.product.images[0].full_url || item.product.images[0].image_path}

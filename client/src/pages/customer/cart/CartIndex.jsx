@@ -249,7 +249,7 @@ export default function CartIndex() {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            <div className="max-w-7xl mx-auto px-4 py-6 md:py-8 pb-40 md:pb-28">
+            <div className={`max-w-7xl mx-auto px-4 py-6 md:py-8 ${totalItems > 0 ? "pb-[calc(env(safe-area-inset-bottom,0px)+6.5rem)] md:pb-28" : "pb-6 md:pb-8"}`}>
                 {/* header */}
                 <div className="mb-6 bg-linear-to-br from-green-50 to-emerald-50 rounded-2xl p-3 md:p-4 border border-green-100">
                     <div className="flex items-start gap-3 md:gap-4">
@@ -349,7 +349,7 @@ export default function CartIndex() {
                                                         key={itemKey}
                                                         className={`p-4 gap-4 items-center grid grid-cols-1 md:grid-cols-[20px_1fr_150px_150px_150px_60px] ${isOverStock ? "bg-orange-50" : ""}`}
                                                     >
-                                                        <div className="flex justify-start md:justify-center items-center">
+                                                        <div className="hidden md:flex justify-start md:justify-center items-center">
                                                             <Checkbox
                                                                 checked={checkedItems[itemKey] || false}
                                                                 onChange={() => toggleItemCheck(item)}
@@ -357,6 +357,15 @@ export default function CartIndex() {
                                                         </div>
 
                                                         <div className="flex gap-4 items-start md:items-center cursor-pointer hover:opacity-75 transition-opacity" onClick={() => handleProductClick(item.uuid)}>
+                                                            <div
+                                                                className="flex md:hidden items-center pt-1"
+                                                                onClick={(e) => e.stopPropagation()}
+                                                            >
+                                                                <Checkbox
+                                                                    checked={checkedItems[itemKey] || false}
+                                                                    onChange={() => toggleItemCheck(item)}
+                                                                />
+                                                            </div>
                                                             <div className="w-20 h-20 rounded-xl bg-gray-100 flex items-center justify-center shrink-0 overflow-hidden">
                                                                 {item.images && item.images.length > 0 ? (
                                                                     <img src={item.images[0].full_url || item.images[0].image_path} alt={item.name} className="w-full h-full object-cover" />
@@ -405,7 +414,7 @@ export default function CartIndex() {
                                                             </span>
                                                         </div>
 
-                                                        <div className="flex md:justify-end items-center">
+                                                        <div className="flex justify-end items-center">
                                                             <Tooltip title="Delete">
                                                                 <Popconfirm
                                                                     title={`Delete ${item.name}?`}
@@ -453,13 +462,12 @@ export default function CartIndex() {
 
 
                 {totalItems > 0 && (
-                    <div className="fixed bottom-0 left-0 right-0 bg-linear-to-r from-green-50 to-emerald-50 border-t-2 border-green-200 shadow-2xl">
-                        <div className="max-w-7xl mx-auto px-4 py-3 md:py-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] md:pb-4">
-                            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+                    <div
+                        className="fixed left-0 right-0 z-110 border-t-2 border-green-200 bg-linear-to-r from-green-50 to-emerald-50 shadow-2xl bottom-[calc(env(safe-area-inset-bottom,0px)+4rem)] md:bottom-0"
+                    >
+                        <div className="max-w-7xl mx-auto px-4 py-3 md:py-4">
+                            <div className="flex items-center justify-between gap-4">
                                 <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 rounded-lg bg-green-500 flex items-center justify-center shrink-0 shadow-md">
-                                        <ShoppingBag size={24} className="text-white" />
-                                    </div>
                                     <div className="min-w-0">
                                         <p className="text-xs text-gray-600 font-medium">Order Total</p>
                                         <p className="text-2xl md:text-3xl font-bold text-green-900">
@@ -471,24 +479,14 @@ export default function CartIndex() {
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-1 gap-2 w-full sm:flex sm:w-auto md:gap-3">
-                                    <Button
-                                        size="large"
-                                        className="h-11 rounded-lg font-semibold w-full sm:w-40 border-green-300 hover:bg-green-50"
-                                        block
-                                        onClick={() => navigate("/")}
-                                        icon={<ShoppingBag size={18} />}
-                                    >
-                                        Continue Shopping
-                                    </Button>
+                                <div className="ml-auto shrink-0">
                                     <Button
                                         type="primary"
                                         size="large"
-                                        className="h-11 rounded-lg font-semibold w-full sm:w-40 bg-green-600 hover:bg-green-700 border-green-600"
+                                        className="h-11 rounded-lg font-semibold w-40 bg-green-600 hover:bg-green-700 border-green-600"
                                         onClick={handleProceedToCheckout}
                                         disabled={getCheckedItems().length === 0}
                                         icon={<ShoppingCart size={18} />}
-                                        block
                                     >
                                         Place Order
                                     </Button>

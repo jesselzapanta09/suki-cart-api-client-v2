@@ -75,51 +75,42 @@ export default function HomeLayout() {
     const getProductImageUrl = (product) => product?.images?.[0]?.full_url || product?.images?.[0]?.image_path || null;
 
     const mobileBottomNav = (
-        <>
-            {/* Mobile Bottom Nav */}
-            <nav
-                className="fixed bottom-0 left-0 right-0 z-120 border-t border-gray-200 bg-white/95 px-3 py-2 shadow-[0_-6px_24px_rgba(15,23,42,0.08)] backdrop-blur sm:hidden"
-                style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 0.5rem)" }}
-            >
-                <div className={`grid gap-2 ${isAuthenticated ? "grid-cols-3" : "grid-cols-4"}`}>
-                    <Link to="/" className={getMobileNavClass(isActiveRoute("/"))} aria-current={isActiveRoute("/") ? "page" : undefined}>
-                        <ShoppingBag size={18} />
-                        <span className="text-[11px] font-semibold">Home</span>
+        <nav
+            className="fixed bottom-0 left-0 right-0 z-120 border-t border-gray-200 bg-white/95 px-3 py-2 shadow-[0_-6px_24px_rgba(15,23,42,0.08)] backdrop-blur sm:hidden"
+            style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 0.5rem)" }}
+        >
+            <div className={`grid gap-2 ${isAuthenticated ? "grid-cols-3" : "grid-cols-4"}`}>
+                <Link to="/" className={getMobileNavClass(isActiveRoute("/"))} aria-current={isActiveRoute("/") ? "page" : undefined}>
+                    <ShoppingBag size={18} />
+                    <span className="text-[11px] font-semibold">Home</span>
+                </Link>
+                <Link
+                    to="/search?sort=latest"
+                    className={getMobileNavClass(isActiveRoute("/search"))}
+                    aria-current={isActiveRoute("/search") ? "page" : undefined}
+                >
+                    <Package size={18} />
+                    <span className="text-[11px] font-semibold">Products</span>
+                </Link>
+                {isAuthenticated ? (
+                    <Link to="/dashboard" className={getMobileNavClass(isActiveRoute("/dashboard"))} aria-current={isActiveRoute("/dashboard") ? "page" : undefined}>
+                        <LayoutDashboard size={18} />
+                        <span className="text-[11px] font-semibold">Go to Dashboard</span>
                     </Link>
-                    <Link
-                        to="/search?sort=latest"
-                        className={getMobileNavClass(isActiveRoute("/search"))}
-                        aria-current={isActiveRoute("/search") ? "page" : undefined}
-                    >
-                        <Package size={18} />
-                        <span className="text-[11px] font-semibold">Products</span>
-                    </Link>
-                    {isAuthenticated ? (
-                        <Link to="/dashboard" className={getMobileNavClass(isActiveRoute("/dashboard"))} aria-current={isActiveRoute("/dashboard") ? "page" : undefined}>
-                            <LayoutDashboard size={18} />
-                            <span className="text-[11px] font-semibold">Go to Dashboard</span>
+                ) : (
+                    <>
+                        <Link to="/login" className={getMobileNavClass(isActiveRoute("/login"))} aria-current={isActiveRoute("/login") ? "page" : undefined}>
+                            <LogIn size={18} />
+                            <span className="text-[11px] font-semibold">Sign in</span>
                         </Link>
-                    ) : (
-                        <>
-                            <Link to="/login" className={getMobileNavClass(isActiveRoute("/login"))} aria-current={isActiveRoute("/login") ? "page" : undefined}>
-                                <LogIn size={18} />
-                                <span className="text-[11px] font-semibold">Sign in</span>
-                            </Link>
-                            <Link to="/register/customer" className={getMobileNavClass(isActiveRoute("/register/customer"))} aria-current={isActiveRoute("/register/customer") ? "page" : undefined}>
-                                <Rocket size={18} />
-                                <span className="text-[11px] font-semibold">Get started</span>
-                            </Link>
-                        </>
-                    )}
-                </div>
-            </nav>
-
-            {/* Spacer for mobile bottom nav */}
-            <div
-                className="h-20 sm:hidden"
-                style={{ height: "calc(env(safe-area-inset-bottom, 0px) + 5rem)" }}
-            />
-        </>
+                        <Link to="/register/customer" className={getMobileNavClass(isActiveRoute("/register/customer"))} aria-current={isActiveRoute("/register/customer") ? "page" : undefined}>
+                            <Rocket size={18} />
+                            <span className="text-[11px] font-semibold">Get started</span>
+                        </Link>
+                    </>
+                )}
+            </div>
+        </nav>
     );
 
     return (
@@ -333,13 +324,12 @@ export default function HomeLayout() {
 
 
             <main className="flex-1 overflow-x-hidden"><Outlet /></main>
-            {mobileBottomNav}
 
             <footer className="bg-green-950 px-4 py-10 text-white sm:px-6 sm:py-12">
                 <div className="mx-auto flex max-w-7xl flex-col gap-10">
-                    <div className="flex flex-col gap-8 md:flex-row md:flex-wrap md:justify-between">
-                        <div className="max-w-sm">
-                            <div className="mb-3 flex items-center gap-3">
+                    <div className="flex flex-col gap-8 text-center md:flex-row md:flex-wrap md:items-start md:justify-between md:text-left">
+                        <div className="mx-auto max-w-sm md:mx-0">
+                            <div className="mb-3 flex items-center justify-center gap-3 md:justify-start">
                                 <div className="flex h-10 w-10 items-center justify-center rounded-2xl">
                                     <img src="/suki-cart-logo-home.png" alt="SukiCart Logo" className="h-full w-full rounded-xl object-contain" />
                                 </div>
@@ -352,9 +342,9 @@ export default function HomeLayout() {
                                 Your trusted online palengke for household essentials. Practical items for everyday living, delivered to your door.
                             </p>
                         </div>
-                        <div>
+                        <div className="mx-auto md:mx-0">
                             <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-green-300">Shop</p>
-                            <div className="flex flex-col gap-3">
+                            <div className="flex flex-col items-center gap-3 md:items-start">
                                 {[["Home", "/"], ["Sign In", "/login"], ["Register as Customer", "/register/customer"], ["Register as Seller", "/register/seller"]].map(([label, to]) => (
                                     <Link key={label} to={to} className="text-sm text-green-200 transition hover:text-white">{label}</Link>
                                 ))}
@@ -362,10 +352,10 @@ export default function HomeLayout() {
                         </div>
                         <div className="flex flex-col justify-center">
                             <p className="mb-4 text-base font-bold text-white">Ready to shop?</p>
-                            <Link to="/register/customer" className="inline-flex min-h-12 items-center justify-center rounded-2xl bg-linear-to-br from-green-700 to-green-500 px-5 py-3 text-center text-sm font-semibold text-white shadow-md transition hover:opacity-90">Create Free Account</Link>
+                            <Link to="/register/customer" className="inline-flex min-h-12 w-full items-center justify-center rounded-2xl bg-linear-to-br from-green-700 to-green-500 px-5 py-3 text-center text-sm font-semibold text-white shadow-md transition hover:opacity-90 sm:w-auto">Create Free Account</Link>
                         </div>
                     </div>
-                    <div className="flex flex-col gap-3 border-t border-white/20 pt-6 text-center sm:flex-row sm:items-center sm:justify-between sm:text-left">
+                    <div className="flex flex-col gap-3 border-t border-white/20 pt-6 text-center sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:text-left">
                         <p className="text-xs text-gray-400">© {new Date().getFullYear()} SukiCart. Educational project only, not a real commerce application.</p>
                         <div className="flex flex-wrap justify-center gap-4 sm:justify-end sm:gap-6">
                             {[
@@ -380,6 +370,11 @@ export default function HomeLayout() {
                     </div>
                 </div>
             </footer>
+            <div
+                className="h-20 sm:hidden"
+                style={{ height: "calc(env(safe-area-inset-bottom, 0px) + 5rem)" }}
+            />
+            {mobileBottomNav}
         </div>
     );
 }

@@ -391,7 +391,7 @@ export default function CartIndex() {
 
                                                         <div className="flex justify-between md:justify-center items-center gap-4">
                                                             <span className="md:hidden text-xs font-medium text-gray-500">Quantity</span>
-                                                            <div className="w-28" onKeyDown={(e) => e.stopPropagation()}>
+                                                            <div className="w-32" onKeyDown={(e) => e.stopPropagation()}>
                                                                 <InputNumber
                                                                     mode="spinner"
                                                                     min={1}

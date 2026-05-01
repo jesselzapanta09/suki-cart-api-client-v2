@@ -473,7 +473,7 @@ export default function ProductDetailPage() {
                             <div className="min-w-0 w-full flex-1">
                                 <div className="mb-3">
                                     <span className="inline-block px-2 py-1 bg-green-100 text-green-700 text-xs font-bold rounded mb-2">Official Store</span>
-                                    <h3 className="break-words text-base font-bold text-gray-800 sm:text-lg">{product.store.store_name || product.store.name}</h3>
+                                    <h3 className="wrap-break-word text-base font-bold text-gray-800 sm:text-lg">{product.store.store_name || product.store.name}</h3>
                                 </div>
 
                                 <div className="flex flex-col items-start gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">

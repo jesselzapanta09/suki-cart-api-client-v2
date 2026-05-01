@@ -15,7 +15,7 @@ export default function SimilarProducts({
     });
 
     return (
-        <div className="bg-white rounded-2xl p-8 shadow-sm mb-8">
+        <div className="mb-8 rounded-2xl bg-white p-4 shadow-sm sm:p-6 lg:p-8">
             <h2 className="text-2xl font-bold text-gray-800 mb-6">Similar Products</h2>
 
             {similarLoading ? (

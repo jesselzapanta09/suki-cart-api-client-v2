@@ -283,7 +283,7 @@ export default function ProductDetailPage() {
     return (
         <div className="bg-gray-50 min-h-screen">
             <div className="max-w-7xl mx-auto mt-3 px-4 ">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 bg-white rounded-2xl p-8 shadow-sm mb-8">
+                <div className="mb-8 grid grid-cols-1 gap-6 rounded-2xl bg-white p-4 shadow-sm sm:p-6 md:grid-cols-2 md:gap-8 lg:p-8">
                     <div className="mt-3 flex flex-col gap-4 sm:mt-4">
                         <div className="flex items-center justify-center bg-linear-to-br from-green-50 to-emerald-100 rounded-xl w-full h-auto aspect-square relative group">
                             {currentImage ? (
@@ -455,7 +455,7 @@ export default function ProductDetailPage() {
 
                 {product.store && (
                     <div className="mb-8 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm sm:p-6">
-                        <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:gap-6">
+                        <div className="grid grid-cols-[80px_minmax(0,1fr)] items-start gap-3 sm:flex sm:items-center sm:gap-6">
                             <div className="h-20 w-20 shrink-0 overflow-hidden rounded-full border-2 border-green-600 bg-gray-100 sm:h-24 sm:w-24">
                                 {product.store.banner ? (
                                     <img
@@ -495,7 +495,7 @@ export default function ProductDetailPage() {
                                 type="default"
                                 size="large"
                                 onClick={() => navigate(`/stores/${product.store.id}`)}
-                                className="w-full whitespace-nowrap sm:w-auto"
+                                className="col-span-2 w-full whitespace-nowrap sm:w-auto"
                                 icon={<Store size={20} />}
                             >
                                 View Store
@@ -505,8 +505,8 @@ export default function ProductDetailPage() {
                 )}
 
                 {(product.description || (product.specs && Object.keys(product.specs).length > 0)) && (
-                    <div className="bg-white rounded-2xl p-8 shadow-sm mb-8">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="mb-8 rounded-2xl bg-white p-4 shadow-sm sm:p-6 lg:p-8">
+                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-8">
                             {product.description && (
                                 <div>
                                     <h3 className="font-semibold text-gray-800 mb-4 text-lg">Description</h3>

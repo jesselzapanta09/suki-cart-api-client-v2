@@ -137,13 +137,13 @@
         <div class="body">
             <p class="greeting">Hi {{ $user->firstname }},</p>
             <p class="intro">
-                Welcome to SukiCart — your neighborhood's online palengke!
+                Welcome to SukiCart ï¿½ your neighborhood's online palengke!
                 Click the button below to verify your email and unlock your account.
                 Fresh deals from local sellers are waiting for you.
             </p>
 
             <div class="cta-wrap">
-                <a href="{{ config('app.frontend_url', 'http://localhost:3000') }}/verify-email?token={{ $token }}" class="btn">
+                <a href="{{ $frontendUrl }}/verify-email?token={{ $token }}" class="btn">
                     Verify My Email Address
                 </a>
             </div>
@@ -156,13 +156,13 @@
 
             <div class="fallback">
                 <p>Button not working? Copy and paste this link into your browser:</p>
-                <span class="fallback-url">{{ config('app.frontend_url', 'http://localhost:3000') }}/verify-email?token={{ $token }}</span>
+                <span class="fallback-url">{{ $frontendUrl }}/verify-email?token={{ $token }}</span>
             </div>
         </div>
 
         <div class="footer">
             <p>
-                &copy; {{ date('Y') }} SukiCart — Your Neighborhood Online Store<br>
+                &copy; {{ date('Y') }} SukiCart ï¿½ Your Neighborhood Online Store<br>
                 If you didn't create this account, you can safely ignore this email.
             </p>
         </div>

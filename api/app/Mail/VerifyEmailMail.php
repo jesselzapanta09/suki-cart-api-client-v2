@@ -13,10 +13,14 @@ class VerifyEmailMail extends Mailable
 {
     use Queueable, SerializesModels;
 
+    public readonly string $frontendUrl;
+
     public function __construct(
         public readonly User   $user,
         public readonly string $token,
-    ) {}
+    ) {
+        $this->frontendUrl = rtrim(config('app.frontend_url', env('APP_FRONTEND_URL', 'http://localhost:3000')), '/');
+    }
 
     public function envelope(): Envelope
     {

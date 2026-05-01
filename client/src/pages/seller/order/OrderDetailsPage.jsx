@@ -123,7 +123,7 @@ export default function OrderDetailsPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-8">
                 <Spin size="large" />
             </div>
         )
@@ -131,10 +131,15 @@ export default function OrderDetailsPage() {
 
     if (!order) {
         return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center px-3 sm:px-4 py-8">
                 <div className="text-center">
                     <Empty description="Order not found" />
-                    <Button type="primary" size="large" onClick={() => navigate("/seller/orders")} className="mt-4">
+                    <Button
+                        type="primary"
+                        size="large"
+                        onClick={() => navigate("/seller/orders")}
+                        className="mt-4 h-10 sm:h-11 text-base font-semibold px-6 active:scale-95 transition-transform"
+                    >
                         Back to Orders
                     </Button>
                 </div>
@@ -164,39 +169,40 @@ export default function OrderDetailsPage() {
     const StatusIcon = statusInfo.icon
 
     return (
-        <div className="min-h-screen bg-gray-50 py-6 md:py-8">
-            <div className="max-w-6xl mx-auto px-4">
-                <div className="mb-6 flex items-center gap-3">
+        <div className="min-h-screen bg-gray-50 py-3 px-0 sm:py-4 sm:px-2 md:py-6 md:px-4">
+            <div className="w-full max-w-6xl mx-auto">
+                <div className="mb-4 sm:mb-6 flex items-center gap-2 sm:gap-3 px-3 sm:px-4">
                     <button
                         onClick={() => navigate("/seller/orders")}
-                        className="p-2 hover:bg-gray-200 rounded-lg transition-colors"
+                        className="p-2 sm:p-2.5 hover:bg-gray-200 rounded-lg transition-colors touch-target active:bg-gray-300 shrink-0"
+                        aria-label="Back to orders"
                     >
                         <ArrowLeft size={20} className="text-gray-700" />
                     </button>
                     <div className="flex-1 min-w-0">
-                        <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Order #{String(order.id || "").slice(0, 8)}</h1>
-                        <p className="text-sm text-gray-500 mt-1">{new Date(order.created_at).toLocaleString()}</p>
+                        <h1 className="text-lg sm:text-2xl md:text-3xl font-bold text-gray-900">Order #{String(order.id || "").slice(0, 8)}</h1>
+                        <p className="text-xs sm:text-sm text-gray-500 mt-0.5 sm:mt-1">{new Date(order.created_at).toLocaleString()}</p>
                     </div>
                 </div>
 
-                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mb-6">
-                    <div className="flex items-start justify-between gap-4 mb-5">
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-3 sm:p-4 md:p-5 mb-4 sm:mb-6 mx-3 sm:mx-0">
+                    <div className="flex items-start justify-between gap-4 mb-4 sm:mb-5">
                         <div>
-                            <h2 className="text-lg font-bold text-gray-900">Product Timeline</h2>
+                            <h2 className="text-base sm:text-lg font-bold text-gray-900">Product Timeline</h2>
                         </div>
                     </div>
 
                     {selectedItem?.status === "cancelled" ? (
-                        <div className="rounded-xl bg-red-50 border border-red-100 p-3 text-sm text-red-700">
+                        <div className="rounded-xl bg-red-50 border border-red-100 p-3 text-xs sm:text-sm text-red-700">
                             <p>This product order was cancelled by {getCancelledByLabel(selectedItem?.cancelled_by)}.</p>
                             {selectedItem?.cancellation_reason && (
                                 <p className="mt-2 text-xs text-red-600">Reason: {selectedItem.cancellation_reason}</p>
                             )}
                         </div>
                     ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 md:gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 md:gap-4 overflow-x-auto pb-2 sm:pb-0">
                             {timelineItems.map((item) => (
-                                <div key={item.status} className="relative">
+                                <div key={item.status} className="relative shrink-0 sm:shrink">
                                     {item.index < timelineItems.length - 1 && (
                                         <div
                                             className={`hidden md:block absolute top-6 left-[calc(50%+2rem)] right-4 h-1 rounded-full ${item.index < currentStep ? "bg-green-400" : "bg-gray-200"
@@ -205,27 +211,27 @@ export default function OrderDetailsPage() {
                                     )}
 
                                     <div
-                                        className={`relative h-full rounded-2xl border p-4 transition-all ${item.isCurrent
-                                                ? "border-blue-500 bg-blue-50 shadow-sm ring-2 ring-blue-100"
-                                                : item.isCompleted
-                                                    ? "border-green-200 bg-green-50"
-                                                    : "border-gray-200 bg-gray-50"
+                                        className={`relative h-full rounded-xl sm:rounded-2xl border p-2.5 sm:p-4 transition-all ${item.isCurrent
+                                            ? "border-blue-500 bg-blue-50 shadow-sm ring-2 ring-blue-100"
+                                            : item.isCompleted
+                                                ? "border-green-200 bg-green-50"
+                                                : "border-gray-200 bg-gray-50"
                                             }`}
                                     >
-                                        <div className="flex items-start gap-3">
+                                        <div className="flex items-start gap-2 sm:gap-3">
                                             <div
-                                                className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${item.isCurrent
-                                                        ? "bg-blue-600 text-white"
-                                                        : item.isCompleted
-                                                            ? "bg-green-600 text-white"
-                                                            : "bg-white text-gray-400 border border-gray-200"
+                                                className={`flex h-10 sm:h-12 w-10 sm:w-12 shrink-0 items-center justify-center rounded-lg sm:rounded-2xl ${item.isCurrent
+                                                    ? "bg-blue-600 text-white"
+                                                    : item.isCompleted
+                                                        ? "bg-green-600 text-white"
+                                                        : "bg-white text-gray-400 border border-gray-200"
                                                     }`}
                                             >
-                                                <item.Icon size={20} />
+                                                <item.Icon size={18} className="sm:w-5 sm:h-5" />
                                             </div>
 
-                                            <div className="min-w-0 flex flex-col items-start gap-2">
-                                                <p className="text-sm font-semibold text-gray-900">{item.label}</p>
+                                            <div className="min-w-0 flex flex-col items-start gap-1.5">
+                                                <p className="text-xs sm:text-sm font-semibold text-gray-900 line-clamp-2">{item.label}</p>
                                                 {item.isCurrent && (
                                                     <span className="rounded-full bg-blue-600 px-2 py-0.5 text-xs font-semibold text-white">
                                                         Current
@@ -242,7 +248,7 @@ export default function OrderDetailsPage() {
                                                     </span>
                                                 )}
                                                 <p className="text-xs text-gray-500">
-                                                    Step {item.index + 1} of {timelineItems.length}
+                                                    {item.index + 1}/{timelineItems.length}
                                                 </p>
                                             </div>
                                         </div>
@@ -253,79 +259,102 @@ export default function OrderDetailsPage() {
                     )}
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-6">
-                    <div className="space-y-5">
-                        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                                <div className="flex items-start gap-3">
-                                    <div className="w-10 h-10 rounded-xl bg-green-50 ring-1 ring-green-100 flex items-center justify-center shrink-0">
-                                        <User size={20} className="text-green-700" />
+                <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-3 sm:gap-4 md:gap-6">
+                    <div className="space-y-3 sm:space-y-4 md:space-y-5 px-3 sm:px-0">
+                        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-3 sm:p-4 md:p-5">
+                            <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2 md:gap-5">
+                                <div className="flex items-start gap-2.5 sm:gap-3">
+                                    <div className="w-9 sm:w-10 h-9 sm:h-10 rounded-lg sm:rounded-xl bg-green-50 ring-1 ring-green-100 flex items-center justify-center shrink-0">
+                                        <User size={18} className="sm:w-5 sm:h-5 text-green-700" />
                                     </div>
-                                    <div>
-                                        <h2 className="text-lg font-bold text-gray-900">Customer</h2>
-                                        <p className="text-sm font-semibold text-gray-800 mt-2">{customerName(order.customer)}</p>
-                                        <p className="text-sm text-gray-500">{order.customer?.email}</p>
-                                        <p className="text-sm text-gray-500">{order.customer?.contact_number}</p>
+                                    <div className="min-w-0">
+                                        <h2 className="text-sm sm:text-lg font-bold text-gray-900">Customer</h2>
+                                        <p className="text-sm font-semibold text-gray-800 mt-1 sm:mt-2 truncate">{customerName(order.customer)}</p>
+                                        <p className="text-xs sm:text-sm text-gray-500 truncate">{order.customer?.email}</p>
+                                        <p className="text-xs sm:text-sm text-gray-500">{order.customer?.contact_number}</p>
                                     </div>
                                 </div>
 
-                                <div className="flex items-start gap-3">
-                                    <div className="w-10 h-10 rounded-xl bg-blue-50 ring-1 ring-blue-100 flex items-center justify-center shrink-0">
-                                        <MapPin size={20} className="text-blue-700" />
+                                <div className="flex items-start gap-2.5 sm:gap-3">
+                                    <div className="w-9 sm:w-10 h-9 sm:h-10 rounded-lg sm:rounded-xl bg-blue-50 ring-1 ring-blue-100 flex items-center justify-center shrink-0">
+                                        <MapPin size={18} className="sm:w-5 sm:h-5 text-blue-700" />
                                     </div>
-                                    <div>
-                                        <h2 className="text-lg font-bold text-gray-900">Delivery</h2>
-                                        <LocationAddress location={order.location} inline className="text-sm text-gray-700 mt-2 inline-block" />
-                                        {order.address_extra && <p className="text-sm text-gray-500 mt-1">{order.address_extra}</p>}
+                                    <div className="min-w-0">
+                                        <h2 className="text-sm sm:text-lg font-bold text-gray-900">Delivery</h2>
+                                        <LocationAddress location={order.location} inline className="text-xs sm:text-sm text-gray-700 mt-1 sm:mt-2 inline-block" />
+                                        {order.address_extra && <p className="text-xs sm:text-sm text-gray-500 mt-1">{order.address_extra}</p>}
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                            <div className="p-4 md:p-5 border-b border-gray-100 bg-gray-50/70 flex items-center justify-between gap-3">
-                                <div>
-                                    <h2 className="font-bold text-gray-950">Store Items</h2>
+                            <div className="p-3 sm:p-4 md:p-5 border-b border-gray-100 bg-gray-50/70 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-3">
+                                <div className="min-w-0">
+                                    <h2 className="text-sm sm:text-base font-bold text-gray-950">Ordered Item/s</h2>
                                     <p className="text-xs text-gray-500">{storeOrder.active_items_count || 0} active · {storeOrder.cancelled_items_count || 0} cancelled</p>
                                 </div>
-                                <p className="text-xl font-bold text-green-700">{formatMoney(storeOrder.subtotal)}</p>
+                                <p className="text-lg sm:text-xl font-bold text-green-700 shrink-0">{formatMoney(storeOrder.subtotal)}</p>
                             </div>
 
-                            <div className="divide-y divide-gray-100">
+                            <div className="divide-y divide-gray-100 overflow-x-auto">
                                 {([selectedItem].filter(Boolean)).map(item => (
-                                    <div key={item.id} className="p-4 md:p-5 grid grid-cols-1 md:grid-cols-[80px_1fr_auto] gap-4">
-                                        <div className="w-20 h-20 rounded-xl bg-gray-100 flex items-center justify-center overflow-hidden">
-                                            {item.product?.images?.length ? (
-                                                <img
-                                                    src={item.product.images[0].full_url || item.product.images[0].image_path}
-                                                    alt={item.product.name}
-                                                    className="w-full h-full object-cover"
-                                                />
-                                            ) : (
-                                                <Package size={28} className="text-gray-400" />
-                                            )}
-                                        </div>
+                                    <div key={item.id} className="p-3 sm:p-4 md:p-5">
+                                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-[70px_1fr] md:grid-cols-[80px_1fr]">
 
-                                        <div className="min-w-0">
-                                            <div className="flex flex-wrap items-center gap-2">
-                                                <h3 className="font-semibold text-gray-900 truncate">{item.product?.name}</h3>
-                                                <Tag color={statusConfig[item.status]?.color || "default"}>
-                                                    {statusConfig[item.status]?.label || item.status}
-                                                </Tag>
+                                            {/* Image */}
+                                            <div className="h-24 w-24 rounded-xl bg-gray-100 flex items-center justify-center overflow-hidden shrink-0 sm:h-17.5 sm:w-17.5 md:h-20 md:w-20">
+                                                {item.product?.images?.length ? (
+                                                    <img
+                                                        src={item.product.images[0].full_url || item.product.images[0].image_path}
+                                                        alt={item.product.name}
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                ) : (
+                                                    <Package size={28} className="sm:w-7 sm:h-7 text-gray-400" />
+                                                )}
                                             </div>
-                                            {item.variant && <p className="text-xs text-gray-500 mt-1">{item.variant.name}</p>}
-                                            <p className="text-sm text-gray-600 mt-2">{formatMoney(item.price)} x {item.quantity}</p>
-                                        </div>
 
-                                        <div className="flex md:flex-col items-center md:items-end justify-between gap-3">
-                                            <p className={`font-bold ${item.status === "cancelled" ? "text-gray-400 line-through" : "text-gray-900"}`}>
-                                                {formatMoney(Number(item.price || 0) * item.quantity)}
-                                            </p>
-                                            {canCancelItem(item) && (
-                                                <Button danger size="small" icon={<X size={14} />} onClick={() => setCancelTarget(item)}>
-                                                    Cancel Item
-                                                </Button>
-                                            )}
+                                            {/* Content */}
+                                            <div className="min-w-0">
+                                                <div className="flex items-start justify-between gap-3">
+                                                    <h3 className="min-w-0 flex-1 font-semibold text-sm sm:text-base text-gray-900 line-clamp-2">
+                                                        {item.product?.name}
+                                                    </h3>
+
+                                                    <Tag
+                                                        color={statusConfig[item.status]?.color || "default"}
+                                                        className="m-0 w-fit shrink-0 text-xs"
+                                                    >
+                                                        {statusConfig[item.status]?.label || item.status}
+                                                    </Tag>
+                                                </div>
+
+                                                {item.variant && (
+                                                    <p className="text-xs sm:text-sm text-gray-500 mt-1">
+                                                        Variant: {item.variant.name}
+                                                    </p>
+                                                )}
+
+                                                {/* Qty + Cancel inline */}
+                                                <div className="mt-2 flex items-center justify-between gap-2">
+                                                    <p className="text-xs sm:text-sm text-gray-600">
+                                                        Qty: {item.quantity}
+                                                    </p>
+
+                                                    {canCancelItem(item) && (
+                                                        <Button
+                                                            danger
+                                                            size="small"
+                                                            icon={<X size={14} />}
+                                                            onClick={() => setCancelTarget(item)}
+                                                            className="text-xs sm:text-sm h-8 sm:h-9 px-2.5 sm:px-3 shrink-0 active:scale-95 transition-transform"
+                                                        >
+                                                            Cancel
+                                                        </Button>
+                                                    )}
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 ))}
@@ -333,71 +362,78 @@ export default function OrderDetailsPage() {
                         </div>
                     </div>
 
-                    <div>
-                        <div className="space-y-5 sticky top-4">
+                    <div className="px-3 sm:px-0">
+                        <div className="space-y-3 sm:space-y-4 md:space-y-5 lg:sticky lg:top-4">
                             {selectedItem?.status === "delivered" ? (
-                                <div className="bg-white rounded-2xl border border-green-100 shadow-sm p-5">
-                                    <div className="flex items-start gap-3">
-                                        <div className="w-11 h-11 rounded-2xl bg-green-100 flex items-center justify-center shrink-0">
-                                            <CheckCircle size={22} className="text-green-700" />
+                                <div className="bg-white rounded-2xl border border-green-100 shadow-sm p-3 sm:p-4 md:p-5">
+                                    <div className="flex items-start gap-2.5 sm:gap-3">
+                                        <div className="w-10 sm:w-11 h-10 sm:h-11 rounded-lg sm:rounded-2xl bg-green-100 flex items-center justify-center shrink-0">
+                                            <CheckCircle size={20} className="sm:w-5.5 sm:h-5.5 text-green-700" />
                                         </div>
-                                        <div>
-                                            <h3 className="font-bold text-gray-900">Order Delivered</h3>
-                                            <p className="text-sm text-gray-600 mt-1">
+                                        <div className="min-w-0">
+                                            <h3 className="font-bold text-sm sm:text-base text-gray-900">Order Delivered</h3>
+                                            <p className="text-xs sm:text-sm text-gray-600 mt-1">
                                                 This product order has already been delivered. No further seller action is needed.
                                             </p>
                                         </div>
                                     </div>
                                 </div>
                             ) : selectedItem?.status === "cancelled" ? (
-                                <div className="bg-white rounded-2xl border border-red-100 shadow-sm p-5">
-                                    <div className="flex items-start gap-3">
-                                        <div className="w-11 h-11 rounded-2xl bg-red-100 flex items-center justify-center shrink-0">
-                                            <X size={22} className="text-red-700" />
+                                <div className="bg-white rounded-2xl border border-red-100 shadow-sm p-3 sm:p-4 md:p-5">
+                                    <div className="flex items-start gap-2.5 sm:gap-3">
+                                        <div className="w-10 sm:w-11 h-10 sm:h-11 rounded-lg sm:rounded-2xl bg-red-100 flex items-center justify-center shrink-0">
+                                            <X size={20} className="sm:w-5.5 sm:h-5.5 text-red-700" />
                                         </div>
-                                        <div>
-                                            <h3 className="font-bold text-gray-900">Order Cancelled</h3>
-                                            <p className="text-sm text-gray-600 mt-1">
+                                        <div className="min-w-0">
+                                            <h3 className="font-bold text-sm sm:text-base text-gray-900">Order Cancelled</h3>
+                                            <p className="text-xs sm:text-sm text-gray-600 mt-1">
                                                 This product order has already been cancelled. No further seller action is needed.
                                             </p>
                                         </div>
                                     </div>
                                 </div>
                             ) : (
-                                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-                                    <div className="flex items-center gap-3 mb-5">
-                                        <div className="w-10 h-10 rounded-xl bg-green-50 ring-1 ring-green-100 flex items-center justify-center shrink-0">
-                                            <ShoppingBag size={20} className="text-green-700" />
+                                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-3 sm:p-4 md:p-5">
+                                    <div className="flex items-center gap-2.5 sm:gap-3 mb-4 sm:mb-5">
+                                        <div className="w-9 sm:w-10 h-9 sm:h-10 rounded-lg sm:rounded-xl bg-green-50 ring-1 ring-green-100 flex items-center justify-center shrink-0">
+                                            <ShoppingBag size={18} className="sm:w-5 sm:h-5 text-green-700" />
                                         </div>
-                                        <div>
-                                            <h3 className="font-bold text-gray-900">Seller Actions</h3>
+                                        <div className="min-w-0">
+                                            <h3 className="font-bold text-sm sm:text-base text-gray-900">Seller Actions</h3>
                                             <p className="text-xs text-gray-500">Update this product order only.</p>
                                         </div>
                                     </div>
 
-                                    <Form form={form} size="large" layout="vertical" requiredMark={false}>
+                                    <Form form={form} size="large" layout="vertical" requiredMark={false} className="ant-form-mobile">
                                         <Form.Item name="status" label="Status" rules={[{ required: true, message: "Status is required" }]}>
-                                            <Select options={statusOptions} />
+                                            <Select options={statusOptions} className="h-10 sm:h-11" />
                                         </Form.Item>
 
                                         {selectedStatus === "shipped" && (
                                             <>
                                                 <Form.Item name="courier_name" label="Courier Name" rules={[{ required: true, message: "Courier name is required" }]}>
-                                                    <Input placeholder="e.g. LBC, J&T, Flash Express" />
+                                                    <Input placeholder="e.g. LBC, J&T, Flash Express" className="h-10 sm:h-11 text-base" />
                                                 </Form.Item>
                                                 <Form.Item name="tracking_number" label="Tracking Number" rules={[{ required: true, message: "Tracking number is required" }]}>
-                                                    <Input placeholder="Tracking number" />
+                                                    <Input placeholder="Tracking number" className="h-10 sm:h-11 text-base" />
                                                 </Form.Item>
                                             </>
                                         )}
 
                                         {selectedStatus === "cancelled" && (
                                             <Form.Item name="cancellation_reason" label="Cancellation Reason" rules={[{ required: true, message: "Cancellation reason is required" }]}>
-                                                <Input.TextArea rows={3} maxLength={1000} placeholder="Why is this store order being cancelled?" />
+                                                <Input.TextArea rows={3} maxLength={1000} placeholder="Why is this store order being cancelled?" className="text-base" />
                                             </Form.Item>
                                         )}
 
-                                        <Button type="primary" block loading={savingStatus} disabled={!selectedItem} onClick={handleStatusSave}>
+                                        <Button
+                                            type="primary"
+                                            block
+                                            loading={savingStatus}
+                                            disabled={!selectedItem}
+                                            onClick={handleStatusSave}
+                                            className="h-10 sm:h-11 text-base font-semibold active:scale-95 transition-transform"
+                                        >
                                             Save Status
                                         </Button>
                                     </Form>
@@ -416,9 +452,11 @@ export default function OrderDetailsPage() {
                 onOk={handleCancelItem}
                 okText="Cancel Item"
                 okButtonProps={{ danger: true, loading: cancelLoading }}
+                centered
+                width={Math.min(500, window.innerWidth - 32)}
             >
-                <div className="space-y-4">
-                    <p className="text-sm text-gray-600">
+                <div className="space-y-3 sm:space-y-4">
+                    <p className="text-xs sm:text-sm text-gray-600">
                         Please provide a reason for cancelling {cancelTarget?.product?.name || "this item"}.
                     </p>
                     <Input.TextArea
@@ -427,6 +465,7 @@ export default function OrderDetailsPage() {
                         onChange={(e) => setCancelReason(e.target.value)}
                         rows={4}
                         maxLength={1000}
+                        className="text-base"
                     />
                 </div>
             </Modal>

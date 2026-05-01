@@ -241,7 +241,7 @@ export default function ProductVariantManagementIndex() {
             <span className="font-sora font-semibold text-sm text-green-900">All Variants</span>
             <span className="text-gray-400 text-xs bg-gray-100 rounded-full px-2 py-0.5">{filteredVariants.length}</span>
           </div>
-          <div className="w-full sm:w-auto">
+          <div className="w-full">
             <Input
               placeholder="Search variant name..."
               prefix={<Search size={14} className="text-gray-400" />}
@@ -249,7 +249,7 @@ export default function ProductVariantManagementIndex() {
               onChange={(event) => handleSearch(event.target.value)}
               allowClear
               size="large"
-              className="w-full rounded-xl sm:w-72"
+              className="w-full rounded-xl"
             />
           </div>
         </div>

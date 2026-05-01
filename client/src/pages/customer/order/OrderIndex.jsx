@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Button, Empty, Input, Pagination, Spin, Tag, App } from "antd"
 import { useNavigate } from "react-router-dom"
-import { Package, Search, Eye, X, Clock, CheckCircle, Truck, Store, ShoppingBag } from "lucide-react"
+import { Package, Search, ChevronRight, X, Clock, CheckCircle, Truck, ShoppingBag } from "lucide-react"
 import * as orderService from "../../../services/orderService"
 
 const statusConfig = {
@@ -102,32 +102,32 @@ export default function OrderIndex() {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            <div className="max-w-7xl mx-auto px-4 py-6 md:py-8 pb-24 md:pb-28">
-                <div className="mb-6 bg-linear-to-br from-green-50 to-emerald-50 rounded-2xl p-3 md:p-4 border border-green-100">
-                    <div className="flex items-start gap-3 md:gap-4">
-                        <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-green-100 flex items-center justify-center shrink-0">
-                            <ShoppingBag size={20} className="text-green-700 md:w-6 md:h-6" />
+            <div className="mx-auto w-full max-w-7xl px-3 py-4 pb-6 sm:px-4 sm:py-5 md:py-8 md:pb-8">
+                <div className="mb-4 rounded-3xl border border-green-100 bg-linear-to-br from-green-50 via-emerald-50 to-white p-4 shadow-sm sm:mb-6 sm:p-5">
+                    <div className="flex items-start gap-3 sm:gap-4">
+                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-green-100 sm:h-12 sm:w-12">
+                            <ShoppingBag size={20} className="text-green-700 sm:h-6 sm:w-6" />
                         </div>
                         <div className="min-w-0">
-                            <h1 className="text-xl md:text-2xl font-bold text-green-900">Your Orders</h1>
-                            <p className="text-gray-500 text-xs md:text-sm">
+                            <h1 className="text-lg font-bold leading-tight text-green-950 sm:text-xl md:text-2xl">Your Orders</h1>
+                            <p className="mt-1 text-xs text-gray-600 sm:text-sm">
                                 {totalItems} order item{totalItems !== 1 ? "s" : ""}
                             </p>
                         </div>
                     </div>
                 </div>
 
-                <div className="mb-6 bg-white rounded-xl border border-gray-100 shadow-sm p-4 md:p-5">
-                    <div className="flex flex-col gap-4">
+                <div className="mb-4 rounded-xl border border-gray-100 bg-white p-3.5 shadow-sm sm:mb-6 sm:p-4 md:p-5">
+                    <div className="flex flex-col gap-3 sm:gap-4">
                         <Input
-                            placeholder="Search by order, store, product, or status"
+                            placeholder="Search by order or product"
                             prefix={<Search size={16} className="text-gray-400" />}
                             onChange={(e) => handleSearch(e.target.value)}
-                            className="rounded-lg h-11"
+                            className="customer-orders-search rounded-xl text-base"
                             size="large"
                         />
 
-                        <div className="grid grid-cols-2 gap-2 md:grid-cols-3 xl:grid-cols-6">
+                        <div className="customer-orders-status-scroll -mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
                             {statusTabs.map((status) => {
                                 const isActive = activeStatus === status
                                 const label = status === "all" ? "All" : statusConfig[status]?.label || status
@@ -137,14 +137,15 @@ export default function OrderIndex() {
                                         key={status}
                                         type="button"
                                         onClick={() => handleStatusChange(status)}
-                                        className={`flex w-full items-center justify-between gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium transition-colors ${
+                                        className={`flex min-h-11 shrink-0 items-center justify-between gap-3 rounded-lg border px-4 py-2.5 text-left text-sm font-medium transition-colors ${
                                             isActive
                                                 ? "border-green-600 bg-green-600 text-white"
                                                 : "border-gray-200 bg-gray-50 text-gray-700 hover:border-gray-300 hover:bg-gray-100"
                                         }`}
+                                        style={{ minWidth: "max-content" }}
                                     >
-                                        <span className="truncate text-left">{label}</span>
-                                        <span className={`rounded-full px-2 py-0.5 text-xs ${isActive ? "bg-white/15 text-white" : "bg-white text-gray-500"}`}>
+                                        <span className="whitespace-nowrap">{label}</span>
+                                        <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs ${isActive ? "bg-white/15 text-white" : "bg-white text-gray-500"}`}>
                                             {counts[status] || 0}
                                         </span>
                                     </button>
@@ -155,28 +156,28 @@ export default function OrderIndex() {
                 </div>
 
                 {loading ? (
-                    <div className="min-h-64 flex items-center justify-center">
+                    <div className="flex min-h-64 items-center justify-center">
                         <Spin size="large" />
                     </div>
                 ) : orders.length === 0 ? (
-                    <div className="bg-white rounded-xl border border-gray-100 p-10">
+                    <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm sm:p-10">
                         <div className="text-center">
-                            <div className="w-20 h-20 rounded-xl bg-green-100 flex items-center justify-center mx-auto mb-4">
+                            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-green-100 sm:h-20 sm:w-20">
                                 <Package size={36} className="text-green-600" />
                             </div>
-                            <h2 className="text-xl font-bold text-green-900 mb-2">No orders yet</h2>
-                            <p className="text-gray-500 text-sm mb-6">Start shopping to create your first order.</p>
-                            <Button type="primary" size="large" className="rounded-lg font-semibold" onClick={() => navigate("/")}>
+                            <h2 className="mb-2 text-lg font-bold text-green-900 sm:text-xl">No orders yet</h2>
+                            <p className="text-sm leading-relaxed text-gray-500">Start shopping to create your first order.</p>
+                            <Button type="primary" size="large" className="mt-6 rounded-xl font-semibold" onClick={() => navigate("/")}>
                                 Continue Shopping
                             </Button>
                         </div>
                     </div>
                 ) : itemRows.length === 0 ? (
-                    <div className="bg-white rounded-xl border border-gray-100 p-10">
+                    <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm sm:p-10">
                         <Empty description={activeStatus === "all" ? "No product orders found" : `No ${statusConfig[activeStatus]?.label?.toLowerCase() || activeStatus} items found`} />
                     </div>
                 ) : (
-                    <div className="space-y-5">
+                    <div className="space-y-4 sm:space-y-5">
                         {itemRows.map((order) => {
                             const item = order.order_item
                             const statusInfo = statusConfig[item?.status] || statusConfig.pending
@@ -185,60 +186,30 @@ export default function OrderIndex() {
                             const itemTotal = item?.item_total ?? ((Number(item?.price || 0) * Number(item?.quantity || 0)) + Number(item?.shipping_cost || 0))
 
                             return (
-                                <div key={`${order.id}-${item?.id}`} className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-                                    <div className="p-4 md:p-5 border-b border-gray-100 bg-gray-50/70 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                                        <div className="flex items-start gap-3 min-w-0 flex-1">
-                                            <div className="w-11 h-11 rounded-lg bg-green-100 flex items-center justify-center shrink-0">
+                                <div key={`${order.id}-${item?.id}`} className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
+                                    <div className="flex items-start justify-between gap-3 border-b border-gray-100 bg-gray-50/70 p-4 md:gap-4 md:p-5">
+                                        <div className="flex min-w-0 flex-1 items-start gap-3">
+                                            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-green-100">
                                                 <ShoppingBag size={20} className="text-green-700" />
                                             </div>
                                             <div className="min-w-0">
-                                                <div className="flex flex-col items-start gap-2">
-                                                    <h2 className="font-bold text-gray-950">Checkout #{String(order.id || "").slice(0, 8)}</h2>
-                                                    <Tag color={statusInfo.color} className="w-fit">
-                                                        <span className="inline-flex items-center gap-1 whitespace-nowrap">
-                                                            <StatusIcon size={14} />
-                                                            <span>{statusInfo.label}</span>
-                                                        </span>
-                                                    </Tag>
-                                                </div>
-                                                <p className="text-xs text-gray-500 mt-1">{new Date(order.created_at).toLocaleString()} | Qty {item?.quantity || 0}</p>
+                                                <h2 className="min-w-0 text-base font-bold text-gray-950">Order #{String(order.id || "").slice(0, 8)}</h2>
+                                                <p className="mt-1 text-sm font-semibold text-gray-800">{getStoreName(store)}</p>
+                                                <p className="text-xs text-gray-500 sm:text-sm">{new Date(order.created_at).toLocaleString()}</p>
                                             </div>
                                         </div>
 
-                                        <div className="flex items-center gap-3 md:shrink-0">
-                                            <div className="text-right">
-                                                <p className="text-xs text-gray-500">Item total</p>
-                                                <p className="text-xl font-bold text-green-700">{formatMoney(itemTotal)}</p>
-                                            </div>
-                                            <Button
-                                                type="primary"
-                                                icon={<Eye size={16} />}
-                                                onClick={() => navigate(`/customer/orders/items/${order?.checkout_no || order?.id}`)}
-                                                className="rounded-lg"
-                                            >
-                                                Details
-                                            </Button>
-                                        </div>
+                                        <Tag color={statusInfo.color} className="m-0 w-fit shrink-0 self-start">
+                                            <span className="inline-flex items-center gap-1 whitespace-nowrap">
+                                                <StatusIcon size={14} />
+                                                <span>{statusInfo.label}</span>
+                                            </span>
+                                        </Tag>
                                     </div>
 
-                                    <div className="p-4 md:p-5">
-                                        <div className="flex items-center gap-3 mb-3">
-                                            <div className="w-12 h-12 rounded-lg bg-green-100 flex items-center justify-center overflow-hidden shrink-0 border border-green-100">
-                                                {store?.banner ? (
-                                                    <img
-                                                        src={`/${store.banner}`}
-                                                        alt={getStoreName(store)}
-                                                        className="w-full h-full object-cover"
-                                                    />
-                                                ) : (
-                                                    <Store size={18} className="text-green-700" />
-                                                )}
-                                            </div>
-                                            <p className="font-semibold text-gray-900 truncate">{getStoreName(store)}</p>
-                                        </div>
-
-                                        <div className="flex items-center gap-3 rounded-xl bg-gray-50 border border-gray-100 p-3">
-                                            <div className="w-14 h-14 rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden shrink-0">
+                                    <div className="space-y-3 p-4 md:p-5">
+                                        <div className="flex items-start gap-3 rounded-xl border border-gray-100 bg-gray-50 p-3">
+                                            <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-gray-100 sm:h-18 sm:w-18">
                                                 {item?.product?.images?.length ? (
                                                     <img
                                                         src={item.product.images[0].full_url || item.product.images[0].image_path}
@@ -249,15 +220,31 @@ export default function OrderIndex() {
                                                     <Package size={20} className="text-gray-400" />
                                                 )}
                                             </div>
-                                            <div className="min-w-0 flex-1">
-                                                <p className="text-sm font-semibold text-gray-900 truncate">{item?.product?.name}</p>
-                                                <p className="text-xs text-gray-500">
+                                            <div className="min-w-0 flex-1 self-center">
+                                                <p className="line-clamp-2 text-sm font-semibold text-gray-900">{item?.product?.name}</p>
+                                                <p className="mt-1 text-xs leading-relaxed text-gray-500 sm:text-sm">
                                                     Price {formatMoney(item?.price)} | Shipping {formatMoney(item?.shipping_cost)}
                                                 </p>
+                                                <p className="mt-1 text-xs text-gray-500 sm:text-sm">Qty {item?.quantity || 0}</p>
                                                 {item?.variant?.name && (
-                                                    <p className="text-xs text-gray-500 mt-1">Variant: {item.variant.name}</p>
+                                                    <p className="mt-1 text-xs text-gray-500 sm:text-sm">Variant: {item.variant.name}</p>
                                                 )}
                                             </div>
+                                            <div className="shrink-0 self-center text-right">
+                                                <p className="text-xs text-gray-500">Item total</p>
+                                                <p className="mt-1 text-base font-bold text-green-700 sm:text-lg">{formatMoney(itemTotal)}</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex justify-end">
+                                            <Button
+                                                icon={<ChevronRight size={16} />}
+                                                onClick={() => navigate(`/customer/orders/items/${order?.checkout_no || order?.id}`)}
+                                                className="h-11 rounded-lg px-3 text-sm font-medium"
+                                                aria-label="View order details"
+                                            >
+                                                View
+                                            </Button>
                                         </div>
                                     </div>
                                 </div>
@@ -266,7 +253,7 @@ export default function OrderIndex() {
                     </div>
                 )}
 
-                <div className="mt-6 flex justify-end">
+                <div className="customer-orders-pagination mt-6 flex justify-center lg:justify-end">
                     <Pagination
                         current={pagination.current}
                         pageSize={pagination.pageSize}

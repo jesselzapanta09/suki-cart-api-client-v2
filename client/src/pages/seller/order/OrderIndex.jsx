@@ -29,13 +29,14 @@ export default function OrderIndex() {
     const [pagination, setPagination] = useState({ current: 1, pageSize: 10 })
     const searchTimer = useRef(null)
 
-    const fetchOrders = useCallback(async (page = 1, pageSize = 10, status = activeStatus) => {
+    const fetchOrders = useCallback(async (page = 1, pageSize = 10, status = activeStatus, keyword = search) => {
         setLoading(true)
         try {
             const data = await getSellerOrders({
                 page,
                 per_page: pageSize,
                 ...(status !== "all" ? { status } : {}),
+                ...(keyword.trim() ? { search: keyword.trim() } : {}),
             })
 
             setOrders(data?.data || [])
@@ -50,41 +51,26 @@ export default function OrderIndex() {
         } finally {
             setLoading(false)
         }
-    }, [activeStatus, message])
+    }, [activeStatus, message, search])
 
     useEffect(() => {
-        fetchOrders(1, pagination.pageSize, activeStatus)
+        fetchOrders(1, pagination.pageSize, activeStatus, search)
         return () => clearTimeout(searchTimer.current)
-    }, [activeStatus, fetchOrders, pagination.pageSize])
+    }, [activeStatus, fetchOrders, pagination.pageSize, search])
 
     const itemRows = useMemo(() => {
-        const rows = orders.flatMap((order) =>
+        return orders.flatMap((order) =>
             (order.store_order?.items || []).map((item) => ({
                 ...order,
                 order_item: item,
             }))
         )
+    }, [orders])
 
-        const keyword = search.trim().toLowerCase()
-
-        if (!keyword) return rows
-
-        return rows.filter((order) => {
-            const item = order.order_item
-            const customer = customerName(order.customer).toLowerCase()
-            const product = (item?.product?.name || "").toLowerCase()
-            const statusLabel = (statusConfig[item?.status]?.label || item?.status || "").toLowerCase()
-
-            return (
-                String(order.id || "").toLowerCase().includes(keyword) ||
-                customer.includes(keyword) ||
-                product.includes(keyword) ||
-                statusLabel.includes(keyword)
-            )
-        })
-    }, [orders, search])
-
-    const totalItems = search.trim() ? itemRows.length : total
+    const activeTabTotal = activeStatus === "all" ? (counts.all ?? total) : (counts[activeStatus] ?? 0)
+    const paginationTotal = search.trim() ? total : activeTabTotal
+    const totalItems = paginationTotal
+    const shouldShowPagination = paginationTotal > pagination.pageSize
 
     const handleSearch = (value) => {
         clearTimeout(searchTimer.current)
@@ -92,7 +78,7 @@ export default function OrderIndex() {
     }
 
     const handlePageChange = (page, pageSize) => {
-        fetchOrders(page, pageSize, activeStatus)
+        fetchOrders(page, pageSize, activeStatus, search)
     }
 
     const handleStatusChange = (status) => {
@@ -133,7 +119,7 @@ export default function OrderIndex() {
                 <div className="mb-4 rounded-xl border border-gray-100 bg-white p-3.5 shadow-sm sm:mb-6 sm:p-4 md:p-5">
                     <div className="flex flex-col gap-3 sm:gap-4">
                         <Input
-                            placeholder="Search by order or product"
+                            placeholder="Search by order number or product"
                             prefix={<Search size={16} className="text-gray-400" />}
                             onChange={(e) => handleSearch(e.target.value)}
                             className="seller-orders-search rounded-xl text-base"
@@ -270,14 +256,16 @@ export default function OrderIndex() {
                     </div>
                 )}
 
-                <div className="seller-orders-pagination mt-6 flex justify-center lg:justify-end">
-                    <Pagination
-                        current={pagination.current}
-                        pageSize={pagination.pageSize}
-                        total={total}
-                        onChange={handlePageChange}
-                    />
-                </div>
+                {shouldShowPagination && (
+                    <div className="seller-orders-pagination mt-6 flex justify-center lg:justify-end">
+                        <Pagination
+                            current={pagination.current}
+                            pageSize={pagination.pageSize}
+                            total={paginationTotal}
+                            onChange={handlePageChange}
+                        />
+                    </div>
+                )}
             </div>
         </div>
     )

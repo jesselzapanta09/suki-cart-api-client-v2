@@ -23,17 +23,27 @@ class CustomerOrderController extends Controller
     {
         $user = $request->user();
         $status = $request->query('status');
+        $search = trim((string) $request->query('search', ''));
         $perPage = min((int) $request->query('per_page', 15), 50);
 
         $baseQuery = OrderItem::query()
             ->where('user_id', $user->id);
 
-        $statusCounts = (clone $baseQuery)
+        $filteredBaseQuery = (clone $baseQuery)
+            ->when($search !== '', function ($q) use ($search) {
+                $q->where(function ($searchQuery) use ($search) {
+                    $searchQuery
+                        ->where('checkout_no', 'like', "%{$search}%")
+                        ->orWhereHas('product', fn ($productQuery) => $productQuery->where('name', 'like', "%{$search}%"));
+                });
+            });
+
+        $statusCounts = (clone $filteredBaseQuery)
             ->select('status', DB::raw('COUNT(*) as total'))
             ->groupBy('status')
             ->pluck('total', 'status');
 
-        $query = (clone $baseQuery)
+        $query = (clone $filteredBaseQuery)
             ->when($status, fn ($q) => $q->where('status', $status))
             ->with(['location', 'product.images', 'product.store', 'variant', 'review'])
             ->orderByDesc('created_at');
@@ -54,7 +64,7 @@ class CustomerOrderController extends Controller
                 'last_page' => $items->lastPage(),
             ],
             'counts' => [
-                'all' => (clone $baseQuery)->count(),
+                'all' => (clone $filteredBaseQuery)->count(),
                 'pending' => (int) ($statusCounts['pending'] ?? 0),
                 'processing' => (int) ($statusCounts['processing'] ?? 0),
                 'shipped' => (int) ($statusCounts['shipped'] ?? 0),

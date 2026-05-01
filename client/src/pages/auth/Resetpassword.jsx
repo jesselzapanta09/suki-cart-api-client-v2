@@ -49,7 +49,7 @@ export default function ResetPassword() {
                                 <Input.Password placeholder="••••••••" className="rounded-lg border-gray-300" />
                             </Form.Item>
                             <Form.Item className="mt-2 mb-0">
-                                <button htmlType="submit" disabled={loading} className="h-12 w-full cursor-pointer rounded-lg bg-linear-to-br from-green-700 to-green-500 text-white font-semibold shadow-md hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2">
+                                <button type="submit" disabled={loading} className="h-12 w-full cursor-pointer rounded-lg bg-linear-to-br from-green-700 to-green-500 text-white font-semibold shadow-md hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2">
                                     {loading && <Loader2 className="animate-spin w-5 h-5" />}
                                     {loading ? "Resetting…" : "Reset Password"}
                                 </button>

@@ -6,23 +6,19 @@ import { verifyEmail } from "../../services/authService"
 import { useAuth } from "../../context/auth-context"
 
 export default function VerifyEmail() {
-    const [status, setStatus] = useState("loading")
-    const [msg, setMsg] = useState("")
+    const [searchParams] = useSearchParams()
+    const token = searchParams.get("token")
+    const [status, setStatus] = useState(token ? "loading" : "error")
+    const [msg, setMsg] = useState(token ? "" : "No verification token found in the link.")
     const calledRef = useRef(false)
     const navigate = useNavigate()
-    const [searchParams] = useSearchParams()
     const { loginUser } = useAuth()
 
     useEffect(() => {
         if (calledRef.current) return
         calledRef.current = true
 
-        const token = searchParams.get("token")
-        if (!token) {
-            setStatus("error")
-            setMsg("No verification token found in the link.")
-            return
-        }
+        if (!token) return
 
         verifyEmail(token)
             .then(data => {
@@ -33,7 +29,7 @@ export default function VerifyEmail() {
                 setStatus("error")
                 setMsg(err.message ?? "Verification failed. The link may have expired.")
             })
-    }, [searchParams])
+    }, [token, loginUser, navigate])
 
     if (status === "loading") {
         return (

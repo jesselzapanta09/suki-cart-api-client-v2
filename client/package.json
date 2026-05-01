@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "cordova-build": "npm run build",
+    "cordova-build": "vite build --mode cordova",
     "lint": "eslint .",
     "preview": "vite preview"
   },

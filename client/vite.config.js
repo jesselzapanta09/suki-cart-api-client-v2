@@ -27,14 +27,14 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
-export default defineConfig(() => ({
-  base: './',
+export default defineConfig(({ mode }) => ({
+  base: mode === 'cordova' ? './' : '/',
   plugins: [
     react(),
     tailwindcss(),
   ],
   build: {
-    outDir: '../cordova/www',
+    outDir: mode === 'cordova' ? '../cordova/www' : 'dist',
     emptyOutDir: true,
   },
   server: {

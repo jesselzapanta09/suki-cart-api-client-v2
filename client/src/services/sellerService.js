@@ -1,5 +1,9 @@
 import api from './api';
 
+export function getSellerDashboard() {
+    return api.get('/seller/dashboard');
+}
+
 export function getStoreStatus() {
     return api.get('/seller/store-status');
 }

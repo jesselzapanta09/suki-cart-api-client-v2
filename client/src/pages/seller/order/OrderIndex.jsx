@@ -100,17 +100,15 @@ export default function OrderIndex() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50">
-
-            <div className="mx-auto w-full max-w-7xl px-3 py-4 pb-24 sm:px-4 sm:py-5 md:py-8 md:pb-28">
-                <div className="mb-4 rounded-3xl border border-green-100 bg-linear-to-br from-green-50 via-emerald-50 to-white p-4 shadow-sm sm:mb-6 sm:p-5">
-                    <div className="flex items-start gap-3 sm:gap-4">
-                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-green-100 sm:h-12 sm:w-12">
-                            <ShoppingBag size={20} className="text-green-700 sm:h-6 sm:w-6" />
+          <div className="mx-auto max-w-7xl space-y-4 px-3 pb-6 pt-3 sm:space-y-5 sm:px-4 sm:pb-8 sm:pt-4 lg:px-8">
+                <div className="rounded-2xl bg-white px-4 py-4 shadow-sm ring-1 ring-gray-200 sm:px-6 sm:py-5">
+                    <div className="flex items-start gap-3 sm:items-center sm:gap-4">
+                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-linear-to-br from-green-600 to-emerald-500 shadow-sm">
+                            <ShoppingBag size={22} className="text-white" />
                         </div>
                         <div className="min-w-0">
-                            <h1 className="text-lg font-bold leading-tight text-green-950 sm:text-xl md:text-2xl">Store Orders</h1>
-                            <p className="mt-1 text-xs text-gray-600 sm:text-sm">
+                            <h1 className="font-sora text-lg font-bold text-gray-900 sm:text-xl">Store Orders</h1>
+                            <p className="mt-1 text-xs leading-5 text-gray-500 sm:text-sm">
                                 {totalItems} order item{totalItems !== 1 ? "s" : ""}
                             </p>
                         </div>
@@ -268,6 +266,5 @@ export default function OrderIndex() {
                     </div>
                 )}
             </div>
-        </div>
     )
 }

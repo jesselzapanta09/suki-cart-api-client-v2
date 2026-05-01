@@ -231,12 +231,13 @@ export default function ProductIndex() {
 
   return (
     <div className="mx-auto max-w-7xl space-y-4 px-3 pb-6 pt-3 sm:space-y-5 sm:px-4 sm:pb-8 sm:pt-4 lg:px-8">
+
       <div className="rounded-2xl bg-white px-4 py-4 shadow-sm ring-1 ring-gray-200 sm:px-6 sm:py-5">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-start gap-3 sm:items-center sm:gap-4">
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-linear-to-br from-green-600 to-emerald-500 shadow-sm">
-            <Layers size={22} className="text-white" />
-          </div>
+              <Layers size={22} className="text-white" />
+            </div>
             <div className="min-w-0">
               <h1 className="font-sora text-lg font-bold text-gray-900 sm:text-xl">Product Management</h1>
               <p className="mt-1 text-xs leading-5 text-gray-500 sm:text-sm">Manage your store&apos;s products</p>

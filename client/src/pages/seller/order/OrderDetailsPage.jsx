@@ -170,7 +170,7 @@ export default function OrderDetailsPage() {
     const StatusIcon = statusInfo.icon
 
     return (
-        <div className="min-h-screen bg-gray-50 py-3 px-0 sm:py-4 sm:px-2 md:py-6 md:px-4">
+        <div className="mx-auto max-w-7xl space-y-4 px-3 pb-6 pt-3 sm:space-y-5 sm:px-4 sm:pb-8 sm:pt-4 lg:px-8">
             <div className="w-full max-w-6xl mx-auto">
                 <div className="mb-4 sm:mb-6 flex items-center gap-2 sm:gap-3 px-3 sm:px-4">
                     <button

@@ -214,9 +214,11 @@ export default function AdminLayout() {
             <main className={`flex-1 min-w-0 ${isDesktop ? 'pt-0' : 'pt-15.5 pb-[calc(env(safe-area-inset-bottom,0px)+5rem)]'}`}>
                 {/* Desktop topbar */}
                 {isDesktop && (
-                    <div className="sticky top-0 z-30 h-14 bg-white border-b border-gray-100 shadow-sm flex items-center justify-end px-6 gap-3">
-                        <NotificationBell />
-                        <Avatar  user={user} />
+                    <div className="sticky top-0 z-30 border-b border-gray-100 bg-white shadow-sm">
+                        <div className="mx-auto flex h-14 max-w-7xl items-center justify-end gap-3 px-3 sm:px-4 lg:px-8">
+                            <NotificationBell />
+                            <Avatar user={user} />
+                        </div>
                     </div>
                 )}
                 <Outlet />

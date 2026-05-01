@@ -208,17 +208,18 @@ export default function CheckoutIndex() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            <div className="max-w-5xl mx-auto px-4 py-6 md:py-8 space-y-5">
+        <div className="mx-auto max-w-7xl space-y-4 px-3 pb-6 pt-3 sm:space-y-5 sm:px-4 sm:pb-8 sm:pt-4 lg:px-8">
                 {/* Header */}
-                <div className="mb-6 bg-linear-to-br from-green-50 to-emerald-50 rounded-2xl p-3 md:p-4 border border-green-100">
-                    <div className="flex items-start gap-3 md:gap-4">
-                        <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-green-100 flex items-center justify-center shrink-0">
-                            <ShoppingCart size={20} className="text-green-700 md:w-6 md:h-6" />
+                <div className="rounded-2xl bg-white px-4 py-4 shadow-sm ring-1 ring-gray-200 sm:px-6 sm:py-5">
+                    <div className="flex items-start gap-3 sm:items-center sm:gap-4">
+                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-linear-to-br from-green-600 to-emerald-500 shadow-sm">
+                            <ShoppingCart size={22} className="text-white" />
                         </div>
                         <div className="min-w-0">
-                            <h1 className="text-xl md:text-2xl font-bold text-green-900">Complete Order</h1>
-                            <p className="text-gray-500 text-xs md:text-sm">{totalItems} item{totalItems !== 1 ? "s" : ""} ready for checkout</p>
+                            <h1 className="font-sora text-lg font-bold text-gray-900 sm:text-xl">Complete Order</h1>
+                            <p className="mt-1 text-xs leading-5 text-gray-500 sm:text-sm">
+                                {totalItems} item{totalItems !== 1 ? "s" : ""} ready for checkout
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -513,7 +514,6 @@ export default function CheckoutIndex() {
                 </div>
                 </Form>
             </div>
-        </div>
         
     );
 }

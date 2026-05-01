@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\AdminCategoryController;
 use App\Http\Controllers\Admin\AdminNotificationLogController;
@@ -16,8 +17,10 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Seller\SellerProductController;
 use App\Http\Controllers\Seller\SellerProductVariantController;
 use App\Http\Controllers\Seller\SellerOrderController;
+use App\Http\Controllers\Seller\SellerDashboardController;
 use App\Http\Controllers\Seller\SellerStoreController;
 use App\Http\Controllers\Customer\CustomerCartController;
+use App\Http\Controllers\Customer\CustomerDashboardController;
 use App\Http\Controllers\Customer\CustomerOrderController;
 use App\Http\Controllers\Customer\CustomerProductReviewController;
 use Illuminate\Http\Request;
@@ -74,6 +77,7 @@ Route::middleware('auth:api')->group(function () {
 
     // Admin routes
     Route::middleware('role:admin')->prefix('admin')->group(function () {
+        Route::get('/dashboard',     [AdminDashboardController::class, 'index']);
         Route::get('/users',         [AdminUserController::class, 'index']);
         Route::get('/users/{id}',    [AdminUserController::class, 'show']);
         Route::post('/users',        [AdminUserController::class, 'store']);
@@ -103,6 +107,7 @@ Route::middleware('auth:api')->group(function () {
     // Seller routes
     Route::middleware('role:seller')->prefix('seller')->group(function () {
         // Always accessible (no store verification needed)
+        Route::get('/dashboard', [SellerDashboardController::class, 'index']);
         Route::get('/store-status', [SellerStoreController::class, 'status']);
         Route::post('/resubmit-store', [SellerStoreController::class, 'resubmit']);
 
@@ -134,6 +139,8 @@ Route::middleware('auth:api')->group(function () {
 
     // Customer routes
     Route::middleware('role:customer')->prefix('customer')->group(function () {
+        Route::get('/dashboard', [CustomerDashboardController::class, 'index']);
+
         // Cart routes
         Route::get('/cart', [CustomerCartController::class, 'index']);
         Route::post('/cart', [CustomerCartController::class, 'store']);

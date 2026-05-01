@@ -2,10 +2,9 @@ import React from "react"
 import ReactDOM from "react-dom/client"
 import "./index.css"
 import App from "./App.jsx"
-import { isCordovaApp } from "./utils/runtime"
 
 // Set up message listener as early as possible (before SW ready on Chrome)
-if ('serviceWorker' in navigator && !isCordovaApp()) {
+if ('serviceWorker' in navigator) {
   navigator.serviceWorker.addEventListener('message', (event) => {
     if (event.data && event.data.type === 'PUSH_NOTIFICATION') {
       const payload = event.data.payload;
@@ -19,8 +18,7 @@ if ('serviceWorker' in navigator && !isCordovaApp()) {
 }
 
 // Register service worker for web push notifications.
-// Works in browsers; Cordova apps use the same sw.js via a plugin.
-if ('serviceWorker' in navigator && !isCordovaApp()) {
+if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('./sw.js', { scope: './' }).then((reg) => {
       console.log('[SW] Registered successfully:', reg);

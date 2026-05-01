@@ -1,5 +1,4 @@
 import api from './api';
-import { isCordovaApp } from '../utils/runtime';
 
 // ── Notifications ──────────────────────────────────────────────────────────────
 
@@ -55,7 +54,7 @@ function urlBase64ToUint8Array(base64String) {
 }
 
 export async function registerPushSubscription() {
-    if (isCordovaApp() || !('serviceWorker' in navigator) || !('PushManager' in window)) {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
         console.warn('[Push] Not supported in this environment.');
         return null;
     }
@@ -82,7 +81,7 @@ export async function registerPushSubscription() {
 }
 
 export async function unregisterPushSubscription() {
-    if (isCordovaApp() || !('serviceWorker' in navigator)) return;
+    if (!('serviceWorker' in navigator)) return;
     try {
         const reg = await navigator.serviceWorker.ready;
         const sub = await reg.pushManager.getSubscription();

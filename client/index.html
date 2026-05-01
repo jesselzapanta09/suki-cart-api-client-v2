@@ -10,13 +10,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
     
     <script>
-      if (window.location.protocol === "file:" || window.cordova) {
-        window.SUKI_CONFIG = {
-          apiBaseUrl: "http://192.168.123.2:8000/api",
-        };
-      }
-    </script>
-    <script>
       (function () {
         var redirect = sessionStorage.getItem('redirect');
         if (redirect) {

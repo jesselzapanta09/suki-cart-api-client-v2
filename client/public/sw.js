@@ -1,6 +1,5 @@
 /* global clients */
 // SukiCart Service Worker — handles background push notifications
-// Compatible with Cordova when wrapped with a plugin that registers this SW.
 
 const CACHE_NAME = 'sukicart-v1';
 
@@ -61,7 +60,7 @@ self.addEventListener('push', (event) => {
         },
         renotify: true,
         timestamp: Date.now(),
-        // Android vibration pattern (works in Cordova)
+        // Android vibration pattern.
         vibrate: [100, 50, 100],
         requireInteraction: false,
     };

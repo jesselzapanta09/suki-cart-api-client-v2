@@ -19,7 +19,7 @@ export function getStorageUrl(path) {
     .replace(/^\/+/, "")
 
   // Some older records may store filesystem-like prefixes. Normalize them
-  // back to the public web path so Cordova resolves them consistently.
+  // back to the public web path.
   normalizedPath = normalizedPath.replace(/^(?:api\/)?public\//i, "")
 
   const storageIndex = normalizedPath.search(/(?:^|\/)storage\//i)

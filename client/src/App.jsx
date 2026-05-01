@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter, HashRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ConfigProvider, App as AntApp } from "antd";
 import { AuthProvider } from "./context/AuthContext.jsx";
 import { useAuth } from "./context/auth-context";
@@ -63,7 +63,6 @@ import CustomerDashboard from "./pages/customer/CustomerDashboard.jsx";
 
 // Pages - Notifications
 import NotificationsPage from "./pages/notifications/NotificationsPage.jsx";
-import { isCordovaApp } from "./utils/runtime";
 
 
 const antTheme = {
@@ -92,15 +91,13 @@ function RoleRedirect() {
 }
 
 export default function App() {
-    const Router = isCordovaApp() ? HashRouter : BrowserRouter;
-
     return (
         <ConfigProvider theme={antTheme}>
             <AntApp>
                 <AuthProvider>
                     <NotificationProvider>
                         <CartProvider>
-                            <Router>
+                            <BrowserRouter>
                                 <ScrollToTop />
                                 <Routes>
                                     {/* Public - Home */}
@@ -177,7 +174,7 @@ export default function App() {
                                     {/* Fallback */}
                                     <Route path="*" element={<Navigate to="/" replace />} />
                                 </Routes>
-                            </Router>
+                            </BrowserRouter>
                     </CartProvider>
                     </NotificationProvider>
                 </AuthProvider>

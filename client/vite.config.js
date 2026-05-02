@@ -42,11 +42,13 @@ export default defineConfig(() => ({
     port: 3000,
     proxy: {
       '/api': {
-        target: 'https://suki-cart-mek6z.ondigitalocean.app',
+        // target: 'https://suki-cart-mek6z.ondigitalocean.app',
+        target: 'http://168.144.95.65',
         changeOrigin: true,
       },
       '/storage': {
-        target: 'https://suki-cart-mek6z.ondigitalocean.app',
+        // target: 'https://suki-cart-mek6z.ondigitalocean.app',
+        target: 'http://168.144.95.65',
         changeOrigin: true,
       },
     },

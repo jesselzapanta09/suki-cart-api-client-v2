@@ -43,12 +43,12 @@ export default defineConfig(() => ({
     proxy: {
       '/api': {
         // target: 'https://suki-cart-mek6z.ondigitalocean.app',
-        target: 'http://168.144.95.65',
+        target: 'https://jezyk.me',
         changeOrigin: true,
       },
       '/storage': {
         // target: 'https://suki-cart-mek6z.ondigitalocean.app',
-        target: 'http://168.144.95.65',
+        target: 'https://jezyk.me',
         changeOrigin: true,
       },
     },
